@@ -1,7 +1,7 @@
 # TASKS.md
 
 ## 진행 요약 (2026-11-06 기준 — 새 세션은 여기부터 읽는다)
-**최신 (2026-11-06): 1-1 전투 시뮬레이션 코어 (공통 체력 · 공격 간격 · 서든데스) — 브랜치 `phase1-battle-core`(← `phase0-setup`), 둘 다 main 병합 전. 테스트 19개 (실행 안 함 — 돌릴 때 됨). 0-1 에디터 · MCP 확인 끝. 다음: 1-2 팀 스냅샷 (착수 질문부터).**
+**최신 (2026-11-06): 1-2 팀 스냅샷 (JSON, formatVersion 1) — 브랜치 `phase1-team-snapshot`(← `phase1-battle-core` ← `phase0-setup`), 모두 main 병합 전. 테스트 37개 (실행 안 함 — 돌릴 때 됨). 다음: 1-3 그레이박스 전투 재생 (착수 질문부터).**
 
 ---
 
@@ -27,7 +27,14 @@
   - 확인: 에디터 컴파일 오류 0 · Setup 메뉴 2번 실행해도 에셋 하나(값 보존) · 실제 에셋 값으로 샘플 전투(1 · 3 · 5라운드 A 승, 75 · 192 · 330틱) · 빈 팀 20라운드는 서든데스로 860틱(86초) 무승부
   - 테스트 작성, 실행 안 함: `BattleSimulatorTests`(9) · `DeterministicRandomTests`(4) · `BalanceTests`(5)
   - 확인 방법: Window → General → Test Runner → EditMode → Run All → 19개 통과. (화면 확인은 1-3 그레이박스 재생에서)
-- [ ] 1-2. 팀 스냅샷 — 직렬화 형식 + 버전 + 왕복 테스트
+- [x] **1-2. 팀 스냅샷** (2026-11-06 사용자 "1-2 진행해줘") — 플레이 확인 대기 (화면 없음 — 테스트로 확인)
+  - 결정 (2026-11-06, 사용자): JSON · 몬스터는 ID + 레벨 + 버프만
+  - 구현: `TeamSnapshot`/`MonsterSnapshot`/`StatBuff`(Core/Snapshot, formatVersion 1) · `TeamSnapshotJson`(직렬화 · 버전 확인 · 단계 변환 자리 · 구조 검사, 잘못되면 `SnapshotFormatException`) · `Packages/manifest.json`에 Newtonsoft JSON 3.2.1 명시(이미 다른 패키지 의존으로 설치돼 있었음)
+  - 정한 것 (Claude, 확인 필요): 스냅샷 필드 = formatVersion · rulesVersion · runId · round · wins · livesLost · trainerId · trinketIds · board(6칸, 빈칸 null). 소유자 ID · 점수 · 결과는 넣지 않음(서버가 감쌈) · 능력치 ID는 문자열(`"attack"` 등) · 모르는 필드는 무시, 새 버전(formatVersion > 현재)은 거부
+  - 확인: 컴파일 오류 · 경고 0 (도달 불가 코드 경고 1개 고침) · 에디터에서 직렬화 → 읽기 → 직렬화 결과 동일 · formatVersion 99 거부
+  - 확인 못 함: 몬스터 표가 없어 스냅샷 → `BattleTeam` 변환은 아직 (몬스터 표 생길 때 = 1-4 또는 Phase 3)
+  - 테스트 작성, 실행 안 함: `TeamSnapshotTests`(고정 JSON v1 양방향 · 왕복 · 모르는 필드 · 잘못된 JSON 12종 · 빈 보드 · 저장 전 검사 → 테스트 케이스 18개)
+  - 확인 방법: Test Runner → EditMode → Run All → 전부 통과 (1-1 포함 37개)
 - [ ] 1-3. 그레이박스 전투 재생 — 이벤트 로그를 3D 도형으로 재생 (GameRoot)
 - [ ] 1-4. 상대 공급자 — `IOpponentSource` + 로컬 파일 구현 + 기본(봇) 팀 몇 개
 

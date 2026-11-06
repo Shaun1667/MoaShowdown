@@ -40,6 +40,7 @@ MoaShowdown — 몬스터 팀을 3×2 격자에 배치해 싸우는 **비동기 
 | 온라인 | 비동기 (팀 스냅샷 업로드 · 상대 스냅샷 다운로드, 전투는 클라이언트에서 결정론적 계산) | 확정 2026-11-06 |
 | 백엔드 | 1단계 로컬 가짜 상대(파일) → 2단계 UGS (Cloud Code + Cloud Save) | 확정 2026-11-06 |
 | 테스트 | Unity Test Framework (EditMode) | 확정 2026-11-06 |
+| JSON | Newtonsoft JSON (`com.unity.nuget.newtonsoft-json` 3.2.1, Core에서 사용) | 확정 2026-11-06 |
 | 원격 저장소 | github.com/Shaun1667/MoaShowdown | — |
 
 ## 폴더 구조
@@ -64,6 +65,7 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 - 전투 계산은 `BattleSimulator.Run`(Core/Battle) 한 곳. 수치는 `BattleRules` ← 데이터 에셋 `Data/BattleBalance.asset`(`BattleBalance.ToRules`). 결과는 `BattleEvent` 목록뿐, 화면은 이것만 보고 재생. 피해는 틱 끝에 양쪽 동시 적용.
 - 난수는 `DeterministicRandom`(Core/Random) 하나. 용도마다 인스턴스를 따로, 저장은 `State`. 규칙 코드에서 `System.Random` · `UnityEngine.Random` 사용 금지.
 - 수치 데이터 에셋은 `Editor/Setup/BalanceSetup`이 만든다 (메뉴 MoaShowdown/Setup/…, 이미 있으면 값 보존). 새 수치 = BALANCE 표 + Setup 기본값 + `BalanceTests` 한 줄.
+- 팀 스냅샷은 `TeamSnapshot`(Core/Snapshot) 하나, JSON 변환은 `TeamSnapshotJson` 한 곳(읽기 = 버전 확인 → `MigrateStep` 단계 변환 → 검사). JSON 이름은 `[JsonProperty]`로 고정. 필드를 바꾸면 `CurrentFormatVersion` +1, `MigrateStep`에 case 추가, `TeamSnapshotTests`의 옛 고정 JSON은 지우지 않는다. 몬스터는 ID · 레벨 · 버프만, 목록은 순서 고정(딕셔너리 금지).
 - (시스템이 생길 때마다 한 줄씩 추가: "이 시스템은 `클래스` 한 곳, 데이터 `에셋`, 새 항목 = 표 한 줄")
 
 ## 핵심 설계 규칙 (변경 금지)
