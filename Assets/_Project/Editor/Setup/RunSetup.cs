@@ -25,8 +25,17 @@ namespace Moa.Showdown.Editor.Setup
             // 1~4라운드 1 · 5~9라운드 2 · 10라운드~ 3 (임시)
             r.lifeLossByRound = new[] { 1, 1, 1, 1, 2, 2, 2, 2, 2, 3 };
             r.startTrainerId = "debug_trainer";
-            r.startTeam.Add(new StartSlot { slot = 0, speciesId = "sprout", level = 1 });
-            r.startTeam.Add(new StartSlot { slot = 3, speciesId = "ember", level = 1 });
+            // 시작 팀 없음 — 1라운드 골드로 상점에서 산다 (2-2)
+            // 상점 · 골드 (BALANCE 10): 수입 30 → 35 · 40 · 45 · 50 … (+5씩), 가격은 원작 값 (사용자 2026-11-06), 판매 75%는 추정
+            r.startGold = 30;
+            r.firstIncome = 35;
+            r.incomeStep = 5;
+            r.shopSlots = 5;
+            r.rerollCost = 3;
+            r.priceByRarity = new[] { 10, 20, 30, 40, 50 };
+            r.sellPercent = 75;
+            r.mergeCount = 3;
+            r.maxLevel = 4;
             AssetDatabase.CreateAsset(r, RunBalancePath);
             AssetDatabase.SaveAssets();
             Debug.Log($"[Setup] {RunBalancePath} 생성");

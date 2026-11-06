@@ -119,6 +119,57 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &227577146
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 227577148}
+  - component: {fileID: 227577147}
+  m_Layer: 0
+  m_Name: Shop
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &227577147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 227577146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48cd9a9aac92f754b86f89a35da2b4f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Moa.Showdown.Game::Moa.Showdown.Game.Shop.ShopView
+  cardColor: {r: 0.18, g: 0.2, b: 0.26, a: 0.95}
+  cardDisabledColor: {r: 0.12, g: 0.12, b: 0.14, a: 0.8}
+  slotColor: {r: 1, g: 1, b: 1, a: 0.08}
+  slotFilledColor: {r: 0.3, g: 0.55, b: 0.95, a: 0.25}
+  selectedColor: {r: 1, g: 0.85, b: 0.3, a: 0.55}
+  buttonColor: {r: 0.2, g: 0.2, b: 0.25, a: 1}
+  startColor: {r: 0.85, g: 0.35, b: 0.5, a: 1}
+--- !u!4 &227577148
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 227577146}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1734223491}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &392575814
 GameObject:
   m_ObjectHideFlags: 0
@@ -480,6 +531,7 @@ MonoBehaviour:
   mainCamera: {fileID: 1253949501}
   stage: {fileID: 967320973}
   hud: {fileID: 392575815}
+  shopView: {fileID: 227577147}
 --- !u!4 &1734223491
 Transform:
   m_ObjectHideFlags: 0
@@ -495,6 +547,7 @@ Transform:
   m_Children:
   - {fileID: 967320974}
   - {fileID: 392575816}
+  - {fileID: 227577148}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807

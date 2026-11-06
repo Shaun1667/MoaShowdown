@@ -225,7 +225,7 @@ namespace Moa.Showdown.Tests
             Assert.That(back.Team[0].Buffs[0].Value, Is.EqualTo(4));
         }
 
-        [TestCase("{\"formatVersion\":2,\"runId\":\"r\",\"round\":1,\"team\":[null,null,null,null,null,null],\"facedRunIds\":[],\"history\":[]}")]
+        [TestCase("{\"formatVersion\":3,\"runId\":\"r\",\"round\":1,\"team\":[null,null,null,null,null,null],\"facedRunIds\":[],\"history\":[]}")]
         [TestCase("{\"runId\":\"r\",\"round\":1}")]
         [TestCase("{\"formatVersion\":1,\"runId\":\"\",\"round\":1,\"team\":[null,null,null,null,null,null],\"facedRunIds\":[],\"history\":[]}")]
         [TestCase("{\"formatVersion\":1,\"runId\":\"r\",\"round\":1,\"team\":[null,null,null],\"facedRunIds\":[],\"history\":[]}")]

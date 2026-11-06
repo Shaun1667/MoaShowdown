@@ -64,6 +64,16 @@ namespace Moa.Showdown.Core.Run
         {
             switch (v)
             {
+                case 1:
+                    // 1 → 2: 상점 필드 추가 (골드 0, 빈 대기석, 빈 상점)
+                    root["gold"] = 0;
+                    var bench = new JArray();
+                    for (int i = 0; i < RunState.BenchSlotCount; i++) bench.Add(JValue.CreateNull());
+                    root["bench"] = bench;
+                    root["shop"] = new JArray();
+                    root["shopRound"] = 0;
+                    root["shopRollIndex"] = 0;
+                    break;
                 default:
                     throw new SnapshotFormatException($"판 상태 formatVersion {v} → {v + 1} 변환이 없음");
             }
@@ -83,6 +93,15 @@ namespace Moa.Showdown.Core.Run
                     throw new SnapshotFormatException("team 몬스터 형식 오류");
             }
             if (s.FacedRunIds == null || s.History == null) throw new SnapshotFormatException("facedRunIds · history 없음");
+            if (s.Gold < 0) throw new SnapshotFormatException("gold 음수");
+            if (s.Bench == null || s.Bench.Length != RunState.BenchSlotCount) throw new SnapshotFormatException("bench 칸 수 오류");
+            foreach (MonsterSnapshot m in s.Bench)
+            {
+                if (m == null) continue;
+                if (string.IsNullOrEmpty(m.SpeciesId) || m.Level < 1 || m.Buffs == null)
+                    throw new SnapshotFormatException("bench 몬스터 형식 오류");
+            }
+            if (s.Shop == null) throw new SnapshotFormatException("shop 없음");
         }
     }
 }

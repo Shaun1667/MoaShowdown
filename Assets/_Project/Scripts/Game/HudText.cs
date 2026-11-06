@@ -33,5 +33,23 @@ namespace Moa.Showdown.Game
         public const string EliminatedFormat = "{0}라운드에서 목숨을 모두 잃었습니다  ({1}승)";
         public const string DebugLevelUp = "레벨업 (디버그)";
         public const string DebugLevelUpDoneFormat = "디버그: 팀 레벨 +1 → 레벨 {0}";
+
+        // 상점 (2-2)
+        public const string ShopHeader = "상점 — 몬스터를 사서 보드에 배치하세요";
+        public const string Bench = "대기석";
+        public const string StartBattle = "전투 시작";
+        public const string GoldFormat = "골드 {0}";
+        public const string RerollFormat = "새로고침 ({0})";
+        public const string SellFormat = "판매 (+{0})";
+        public const string SoldOut = "—";
+        public const string ShopCardFormat = "{0}\n{1}\n{2}골드";
+        public const string UnitLabelFormat = "{0}\nLv{1}";
+        public const string NotEnoughGold = "골드가 부족합니다";
+        public const string BenchFull = "대기석이 가득 찼습니다";
+        public const string BoughtFormat = "{0} 구매";
+        public const string MergedFormat = "{0} 합체! → Lv{1}";
+        public const string SoldFormat = "{0} 판매 (+{1})";
+        public const string EmptyBoardWarning = "보드에 몬스터가 없습니다 — 그래도 전투를 시작하려면 한 번 더 누르세요";
+        public static readonly string[] RarityNames = { "일반", "고급", "희귀", "영웅", "전설" };
     }
 }

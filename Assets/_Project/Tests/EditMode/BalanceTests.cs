@@ -67,12 +67,25 @@ namespace Moa.Showdown.Tests
             var r = AssetDatabase.LoadAssetAtPath<RunBalance>("Assets/_Project/Data/RunBalance.asset");
             var team = r.ToStartTeam();
             Assert.That(team.Length, Is.EqualTo(6));
-            Assert.That(team[0].SpeciesId, Is.EqualTo("sprout"));
-            Assert.That(team[3].SpeciesId, Is.EqualTo("ember"));
-            Assert.That(team.Count(m => m != null), Is.EqualTo(2));
-            var species = AssetDatabase.LoadAssetAtPath<SpeciesTable>("Assets/_Project/Data/SpeciesTable.asset").ToCatalog();
-            foreach (var m in team)
-                if (m != null) Assert.That(species.TryGet(m.SpeciesId, out _), Is.True, m.SpeciesId);
+            Assert.That(team.Count(m => m != null), Is.EqualTo(0), "2-2부터 시작 팀 없음 — 1라운드 골드로 산다");
+        }
+
+        [Test]
+        public void Balance10_Shop()
+        {
+            var r = AssetDatabase.LoadAssetAtPath<RunBalance>("Assets/_Project/Data/RunBalance.asset");
+            Assert.That(r.startGold, Is.EqualTo(30));
+            Assert.That(r.firstIncome, Is.EqualTo(35));
+            Assert.That(r.incomeStep, Is.EqualTo(5));
+            Assert.That(r.shopSlots, Is.EqualTo(5));
+            Assert.That(r.rerollCost, Is.EqualTo(3));
+            CollectionAssert.AreEqual(new[] { 10, 20, 30, 40, 50 }, r.priceByRarity);
+            Assert.That(r.sellPercent, Is.EqualTo(75));
+            Assert.That(r.mergeCount, Is.EqualTo(3));
+            Assert.That(r.maxLevel, Is.EqualTo(4));
+            Assert.DoesNotThrow(() => r.ToShopRules().Validate());
+            var species = AssetDatabase.LoadAssetAtPath<SpeciesTable>("Assets/_Project/Data/SpeciesTable.asset");
+            Assert.That(species.rows.All(x => x.rarity == Moa.Showdown.Core.Content.Rarity.Common), Is.True, "시험용 6종은 모두 일반 (BALANCE 7)");
         }
 
         [Test]

@@ -80,6 +80,10 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 - 판 상태는 `RunState` 하나(JSON `RunStateJson`, formatVersion 1). 난수는 상태에 두지 않고 `SeedMix.Derive(판 시드, 용도, 라운드)` — 용도 번호(`PurposeBattle` 1 · `PurposeOpponent` 2)는 바꾸지 않는다. 새 용도 = 새 번호.
 - GameRoot 모드: Run(기본, 판 진행 · 결과 패널 · 다음 라운드/새 판 · 디버그 레벨업) / BattleTest(1-3 · 1-4 시험 전투). 진입점 `Continue()` · `DebugLevelUp()` · `Replay()` · `State` · `LastReport`.
 - **확인 · 시험 때 플레이 모드에서 판을 돌리면 내 팀이 실제로 올라간다** → GameRoot `localWriteFolder`를 다른 이름(예: `LocalOpponents_ClaudeCheck`)으로 바꿔 돌리고, 끝나면 되돌리고 그 폴더만 지운다.
+- 상점 · 골드 · 배치는 `ShopController`(Core/Shop) 한 곳: `BeginRound`(라운드당 한 번 수입 + 진열) · `Buy`(대기석 빈칸으로, 가득 차도 합체되면 허용) · `Reroll` · `Sell`(들인 골드 × SellPercent, 반올림) · `Move`(맞바꾸기). 합체 = 같은 몬스터 · 같은 레벨 MergeCount마리 → 보드 → 대기석 순 첫 자리로 Lv+1(버프 합침), 연쇄. 수치는 `ShopRules` ← `RunBalance`(BALANCE 10), 몬스터 가격 = 등급(`Rarity`) → `PriceByRarity`. 자리는 `Location`(Board 0~5 · Bench 0~3).
+- 상점 난수 = `SeedMix(판 시드, PurposeShop 3, 라운드)` ⊕ `ShopRollIndex` — 몬스터 표 순서(`SpeciesCatalog.All`)를 바꾸면 같은 시드의 상점이 달라진다.
+- 상점 화면은 `ShopView`(Game/Shop, uGUI 코드 생성, 별도 캔버스): 카드 클릭 = 사기, 내 몬스터 클릭 = 선택, 다른 칸 클릭 = 옮기기/맞바꾸기, 판매 · 새로고침 · 전투 시작 버튼. 그릴 내용은 GameRoot가 `ShopViewData`로 만든다 (뷰는 규칙을 모름). 보드 칸 버튼은 3D 칸 위치를 화면 좌표로 따라간다.
+- Run 흐름: 새 판 → `EnterShop`(상점) → 전투 시작 → 전투 재생 → 결과 패널 → 다음 라운드 = `EnterShop` … 판 끝 → 새 판.
 - (시스템이 생길 때마다 한 줄씩 추가: "이 시스템은 `클래스` 한 곳, 데이터 `에셋`, 새 항목 = 표 한 줄")
 
 ## 핵심 설계 규칙 (변경 금지)

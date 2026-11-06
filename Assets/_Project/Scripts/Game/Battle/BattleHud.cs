@@ -119,6 +119,13 @@ namespace Moa.Showdown.Game.Battle
 
         public void ShowRunInfo(string text) => _runInfo.text = text;
 
+        /// <summary>상점 단계: 라운드 · 안내 글, HP 바는 이번 라운드 체력으로 가득, 전투 이름표 · 숫자 · 배너는 지운다.</summary>
+        public void ShowShopHeader(int round, string text, int roundHp)
+        {
+            ShowBattle(round, "", "", roundHp);
+            _teams.text = text;
+        }
+
         public void ShowRoundResult(string detail, string continueLabel)
         {
             _resultDetail.text = detail;

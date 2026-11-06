@@ -17,12 +17,24 @@ namespace Moa.Showdown.Core.Content
         public string DisplayName;
         public int Attack;
         public int AttackIntervalTicks;
+        public Rarity Rarity;
     }
 
-    /// <summary>몬스터 표 조회 한 곳. ID로만 찾는다 (순회 순서에 의존하는 규칙 금지).</summary>
+    /// <summary>몬스터 등급 (상점 가격). 끝에만 추가한다.</summary>
+    public enum Rarity
+    {
+        Common = 0,
+        Uncommon = 1,
+        Rare = 2,
+        Epic = 3,
+        Legendary = 4,
+    }
+
+    /// <summary>몬스터 표 조회 한 곳. 규칙은 ID로 찾는다. <see cref="All"/>은 표 순서 그대로 (상점 뽑기용 — 표 순서를 바꾸면 같은 시드의 상점이 달라짐).</summary>
     public sealed class SpeciesCatalog
     {
         private readonly Dictionary<string, SpeciesDef> _byId = new Dictionary<string, SpeciesDef>(StringComparer.Ordinal);
+        private readonly List<SpeciesDef> _all = new List<SpeciesDef>();
 
         public SpeciesCatalog(IEnumerable<SpeciesDef> defs)
         {
@@ -33,10 +45,13 @@ namespace Moa.Showdown.Core.Content
                 if (d.AttackIntervalTicks < 1) throw new ArgumentException($"{d.Id}: 공격 간격 < 1");
                 if (_byId.ContainsKey(d.Id)) throw new ArgumentException($"몬스터 ID 중복: {d.Id}");
                 _byId.Add(d.Id, d);
+                _all.Add(d);
             }
         }
 
         public int Count => _byId.Count;
+
+        public IReadOnlyList<SpeciesDef> All => _all;
 
         public bool TryGet(string id, out SpeciesDef def)
         {

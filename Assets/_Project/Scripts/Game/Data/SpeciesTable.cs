@@ -21,6 +21,7 @@ namespace Moa.Showdown.Game.Data
             DisplayName = r.displayName,
             Attack = r.attack,
             AttackIntervalTicks = r.attackIntervalTicks,
+            Rarity = r.rarity,
         }));
     }
 
@@ -32,5 +33,7 @@ namespace Moa.Showdown.Game.Data
         public int attack;
         [Tooltip("공격 간격(틱). 10틱 = 1초")]
         public int attackIntervalTicks;
+        [Tooltip("등급 = 상점 가격 (BALANCE 10)")]
+        public Rarity rarity;
     }
 }

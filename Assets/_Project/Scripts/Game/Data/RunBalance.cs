@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Moa.Showdown.Core.Battle;
 using Moa.Showdown.Core.Run;
+using Moa.Showdown.Core.Shop;
 using Moa.Showdown.Core.Snapshot;
 using UnityEngine;
 
@@ -22,6 +23,17 @@ namespace Moa.Showdown.Game.Data
         [Tooltip("라운드 1부터 패배 시 잃는 목숨. 표보다 뒤 라운드는 마지막 값 (BALANCE 5)")]
         public int[] lifeLossByRound;
 
+        [Header("상점 · 골드 (BALANCE 10)")]
+        [Tooltip("1라운드 지급")] public int startGold;
+        [Tooltip("2라운드 수입")] public int firstIncome;
+        [Tooltip("3라운드부터 라운드마다 수입 증가량")] public int incomeStep;
+        public int shopSlots;
+        public int rerollCost;
+        [Tooltip("등급별 가격: 일반 · 고급 · 희귀 · 영웅 · 전설")] public int[] priceByRarity;
+        [Tooltip("판매가 = 들인 골드 × %")] public int sellPercent;
+        [Tooltip("같은 몬스터 · 같은 레벨 몇 마리면 합체")] public int mergeCount;
+        public int maxLevel;
+
         [Header("시작 (BALANCE 9)")]
         public string startTrainerId;
         public List<StartSlot> startTeam = new List<StartSlot>();
@@ -31,6 +43,19 @@ namespace Moa.Showdown.Game.Data
             WinsToChampion = winsToChampion,
             StartLives = startLives,
             LifeLossByRound = (int[])lifeLossByRound.Clone(),
+        };
+
+        public ShopRules ToShopRules() => new ShopRules
+        {
+            StartGold = startGold,
+            FirstIncome = firstIncome,
+            IncomeStep = incomeStep,
+            ShopSlots = shopSlots,
+            RerollCost = rerollCost,
+            PriceByRarity = (int[])priceByRarity.Clone(),
+            SellPercent = sellPercent,
+            MergeCount = mergeCount,
+            MaxLevel = maxLevel,
         };
 
         public MonsterSnapshot[] ToStartTeam()

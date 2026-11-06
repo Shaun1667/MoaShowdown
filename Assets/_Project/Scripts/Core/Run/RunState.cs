@@ -19,7 +19,11 @@ namespace Moa.Showdown.Core.Run
     /// </summary>
     public sealed class RunState
     {
-        public const int CurrentFormatVersion = 1;
+        /// <summary>1 = 2-1 (판 진행) · 2 = 2-2 (골드 · 대기석 · 상점 추가).</summary>
+        public const int CurrentFormatVersion = 2;
+
+        /// <summary>대기석 칸 수 (원작 4칸).</summary>
+        public const int BenchSlotCount = 4;
 
         [JsonProperty("formatVersion", Order = 0)]
         public int FormatVersion = CurrentFormatVersion;
@@ -56,6 +60,26 @@ namespace Moa.Showdown.Core.Run
 
         [JsonProperty("history", Order = 10)]
         public List<RoundRecord> History = new List<RoundRecord>();
+
+        // ── formatVersion 2 (2-2 상점) ──
+
+        [JsonProperty("gold", Order = 11)]
+        public int Gold;
+
+        [JsonProperty("bench", Order = 12)]
+        public MonsterSnapshot[] Bench = new MonsterSnapshot[BenchSlotCount];
+
+        /// <summary>상점 진열 (몬스터 ID, 산 칸은 null).</summary>
+        [JsonProperty("shop", Order = 13)]
+        public List<string> Shop = new List<string>();
+
+        /// <summary>상점을 준비한 라운드 (수입 · 첫 진열을 한 번만 하기 위해). 0 = 아직.</summary>
+        [JsonProperty("shopRound", Order = 14)]
+        public int ShopRound;
+
+        /// <summary>이 라운드에 상점을 몇 번 새로 뽑았는지 (상점 난수 = 판 시드 · 라운드 · 이 값).</summary>
+        [JsonProperty("shopRollIndex", Order = 15)]
+        public int ShopRollIndex;
 
         /// <summary>판 결과 (저장한 값이 아니라 승수 · 목숨에서 계산).</summary>
         public RunOutcome GetOutcome(RunRules rules) =>

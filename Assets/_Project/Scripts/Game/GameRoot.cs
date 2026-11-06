@@ -6,8 +6,11 @@ using Moa.Showdown.Core.Battle;
 using Moa.Showdown.Core.Content;
 using Moa.Showdown.Core.Online;
 using Moa.Showdown.Core.Run;
+using Moa.Showdown.Core.Shop;
+using Moa.Showdown.Core.Snapshot;
 using Moa.Showdown.Game.Battle;
 using Moa.Showdown.Game.Data;
+using Moa.Showdown.Game.Shop;
 using UnityEngine;
 
 namespace Moa.Showdown.Game
@@ -59,8 +62,13 @@ namespace Moa.Showdown.Game
         [SerializeField] private Camera mainCamera;
         [SerializeField] private BattleStage stage;
         [SerializeField] private BattleHud hud;
+        [SerializeField] private ShopView shopView;
 
         private BattleRules _rules;
+        private ShopController _shop;
+        private Location? _selected;
+        private string _shopMessage = "";
+        private bool _emptyBoardWarned;
         private BattlePlayback _playback;
         private string _lastSignature;
         private string _lastInputKey;
@@ -81,6 +89,8 @@ namespace Moa.Showdown.Game
         /// <summary>마지막 라운드 결과 (Run 모드).</summary>
         public RoundReport LastReport { get; private set; }
         public RunRules RunRules => _run?.Rules;
+        public ShopController Shop => _shop;
+        public Location? Selected => _selected;
 
         private void Start()
         {
@@ -103,9 +113,16 @@ namespace Moa.Showdown.Game
             if (mode == Mode.Run)
             {
                 _run = new RunController(runBalance.ToRules(), _rules, _statRules, _catalog, _opponents, balance.rulesVersion);
+                _shop = new ShopController(runBalance.ToShopRules(), _catalog);
+                shopView.Build(mainCamera, slot => stage.SlotPosition(BattleSide.A, slot), _shop.Rules.ShopSlots);
+                shopView.ShopCardClicked += OnShopCard;
+                shopView.RerollClicked += OnReroll;
+                shopView.SellClicked += OnSell;
+                shopView.LocationClicked += OnLocation;
+                shopView.StartBattleClicked += OnStartBattle;
                 hud.SetDebugVisible(showDebugButtons);
                 StartNewRun();
-                Continue();
+                EnterShop();
             }
             else
             {
@@ -145,13 +162,96 @@ namespace Moa.Showdown.Game
             ShowRunInfo(State.Wins, State.Lives);
         }
 
-        /// <summary>결과 패널의 계속 버튼: 판이 진행 중이면 다음 라운드, 끝났으면 새 판을 시작하고 첫 라운드.</summary>
-        public async void Continue()
+        /// <summary>결과 패널의 계속 버튼: 판이 진행 중이면 다음 라운드 상점, 끝났으면 새 판을 시작하고 1라운드 상점.</summary>
+        public void Continue()
         {
             if (mode != Mode.Run) return;
+            if (State.GetOutcome(_run.Rules) != RunOutcome.InProgress) StartNewRun();
+            EnterShop();
+        }
+
+        // ───────── 상점 (2-2) ─────────
+
+        /// <summary>라운드 시작: 수입 · 진열(라운드당 한 번) → 상점 화면. 보드에는 내 팀만 보인다.</summary>
+        public void EnterShop()
+        {
+            _shop.BeginRound(State);
+            _selected = null;
+            _shopMessage = "";
+            _emptyBoardWarned = false;
+            _playback = null;
+            _roundResultPending = false;
+            hud.HideRoundResult();
+            hud.ShowStatus("");
+            hud.ShowShopHeader(State.Round, HudText.ShopHeader, _rules.GetTeamHp(State.Round));
+            ShowRunInfo(State.Wins, State.Lives);
+            RefreshShop();
+        }
+
+        private void OnShopCard(int index)
+        {
+            string id = index < State.Shop.Count ? State.Shop[index] : null;
+            int levelBefore = MaxLevelOf(id);
+            ShopError e = _shop.Buy(State, index);
+            if (e == ShopError.None)
+            {
+                int levelAfter = MaxLevelOf(id);
+                _shopMessage = levelAfter > levelBefore && levelAfter > 1
+                    ? string.Format(HudText.MergedFormat, NameOf(id), levelAfter)
+                    : string.Format(HudText.BoughtFormat, NameOf(id));
+                _selected = null;
+            }
+            else _shopMessage = ErrorText(e);
+            RefreshShop();
+        }
+
+        private void OnReroll()
+        {
+            ShopError e = _shop.Reroll(State);
+            _shopMessage = e == ShopError.None ? "" : ErrorText(e);
+            RefreshShop();
+        }
+
+        private void OnSell()
+        {
+            if (!_selected.HasValue) return;
+            MonsterSnapshot m = ShopController.Get(State, _selected.Value);
+            if (m == null) return;
+            int value = _shop.SellValue(m);
+            string name = NameOf(m.SpeciesId);
+            if (_shop.Sell(State, _selected.Value) == ShopError.None) _shopMessage = string.Format(HudText.SoldFormat, name, value);
+            _selected = null;
+            RefreshShop();
+        }
+
+        /// <summary>클릭 → 클릭: 고른 게 없으면 내 몬스터를 고르고, 고른 게 있으면 그 칸으로 옮기기/맞바꾸기 (같은 칸 = 선택 취소).</summary>
+        private void OnLocation(Location at)
+        {
+            if (!_selected.HasValue)
+            {
+                if (ShopController.Get(State, at) != null) _selected = at;
+            }
+            else
+            {
+                if (!_selected.Value.Equals(at)) _shop.Move(State, _selected.Value, at);
+                _selected = null;
+            }
+            _shopMessage = "";
+            RefreshShop();
+        }
+
+        private async void OnStartBattle()
+        {
+            if (State.Team.All(m => m == null) && !_emptyBoardWarned)
+            {
+                _emptyBoardWarned = true;
+                _shopMessage = HudText.EmptyBoardWarning;
+                RefreshShop();
+                return;
+            }
+            shopView.Hide();
             try
             {
-                if (State.GetOutcome(_run.Rules) != RunOutcome.InProgress) StartNewRun();
                 await PlayNextRoundAsync();
             }
             catch (Exception e)
@@ -160,8 +260,71 @@ namespace Moa.Showdown.Game
             }
         }
 
+        private void RefreshShop()
+        {
+            var d = new ShopViewData
+            {
+                Round = State.Round,
+                Gold = State.Gold,
+                RerollCost = _shop.Rules.RerollCost,
+                Shop = State.Shop.Select(id => id == null
+                    ? new ShopCard { Empty = true }
+                    : new ShopCard
+                    {
+                        Name = NameOf(id),
+                        Rarity = RarityName(id),
+                        Price = _shop.PriceOf(id),
+                        Affordable = State.Gold >= _shop.PriceOf(id),
+                    }).ToArray(),
+                Selected = _selected,
+                Message = _shopMessage,
+            };
+            for (int i = 0; i < d.Board.Length; i++) d.Board[i] = UnitText(State.Team[i]);
+            for (int i = 0; i < d.Bench.Length; i++) d.Bench[i] = UnitText(State.Bench[i]);
+            if (_selected.HasValue)
+            {
+                MonsterSnapshot m = ShopController.Get(State, _selected.Value);
+                if (m != null) d.SellValue = _shop.SellValue(m);
+            }
+            shopView.Show(d);
+
+            // 보드 미리 보기: 내 팀만 (상대 칸은 비움)
+            BattleTeam mine = TeamFactory.Build(_run.MakeSnapshot(State), _catalog, _statRules);
+            stage.Build(mine, new BattleTeam(), unchecked((ulong)State.Seed));
+            stage.Tick(0f, 0f, true);
+        }
+
+        private string UnitText(MonsterSnapshot m) => m == null ? null : string.Format(HudText.UnitLabelFormat, NameOf(m.SpeciesId), m.Level);
+
+        private string NameOf(string speciesId) =>
+            speciesId != null && _catalog.TryGet(speciesId, out SpeciesDef d) ? d.DisplayName : speciesId;
+
+        private string RarityName(string speciesId)
+        {
+            if (!_catalog.TryGet(speciesId, out SpeciesDef d)) return "";
+            int i = (int)d.Rarity;
+            return i >= 0 && i < HudText.RarityNames.Length ? HudText.RarityNames[i] : d.Rarity.ToString();
+        }
+
+        private int MaxLevelOf(string speciesId)
+        {
+            if (speciesId == null) return 0;
+            int max = 0;
+            foreach (MonsterSnapshot m in State.Team.Concat(State.Bench))
+                if (m != null && m.SpeciesId == speciesId && m.Level > max) max = m.Level;
+            return max;
+        }
+
+        private static string ErrorText(ShopError e) => e switch
+        {
+            ShopError.NotEnoughGold => HudText.NotEnoughGold,
+            ShopError.BenchFull => HudText.BenchFull,
+            _ => "",
+        };
+
         private async Task PlayNextRoundAsync()
         {
+            shopView.Hide();
             hud.HideRoundResult();
             int winsBefore = State.Wins;
             int livesBefore = State.Lives;
@@ -228,6 +391,7 @@ namespace Moa.Showdown.Game
             RunController.DebugLevelUpAll(State);
             int level = State.Team.Where(m => m != null).Select(m => m.Level).DefaultIfEmpty(0).Max();
             hud.ShowStatus(string.Format(HudText.DebugLevelUpDoneFormat, level));
+            if (shopView.IsVisible) RefreshShop();
         }
 
         // ───────── 다시 보기 · 시험 전투 ─────────

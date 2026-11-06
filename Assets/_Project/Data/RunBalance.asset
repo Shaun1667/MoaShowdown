@@ -15,11 +15,14 @@ MonoBehaviour:
   winsToChampion: 10
   startLives: 10
   lifeLossByRound: 01000000010000000100000001000000020000000200000002000000020000000200000003000000
+  startGold: 30
+  firstIncome: 35
+  incomeStep: 5
+  shopSlots: 5
+  rerollCost: 3
+  priceByRarity: 0a000000140000001e0000002800000032000000
+  sellPercent: 75
+  mergeCount: 3
+  maxLevel: 4
   startTrainerId: debug_trainer
-  startTeam:
-  - slot: 0
-    speciesId: sprout
-    level: 1
-  - slot: 3
-    speciesId: ember
-    level: 1
+  startTeam: []
