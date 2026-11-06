@@ -31,7 +31,7 @@ namespace Moa.Showdown.Editor.Setup
             Debug.Log($"[Setup] {BattleBalancePath} 생성");
         }
 
-        // BALANCE.md 1~4번
+        // BALANCE.md 1~4 · 6번
         private static void ApplyDefaults(BattleBalance b)
         {
             b.ticksPerSecond = 10;
@@ -46,6 +46,8 @@ namespace Moa.Showdown.Editor.Setup
             b.suddenDeathBaseDamage = 20;
             b.suddenDeathDamageStep = 20;
             b.maxTicks = 3000;
+            b.levelAttackMultiplier = 2;
+            b.rulesVersion = 1;
         }
     }
 }

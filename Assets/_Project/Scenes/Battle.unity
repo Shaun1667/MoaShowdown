@@ -434,10 +434,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Moa.Showdown.Game::Moa.Showdown.Game.GameRoot
   balance: {fileID: 11400000, guid: 8238de04230599c4988b3422d7d03fa1, type: 2}
   debugTeams: {fileID: 11400000, guid: a769914339220554d8694ae48c007a44, type: 2}
+  speciesTable: {fileID: 11400000, guid: 366a36993b9dc9f4b99bcd3900158a87, type: 2}
   teamAIndex: 0
   teamBIndex: 1
   round: 3
   seed: 12345
+  useLocalOpponent: 1
+  wins: 0
   mainCamera: {fileID: 1253949501}
   stage: {fileID: 967320973}
   hud: {fileID: 392575815}

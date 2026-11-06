@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Moa.Showdown.Core.Battle;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -77,6 +78,46 @@ namespace Moa.Showdown.Core.Snapshot
 
             Validate(snapshot);
             return snapshot;
+        }
+
+        /// <summary>스냅샷 여러 개 = JSON 배열 (로컬 상대 파일 · 서버 묶음).</summary>
+        public static string SerializeMany(IEnumerable<TeamSnapshot> snapshots)
+        {
+            var array = new JArray();
+            foreach (TeamSnapshot s in snapshots)
+                array.Add(JObject.Parse(Serialize(s)));
+            return array.ToString(Formatting.Indented);
+        }
+
+        /// <summary>
+        /// JSON 배열 → 스냅샷 목록 (파일 안 순서 유지). 잘못된 항목은 건너뛰고 errors에 이유를 남긴다 — 한 항목 때문에 파일 전체를 버리지 않는다.
+        /// 배열 자체가 아니면 예외.
+        /// </summary>
+        public static List<TeamSnapshot> DeserializeMany(string json, List<string> errors)
+        {
+            JArray array;
+            try
+            {
+                array = JArray.Parse(json);
+            }
+            catch (JsonException e)
+            {
+                throw new SnapshotFormatException("JSON 배열 파싱 실패", e);
+            }
+
+            var list = new List<TeamSnapshot>();
+            for (int i = 0; i < array.Count; i++)
+            {
+                try
+                {
+                    list.Add(Deserialize(array[i].ToString(Formatting.None)));
+                }
+                catch (SnapshotFormatException e)
+                {
+                    errors?.Add($"[{i}] {e.Message}");
+                }
+            }
+            return list;
         }
 
         /// <summary>옛 버전 → 현재 버전, 한 단계씩.</summary>

@@ -21,6 +21,8 @@ namespace Moa.Showdown.Editor.Setup
         {
             BalanceSetup.CreateBattleBalance();
             DebugTeamsSetup.CreateDebugTeams();
+            SpeciesSetup.CreateSpeciesTable();
+            LocalOpponentsSetup.CreateLocalOpponents();
 
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
 
@@ -54,6 +56,7 @@ namespace Moa.Showdown.Editor.Setup
             var so = new SerializedObject(rootGo.GetComponent<GameRoot>());
             SetIfNull(so, "balance", AssetDatabase.LoadAssetAtPath<BattleBalance>(BalanceSetup.BattleBalancePath));
             SetIfNull(so, "debugTeams", AssetDatabase.LoadAssetAtPath<DebugTeamSet>(DebugTeamsSetup.DebugTeamsPath));
+            SetIfNull(so, "speciesTable", AssetDatabase.LoadAssetAtPath<SpeciesTable>(SpeciesSetup.SpeciesTablePath));
             SetIfNull(so, "mainCamera", cam);
             SetIfNull(so, "stage", stage);
             SetIfNull(so, "hud", hud);

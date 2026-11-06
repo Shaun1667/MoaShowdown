@@ -71,6 +71,10 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 - 전투 씬은 메뉴 MoaShowdown/Setup/Battle Scene이 만든다 (`Scenes/Battle.unity`, 없는 것만 생성 · 빈 참조만 채움, 빌드 목록 맨 앞). 시험 팀은 `Data/DebugTeams.asset`(메뉴 Setup/Debug Teams), GameRoot 인스펙터에서 팀 번호 · 라운드 · 시드를 고른다.
 - 칸 배치(화면): 왼쪽 = 내 팀(A), 오른쪽 = 상대(B). 줄 0 = 위 줄 · 1 = 아래 줄, 열 0 = 가운데 쪽 (원작 화면, 2026-11-06).
 - 플레이 모드 확인(에디터 포커스 없을 때): `EditorApplication.isPaused = true` 후 `EditorApplication.Step()`을 반복 — 한 명령 안에서 바로 진행된다. 진행 확인은 `GameRoot.Playback`, 캡처는 `ScreenCapture.CaptureScreenshot` 후 Step 2번.
+- 몬스터 표는 `SpeciesCatalog`(Core/Content, ID로만 조회) ← 데이터 에셋 `Data/SpeciesTable.asset`(`SpeciesTable.ToCatalog`, 메뉴 Setup/Species Table). 새 몬스터 = 표 한 줄. ID는 스냅샷에 저장되므로 바꾸지 않는다. 능력치 ID 문자열은 `StatIds`.
+- 스냅샷 → 전투 팀은 `TeamFactory.Build`(Core/Content) 한 곳: 공격력 = 기본 × 레벨 배율^(레벨−1) + 공격 버프, 간격 = 기본 + 간격 버프(최소 1). 모르는 몬스터 · 상한 초과는 `SnapshotContentException`. 레벨 배율 · 규칙 버전은 `BattleBalance`(BALANCE 6).
+- 상대는 `IOpponentSource`(Core/Online, 비동기) 하나로 받는다. 고르기 규칙은 `OpponentPicker` 한 곳(같은 라운드 · 같은 rulesVersion · 내 판 아님 · 만난 적 없음 · 싸울 수 있음 → 승수 가장 가까운 무리 → 시드 난수, 없으면 봇). 로컬 구현 `LocalFileOpponentSource`: 읽기 `StreamingAssets/Opponents/*.json` + 쓰기 폴더, 봇 `StreamingAssets/OpponentBots/*.json`, 올리기 = `persistentDataPath/LocalOpponents/my_teams.json`. UGS = 같은 인터페이스의 새 구현.
+- 샘플 상대 파일은 메뉴 Setup/Local Opponents가 고정 시드로 만든다 (`sample_opponents.json` · `bots.json`만 덮어씀, 손으로 만든 상대는 다른 파일 이름으로).
 - (시스템이 생길 때마다 한 줄씩 추가: "이 시스템은 `클래스` 한 곳, 데이터 `에셋`, 새 항목 = 표 한 줄")
 
 ## 핵심 설계 규칙 (변경 금지)

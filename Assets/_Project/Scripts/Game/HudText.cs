@@ -14,5 +14,8 @@ namespace Moa.Showdown.Game
         public const string TeamVsFormat = "{0}  vs  {1}";
         public const string SameResult = "같은 시드 → 같은 결과 (확인됨)";
         public const string DifferentResult = "결과가 다름! (결정론 깨짐)";
+        public const string OpponentFormat = "{0} ({1}승)";
+        public const string OpponentBotFormat = "봇 {0}";
+        public const string OpponentNotFound = "상대를 못 찾아 디버그 팀으로 대신함";
     }
 }

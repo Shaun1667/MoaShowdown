@@ -1,0 +1,180 @@
+[
+  {
+    "formatVersion": 1,
+    "rulesVersion": 1,
+    "runId": "bot_r01",
+    "round": 1,
+    "wins": 0,
+    "livesLost": 0,
+    "trainerId": "bot",
+    "trinketIds": [],
+    "board": [
+      {
+        "speciesId": "ember",
+        "level": 1,
+        "buffs": []
+      },
+      null,
+      null,
+      {
+        "speciesId": "sprout",
+        "level": 1,
+        "buffs": []
+      },
+      null,
+      null
+    ]
+  },
+  {
+    "formatVersion": 1,
+    "rulesVersion": 1,
+    "runId": "bot_r04",
+    "round": 4,
+    "wins": 0,
+    "livesLost": 0,
+    "trainerId": "bot",
+    "trinketIds": [],
+    "board": [
+      {
+        "speciesId": "gust",
+        "level": 2,
+        "buffs": []
+      },
+      {
+        "speciesId": "pebble",
+        "level": 2,
+        "buffs": []
+      },
+      null,
+      {
+        "speciesId": "zap",
+        "level": 2,
+        "buffs": []
+      },
+      null,
+      null
+    ]
+  },
+  {
+    "formatVersion": 1,
+    "rulesVersion": 1,
+    "runId": "bot_r07",
+    "round": 7,
+    "wins": 0,
+    "livesLost": 0,
+    "trainerId": "bot",
+    "trinketIds": [],
+    "board": [
+      {
+        "speciesId": "ember",
+        "level": 3,
+        "buffs": []
+      },
+      {
+        "speciesId": "pebble",
+        "level": 3,
+        "buffs": []
+      },
+      {
+        "speciesId": "zap",
+        "level": 3,
+        "buffs": []
+      },
+      {
+        "speciesId": "ember",
+        "level": 3,
+        "buffs": []
+      },
+      {
+        "speciesId": "zap",
+        "level": 3,
+        "buffs": []
+      },
+      null
+    ]
+  },
+  {
+    "formatVersion": 1,
+    "rulesVersion": 1,
+    "runId": "bot_r10",
+    "round": 10,
+    "wins": 0,
+    "livesLost": 0,
+    "trainerId": "bot",
+    "trinketIds": [],
+    "board": [
+      {
+        "speciesId": "pebble",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "zap",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "gust",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "pebble",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "drip",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "ember",
+        "level": 4,
+        "buffs": []
+      }
+    ]
+  },
+  {
+    "formatVersion": 1,
+    "rulesVersion": 1,
+    "runId": "bot_r13",
+    "round": 13,
+    "wins": 0,
+    "livesLost": 0,
+    "trainerId": "bot",
+    "trinketIds": [],
+    "board": [
+      {
+        "speciesId": "drip",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "drip",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "sprout",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "ember",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "pebble",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "gust",
+        "level": 5,
+        "buffs": []
+      }
+    ]
+  }
+]

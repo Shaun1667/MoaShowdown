@@ -1,7 +1,7 @@
 # TASKS.md
 
 ## 진행 요약 (2026-11-06 기준 — 새 세션은 여기부터 읽는다)
-**최신 (2026-11-06): 1-1 고침 — 팀 공통 체력을 원작 값 14라운드로 교체. 브랜치 `phase1-hp-table`, main 병합 전. 테스트 41개 (40개 통과 2026-11-06, 고친 1개 실행 안 함). 플레이 확인 대기: 1-3 (화면 직접 확인). 다음: 1-4 상대 공급자 (착수 질문부터 — 몬스터 표 범위).**
+**최신 (2026-11-06): 1-4 상대 공급자 (몬스터 표 6종 · 로컬 상대 파일 · 봇 · 내 팀 올리기) — 브랜치 `phase1-opponent-source`(← `phase1-hp-table`), 둘 다 main 병합 전. 테스트 65개 (40개 통과 2026-11-06, 25개 실행 안 함 — 돌릴 때 됨). 플레이 확인 대기: 1-3 · 1-4. Phase 1 항목 끝. 다음: 미정 — Phase 2 후보(2-1 한 판 진행) 먼저 묻는다.**
 
 ---
 
@@ -46,7 +46,15 @@
   - 확인 못 함: 실제 마우스 클릭(버튼은 코드로 onClick 호출) · 1x 실제 시간 흐름(포커스 없어 프레임 진행으로 대체) · 화면 비율 16:9 외
   - 테스트 통과 (2026-11-06 사용자 실행): `BattlePlaybackTests`(4)
   - 확인 방법: `Scenes/Battle.unity` 열기 → 플레이 → 공격 · HP 감소 · 결과 배너 → 2x/4x 버튼 → 다시 보기 → 아래 "같은 시드 → 같은 결과 (확인됨)". GameRoot 인스펙터에서 팀 번호(0 고른 · 1 빠른 · 2 한 방 · 3 빈) · 라운드를 바꿔 볼 수 있음
-- [ ] 1-4. 상대 공급자 — `IOpponentSource` + 로컬 파일 구현 + 기본(봇) 팀 몇 개
+- [x] **1-4. 상대 공급자** (2026-11-06 사용자 "1-4 진행해줘") — 플레이 확인 대기
+  - 결정 (2026-11-06, 사용자): 몬스터 표 시험용 6종(능력치만) · 레벨당 공격력 ×2(임시) · 로컬 상대 = 스냅샷 JSON 파일 · 내 팀 올리기(로컬 저장) 기능
+  - 구현: Core — `SpeciesCatalog`/`SpeciesDef`/`StatIds`/`UnitStatRules` · `TeamFactory`(스냅샷 → 전투 팀, 레벨 · 버프 · 상한 검사) · `IOpponentSource`(비동기) · `OpponentQuery`/`OpponentResult` · `OpponentPicker`(플레이어 · 봇 고르기) · `LocalFileOpponentSource` · `TeamSnapshotJson.SerializeMany/DeserializeMany`(잘못된 항목은 건너뛰고 기록). Game — `SpeciesTable` 에셋 · `BattleBalance`에 `levelAttackMultiplier` · `rulesVersion` · `GameRoot` "로컬 상대" 모드(기본 켜짐, 못 찾으면 디버그 팀 + 안내) · `HudText` 문구 3개. Editor — 메뉴 `Setup/Species Table` · `Setup/Local Opponents` · Battle Scene이 둘 다 부르고 몬스터 표 연결. 데이터 — `StreamingAssets/Opponents/sample_opponents.json`(14라운드 × 3팀) · `StreamingAssets/OpponentBots/bots.json`(5팀)
+  - 정한 것 (Claude, 확인 필요): 고르기 = 같은 라운드 · 같은 규칙 버전 · 내 판 아님 · 만난 적 없음 → 승수가 가장 가까운 무리에서 시드 난수(원작은 점수 구간 매칭 — 점수가 생기면 바꿈) · 봇 = 같은 라운드, 없으면 그 아래 가장 높은 라운드 · 모르는 능력치 버프는 무시 · 레벨 계산 후 버프를 더함 · 능력치 안전 상한 10억 · 상대 파일은 매번 다시 읽음 · 올린 팀 저장 위치 `persistentDataPath/LocalOpponents/my_teams.json`(회사 · 제품 이름을 바꾸면 위치가 바뀜)
+  - 수치: BALANCE 6 · 7 · 8
+  - 확인: 컴파일 오류 · 경고 0 · 기존 BattleBalance 에셋에 새 값(배율 2 · 버전 1) 채움 · Setup 메뉴 재실행해도 샘플 파일 동일 · 샘플 42팀 · 봇 5팀 읽기 오류 0 · 플레이: 3라운드 → `sample_r03_0`(0승) 상대로 110틱 승리 · 20라운드 → 샘플 없음 → 봇 `bot_r13`(레벨 5, 공격력 ×16 표시 확인) · 3라운드 다시 보기 → 같은 상대 + "같은 결과 (확인됨)" · 캡처 2장 · 콘솔 오류 0
+  - 확인 못 함: 플레이 모드에서 실제 올리기(내 저장 폴더를 더럽히지 않으려고 — 임시 폴더 테스트로만) · 빌드에서 StreamingAssets 읽기
+  - 테스트 작성, 실행 안 함: `TeamFactoryTests`(8) · `OpponentPickerTests`(8) · `LocalFileOpponentSourceTests`(6) · `BalanceTests.Balance6` · `Balance7` (→ 총 65개)
+  - 확인 방법: `Battle.unity` 플레이 → 위 팀 이름이 "고른 팀 vs sample_r03_0 (0승)" → GameRoot 인스펙터에서 라운드 20 → 다시 보기 → "봇 bot_r13" · 오른쪽 공격력이 큰 숫자. `Use Local Opponent` 끄면 예전처럼 디버그 팀
 
 ## Phase 2. 시스템 연결
 - [ ] 2-1. 한 판 진행(Run) — 라운드 · 승패 · 10승/5패

@@ -50,6 +50,35 @@ namespace Moa.Showdown.Tests
         }
 
         [Test]
+        public void Balance6_LevelMultiplier_RulesVersion()
+        {
+            var b = Load();
+            Assert.That(b.levelAttackMultiplier, Is.EqualTo(2));
+            Assert.That(b.rulesVersion, Is.EqualTo(1));
+            Assert.DoesNotThrow(() => b.ToStatRules().Validate());
+        }
+
+        [Test]
+        public void Balance7_SpeciesTable()
+        {
+            var t = AssetDatabase.LoadAssetAtPath<SpeciesTable>("Assets/_Project/Data/SpeciesTable.asset");
+            Assert.That(t, Is.Not.Null, "SpeciesTable 에셋 없음 — 메뉴 MoaShowdown/Setup/Species Table 실행");
+            var expected = new[]
+            {
+                ("sprout", 8, 8), ("ember", 14, 12), ("pebble", 20, 18),
+                ("zap", 5, 4), ("drip", 10, 10), ("gust", 7, 6),
+            };
+            Assert.That(t.rows.Count, Is.EqualTo(expected.Length));
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(t.rows[i].id, Is.EqualTo(expected[i].Item1));
+                Assert.That(t.rows[i].attack, Is.EqualTo(expected[i].Item2), t.rows[i].id);
+                Assert.That(t.rows[i].attackIntervalTicks, Is.EqualTo(expected[i].Item3), t.rows[i].id);
+            }
+            Assert.DoesNotThrow(() => t.ToCatalog());
+        }
+
+        [Test]
         public void Asset_ProducesValidRules()
         {
             Assert.DoesNotThrow(() => Load().ToRules().Validate());

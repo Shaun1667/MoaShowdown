@@ -19,3 +19,5 @@ MonoBehaviour:
   suddenDeathBaseDamage: 20
   suddenDeathDamageStep: 20
   maxTicks: 3000
+  levelAttackMultiplier: 2
+  rulesVersion: 1
