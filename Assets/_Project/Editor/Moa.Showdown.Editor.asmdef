@@ -1,0 +1,19 @@
+{
+    "name": "Moa.Showdown.Editor",
+    "rootNamespace": "Moa.Showdown.Editor",
+    "references": [
+        "Moa.Showdown.Core",
+        "Moa.Showdown.Game"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

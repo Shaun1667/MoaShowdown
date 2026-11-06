@@ -1,0 +1,17 @@
+{
+    "name": "Moa.Showdown.Game",
+    "rootNamespace": "Moa.Showdown.Game",
+    "references": [
+        "Moa.Showdown.Core",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
