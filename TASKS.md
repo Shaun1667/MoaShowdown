@@ -176,4 +176,6 @@
 ---
 
 ## 다른 PC에서 할 일
+- **`Docs/진행상황.md`를 먼저 읽는다** (2026-11-06 작업 환경 옮기기 — 설치 · 브랜치 · 다음 할 일 · 임시값 정리)
 - Unity Hub에서 `MoaShowdown` 폴더를 프로젝트로 추가 (이전 `My project` 경로 항목은 삭제)
+- L-5는 브랜치 `phase-l5-lobby-view`에만 있음 (main 아님) → `git switch phase-l5-lobby-view` → 테스트 169개 실행
