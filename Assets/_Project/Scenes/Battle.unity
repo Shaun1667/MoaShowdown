@@ -568,6 +568,8 @@ MonoBehaviour:
   runSeed: 0
   localWriteFolder: LocalOpponents
   showDebugButtons: 1
+  usePrepTimer: 1
+  prepWarnSeconds: 5
   teamAIndex: 0
   teamBIndex: 1
   round: 3

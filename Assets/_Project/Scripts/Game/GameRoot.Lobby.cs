@@ -42,6 +42,56 @@ namespace Moa.Showdown.Game
             RefreshStandings();
         }
 
+        // ───────── 준비 시간 (L-3) ─────────
+
+        private readonly PrepTimer _prep = new PrepTimer();
+
+        /// <summary>지금 준비 시간 (확인 · 테스트용).</summary>
+        public PrepTimer Prep => _prep;
+
+        /// <summary>상점 시작 때: 봇 · 탈락자는 처음부터 준비 완료. 타이머를 끈 경우 버튼은 "전투 시작".</summary>
+        private void StartPrepTimer()
+        {
+            if (!usePrepTimer)
+            {
+                _prep.Stop();
+                shopView.SetTimer(-1, false);
+                shopView.SetStartLabel(HudText.StartBattle);
+                return;
+            }
+            var autoReady = Lobby.Players.Where(p => p.IsBot || !p.IsAlive).Select(p => p.Index);
+            _prep.Start(Lobby.Players.Count, _lobby.PrepSeconds, autoReady);
+            shopView.SetStartLabel(HudText.ReadyButton);
+            shopView.SetTimer(_prep.DisplaySeconds, _prep.DisplaySeconds <= prepWarnSeconds);
+        }
+
+        private void StopPrepTimer()
+        {
+            _prep.Stop();
+            shopView.SetTimer(-1, false);
+        }
+
+        /// <summary>매 프레임: 상점이 열려 있을 때만 시간이 흐르고, 시작 조건이 되면 전투 (시간 끝 = 보드 그대로, 경고 없이).</summary>
+        private void TickPrepTimer()
+        {
+            if (mode != Mode.Lobby || !_prep.IsRunning || !shopView.IsVisible) return;
+            _prep.Advance(Time.deltaTime);
+            shopView.SetTimer(_prep.DisplaySeconds, _prep.DisplaySeconds <= prepWarnSeconds);
+            if (_prep.ShouldStart) StartBattleNow(force: true);
+        }
+
+        /// <summary>준비 완료 버튼: 나를 준비 완료로. 모두 준비되면 다음 프레임에 시작 (오프라인은 봇이 이미 준비 → 바로).</summary>
+        private void LobbyReady()
+        {
+            _prep.SetReady(MeIndex);
+            if (_prep.ShouldStart) StartBattleNow(force: true);
+            else
+            {
+                _shopMessage = HudText.WaitingOthers;
+                RefreshShop();
+            }
+        }
+
         /// <summary>결과 패널 계속: 내가 살아 있고 로비가 안 끝났으면 다음 라운드 상점, 아니면 새 로비.</summary>
         private void LobbyContinue()
         {

@@ -30,7 +30,7 @@ namespace Moa.Showdown.Tests
                 PriceByRarity = new[] { 10, 20, 30, 40, 50 }, SellPercent = 75, MergeCountByLevel = new[] { 3, 2 }, MaxLevel = 3,
             }, catalog, X2);
             return new LobbyController(
-                new LobbyRules { PlayerCount = players, RecentOpponentMemory = 3, PoolSizeByRarity = new[] { 29, 22, 18, 12, 10 } },
+                new LobbyRules { PlayerCount = players, RecentOpponentMemory = 3, PoolSizeByRarity = new[] { 29, 22, 18, 12, 10 }, PrepSeconds = 30 },
                 new RunRules { WinsToChampion = 10, StartLives = 10, LifeLossByRound = new[] { 1, 1, 2, 3 } },
                 new BattleRules
                 {

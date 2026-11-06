@@ -97,6 +97,11 @@ namespace Moa.Showdown.Game
         public const string LobbyAliveFormat = "생존 {0}/{1}";
         public const string InfoPoolFormat = "풀에 남은 수: {0}";
 
+        // 준비 시간 (L-3)
+        public const string PrepTimerFormat = "{0}";
+        public const string ReadyButton = "준비 완료";
+        public const string WaitingOthers = "다른 플레이어를 기다리는 중…";
+
         // 능력 · 상태 (3-1)
         public const string StatusShieldFormat = "방어막 {0}";
         public const string StatusBurnFormat = "화상 {0}";

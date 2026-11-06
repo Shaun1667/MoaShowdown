@@ -61,6 +61,8 @@ namespace Moa.Showdown.Game.Shop
         private RectTransform _boardLayer;
         private Text _gold;
         private Text _message;
+        private Text _startLabel;
+        private Text _timer;
         private Text _rerollLabel;
         private Text _sellLabel;
         private GameObject _sellButton;
@@ -115,7 +117,11 @@ namespace Moa.Showdown.Game.Shop
             var sell = NewButton("Sell", _root, bottom, new Vector2(150f, 265f), new Vector2(200f, 70f), buttonColor, 24, () => SellClicked?.Invoke());
             _sellLabel = sell.text;
             _sellButton = sell.image.gameObject;
-            NewButton("StartBattle", _root, new Vector2(1f, 0f), new Vector2(-180f, 265f), new Vector2(280f, 80f), startColor, 30, () => StartBattleClicked?.Invoke()).text.text = HudText.StartBattle;
+            _startLabel = NewButton("StartBattle", _root, new Vector2(1f, 0f), new Vector2(-180f, 265f), new Vector2(280f, 80f), startColor, 30, () => StartBattleClicked?.Invoke()).text;
+            _startLabel.text = HudText.StartBattle;
+            // 준비 시간 (L-3): 전투 시작 버튼 위
+            _timer = NewText("PrepTimer", _root, new Vector2(1f, 0f), new Vector2(-180f, 340f), 40);
+            _timer.text = "";
 
             _gold = NewText("Gold", _root, new Vector2(0f, 0f), new Vector2(170f, 175f), 34);
             _gold.color = new Color(1f, 0.85f, 0.35f);
@@ -182,6 +188,16 @@ namespace Moa.Showdown.Game.Shop
             _sellButton.SetActive(d.SellValue.HasValue);
             if (d.SellValue.HasValue) _sellLabel.text = string.Format(HudText.SellFormat, d.SellValue.Value);
         }
+
+        /// <summary>남은 준비 시간 표시 (seconds &lt; 0 = 숨김). warn이면 빨갛게.</summary>
+        public void SetTimer(int seconds, bool warn)
+        {
+            _timer.text = seconds < 0 ? "" : string.Format(HudText.PrepTimerFormat, seconds);
+            _timer.color = warn ? new Color(1f, 0.35f, 0.3f) : Color.white;
+        }
+
+        /// <summary>전투 시작 버튼 글 (로비 = "준비 완료", 다른 모드 = "전투 시작").</summary>
+        public void SetStartLabel(string text) => _startLabel.text = text;
 
         public void Hide()
         {

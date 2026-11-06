@@ -27,5 +27,6 @@ MonoBehaviour:
   playerCount: 8
   recentOpponentMemory: 3
   poolSizeByRarity: 3c00000016000000120000000c0000000a000000
+  prepSeconds: 30
   startTrainerId: debug_trainer
   startTeam: []

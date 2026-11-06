@@ -82,6 +82,9 @@ namespace Moa.Showdown.Core.Lobby
         public static UnitPool PoolOf(LobbyState lobby) => new UnitPool(lobby.Pool);
         public RunRules RunRules => _runRules;
 
+        /// <summary>준비 시간 (초, BALANCE 15).</summary>
+        public int PrepSeconds => _lobbyRules.PrepSeconds;
+
         /// <summary>새 로비: 사람 humanNames.Count명 + 나머지는 봇. 플레이어마다 자기 시드(상점 난수용)를 로비 시드에서 뽑는다.</summary>
         public LobbyState NewLobby(string lobbyId, ulong seed, IReadOnlyList<string> humanNames, Func<int, string> botName)
         {

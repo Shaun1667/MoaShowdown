@@ -103,6 +103,7 @@ namespace Moa.Showdown.Tests
             var r = AssetDatabase.LoadAssetAtPath<RunBalance>("Assets/_Project/Data/RunBalance.asset");
             Assert.That(r.playerCount, Is.EqualTo(8));
             Assert.That(r.recentOpponentMemory, Is.EqualTo(3));
+            Assert.That(r.prepSeconds, Is.EqualTo(30), "준비 시간 30초 (BALANCE 15)");
             Assert.DoesNotThrow(() => r.ToLobbyRules().Validate());
         }
 

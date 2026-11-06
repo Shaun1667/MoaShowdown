@@ -39,6 +39,7 @@ namespace Moa.Showdown.Game.Data
         [Tooltip("로비 인원 (모자라면 봇)")] public int playerCount;
         [Tooltip("최근 몇 라운드의 상대를 피할지")] public int recentOpponentMemory;
         [Tooltip("공유 풀: 등급별 종류당 수량 (일반 · 고급 · 희귀 · 영웅 · 전설, BALANCE 14)")] public int[] poolSizeByRarity;
+        [Tooltip("준비(상점) 시간 초 (BALANCE 15)")] public int prepSeconds;
 
         [Header("시작 (BALANCE 9)")]
         public string startTrainerId;
@@ -69,6 +70,7 @@ namespace Moa.Showdown.Game.Data
             PlayerCount = playerCount,
             RecentOpponentMemory = recentOpponentMemory,
             PoolSizeByRarity = (int[])poolSizeByRarity.Clone(),
+            PrepSeconds = prepSeconds,
         };
 
         public MonsterSnapshot[] ToStartTeam()

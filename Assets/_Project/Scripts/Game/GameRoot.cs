@@ -51,6 +51,10 @@ namespace Moa.Showdown.Game
         [Tooltip("내 팀을 올리는 폴더 이름 (persistentDataPath 아래). 확인 · 시험 때는 다른 이름으로 바꿔 실제 기록과 섞지 않는다")]
         [SerializeField] private string localWriteFolder = "LocalOpponents";
         [SerializeField] private bool showDebugButtons = true;
+        [Tooltip("로비 준비 시간 타이머 (끄면 시간 제한 없음 — 개발 · 테스트용)")]
+        [SerializeField] private bool usePrepTimer = true;
+        [Tooltip("남은 시간이 이 초 이하면 빨갛게")]
+        [SerializeField] private int prepWarnSeconds = 5;
 
         [Header("시험 전투 (BattleTest 모드)")]
         [SerializeField] private int teamAIndex;
@@ -161,6 +165,7 @@ namespace Moa.Showdown.Game
 
         private void Update()
         {
+            TickPrepTimer();
             if (_playback == null) return;
             float scaled = Time.deltaTime * _speed;
             _playback.Advance(Time.deltaTime, _speed, OnBattleEvent);
@@ -343,6 +348,7 @@ namespace Moa.Showdown.Game
             hud.ShowShopHeader(State.Round, HudText.ShopHeader, _rules.GetTeamHp(State.Round));
             ShowRunInfo(State.Wins, State.Lives);
             RefreshShop();
+            if (mode == Mode.Lobby) StartPrepTimer();
         }
 
         private void OnShopCard(int index)
@@ -397,15 +403,34 @@ namespace Moa.Showdown.Game
             RefreshShop();
         }
 
-        private async void OnStartBattle()
+        private void OnStartBattle()
         {
-            if (State.Team.All(m => m == null) && !_emptyBoardWarned)
+            // 로비: 버튼 = "준비 완료". 전원 준비 완료(오프라인은 봇이 이미 준비)면 바로 시작
+            if (mode == Mode.Lobby && usePrepTimer)
             {
-                _emptyBoardWarned = true;
-                _shopMessage = HudText.EmptyBoardWarning;
-                RefreshShop();
+                if (State.Team.All(m => m == null) && !_emptyBoardWarned) { WarnEmptyBoard(); return; }
+                LobbyReady();
                 return;
             }
+            StartBattleNow(force: false);
+        }
+
+        private void WarnEmptyBoard()
+        {
+            _emptyBoardWarned = true;
+            _shopMessage = HudText.EmptyBoardWarning;
+            RefreshShop();
+        }
+
+        /// <summary>상점을 닫고 전투. force = 준비 시간이 끝나 강제로 (빈 보드 경고 없이).</summary>
+        private async void StartBattleNow(bool force)
+        {
+            if (!force && State.Team.All(m => m == null) && !_emptyBoardWarned)
+            {
+                WarnEmptyBoard();
+                return;
+            }
+            StopPrepTimer();
             shopView.Hide();
             try
             {

@@ -17,10 +17,14 @@ namespace Moa.Showdown.Core.Lobby
         /// <summary>공유 풀: 등급(Rarity 번호 순)별 종류당 수량 (L-2, TFT 값).</summary>
         public int[] PoolSizeByRarity;
 
+        /// <summary>준비(상점) 시간 (초, L-3). 전원 준비 완료면 더 일찍 시작.</summary>
+        public int PrepSeconds;
+
         public void Validate()
         {
             if (PlayerCount < 2) throw new InvalidOperationException("PlayerCount < 2");
             if (RecentOpponentMemory < 0) throw new InvalidOperationException("RecentOpponentMemory < 0");
+            if (PrepSeconds < 1) throw new InvalidOperationException("PrepSeconds < 1");
             if (PoolSizeByRarity == null || PoolSizeByRarity.Length == 0) throw new InvalidOperationException("PoolSizeByRarity 없음");
             foreach (int n in PoolSizeByRarity)
                 if (n < 0) throw new InvalidOperationException("풀 수량 음수");

@@ -94,6 +94,7 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 - 봇은 `BotBrain`(난수 없음): 가진 몬스터 → 초당 피해 높은 순으로 사고, 대기석이 차면 가장 약한 것 팔고, 보드 빈칸을 강한 것부터 채우고 더 강하면 맞바꿈. 새로고침 안 함.
 - GameRoot 모드 Lobby(기본, `GameRoot.Lobby.cs` partial): 나 = 0번. 내 대진만 재생하고, 기록상 내가 B면 `PlayBattle(…, flip: true)` → `ViewSide`로 좌우를 바꿔 그린다(나는 항상 왼쪽). 오른쪽 위 순위 표 `BattleHud.ShowStandings`.
 - 공유 몬스터 풀은 `UnitPool`(Core/Shop) — 상태는 `LobbyState.Pool`(몬스터 표 순서 목록)에 있고 `UnitPool`은 그걸 다루기만. 상점 조작은 풀을 인자로 받는다: `BeginRound/Reroll(s, pool)`(안 산 카드 돌려놓고 남은 수 비례로 뽑기) · `Sell(s, at, pool)`(`CopiesAt` 마리 돌려놓기) · `ReturnEverything`(탈락). pool = null이면 예전처럼 무한 상점(Run 모드). GameRoot는 `CurrentPool`을 넘긴다. **불변식: 풀 + 모든 상점 카드 + 모든 보유 몬스터 마리 수 = 처음 총량** (`LobbyTests.Pool_TotalUnitsConserved…`).
+- 준비 시간은 `PrepTimer`(Core/Lobby) 한 곳 — 시작 조건(시간 0 또는 살아 있는 사람 전원 준비 완료, 봇 · 탈락자는 처음부터 준비)을 여기서만 판정한다. 실제 시간이라 결정론 대상이 아니고 전투 결과에 영향 없음. GameRoot는 상점이 열려 있을 때만 `Advance`, 시간 끝 강제 시작은 `StartBattleNow(force: true)`(빈 보드 경고 없음). 인스펙터 `usePrepTimer`로 끌 수 있음.
 - (시스템이 생길 때마다 한 줄씩 추가: "이 시스템은 `클래스` 한 곳, 데이터 `에셋`, 새 항목 = 표 한 줄")
 
 ## 핵심 설계 규칙 (변경 금지)
