@@ -75,6 +75,10 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 - 스냅샷 → 전투 팀은 `TeamFactory.Build`(Core/Content) 한 곳: 공격력 = 기본 × 레벨 배율^(레벨−1) + 공격 버프, 간격 = 기본 + 간격 버프(최소 1). 모르는 몬스터 · 상한 초과는 `SnapshotContentException`. 레벨 배율 · 규칙 버전은 `BattleBalance`(BALANCE 6).
 - 상대는 `IOpponentSource`(Core/Online, 비동기) 하나로 받는다. 고르기 규칙은 `OpponentPicker` 한 곳(같은 라운드 · 같은 rulesVersion · 내 판 아님 · 만난 적 없음 · 싸울 수 있음 → 승수 가장 가까운 무리 → 시드 난수, 없으면 봇). 로컬 구현 `LocalFileOpponentSource`: 읽기 `StreamingAssets/Opponents/*.json` + 쓰기 폴더, 봇 `StreamingAssets/OpponentBots/*.json`, 올리기 = `persistentDataPath/LocalOpponents/my_teams.json`. UGS = 같은 인터페이스의 새 구현.
 - 샘플 상대 파일은 메뉴 Setup/Local Opponents가 고정 시드로 만든다 (`sample_opponents.json` · `bots.json`만 덮어씀, 손으로 만든 상대는 다른 파일 이름으로).
+- 판 진행은 `RunController`(Core/Run) 한 곳: 라운드 = 내 팀 스냅샷 → 올리기 → 상대 받기 → 전투 → 승(+1승) · 패(라운드별 목숨 감소, 남은 목숨까지만) · 무(변화 없음) · 상대 없음(부전승) → 진행 중이면 라운드 +1. 수치는 `RunRules` ← 에셋 `Data/RunBalance.asset`(메뉴 Setup/Run Balance, 시작 팀 포함).
+- 판 상태는 `RunState` 하나(JSON `RunStateJson`, formatVersion 1). 난수는 상태에 두지 않고 `SeedMix.Derive(판 시드, 용도, 라운드)` — 용도 번호(`PurposeBattle` 1 · `PurposeOpponent` 2)는 바꾸지 않는다. 새 용도 = 새 번호.
+- GameRoot 모드: Run(기본, 판 진행 · 결과 패널 · 다음 라운드/새 판 · 디버그 레벨업) / BattleTest(1-3 · 1-4 시험 전투). 진입점 `Continue()` · `DebugLevelUp()` · `Replay()` · `State` · `LastReport`.
+- **확인 · 시험 때 플레이 모드에서 판을 돌리면 내 팀이 실제로 올라간다** → GameRoot `localWriteFolder`를 다른 이름(예: `LocalOpponents_ClaudeCheck`)으로 바꿔 돌리고, 끝나면 되돌리고 그 폴더만 지운다.
 - (시스템이 생길 때마다 한 줄씩 추가: "이 시스템은 `클래스` 한 곳, 데이터 `에셋`, 새 항목 = 표 한 줄")
 
 ## 핵심 설계 규칙 (변경 금지)

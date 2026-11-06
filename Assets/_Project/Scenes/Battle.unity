@@ -153,6 +153,7 @@ MonoBehaviour:
   buttonColor: {r: 0.2, g: 0.2, b: 0.25, a: 1}
   buttonActiveColor: {r: 0.85, g: 0.35, b: 0.5, a: 1}
   popupSeconds: 0.7
+  panelColor: {r: 0.05, g: 0.06, b: 0.08, a: 0.92}
 --- !u!4 &392575816
 Transform:
   m_ObjectHideFlags: 0
@@ -316,6 +317,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1556188941}
   - component: {fileID: 1556188940}
+  - component: {fileID: 1556188942}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -403,6 +405,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1556188942
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1556188939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &1734223489
 GameObject:
   m_ObjectHideFlags: 0
@@ -432,9 +463,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07877de9f3eac97499fa01e4f1adab78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Moa.Showdown.Game::Moa.Showdown.Game.GameRoot
+  mode: 0
   balance: {fileID: 11400000, guid: 8238de04230599c4988b3422d7d03fa1, type: 2}
-  debugTeams: {fileID: 11400000, guid: a769914339220554d8694ae48c007a44, type: 2}
+  runBalance: {fileID: 11400000, guid: 3f10e60482647b5489b5295c7317c8b8, type: 2}
   speciesTable: {fileID: 11400000, guid: 366a36993b9dc9f4b99bcd3900158a87, type: 2}
+  debugTeams: {fileID: 11400000, guid: a769914339220554d8694ae48c007a44, type: 2}
+  runSeed: 0
+  localWriteFolder: LocalOpponents
+  showDebugButtons: 1
   teamAIndex: 0
   teamBIndex: 1
   round: 3

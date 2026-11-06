@@ -1,3 +1,4 @@
+using System.Linq;
 using Moa.Showdown.Game.Data;
 using NUnit.Framework;
 using UnityEditor;
@@ -47,6 +48,31 @@ namespace Moa.Showdown.Tests
         public void Balance4_MaxTicks()
         {
             Assert.That(Load().maxTicks, Is.EqualTo(3000));
+        }
+
+        [Test]
+        public void Balance5_RunRules()
+        {
+            var r = AssetDatabase.LoadAssetAtPath<RunBalance>("Assets/_Project/Data/RunBalance.asset");
+            Assert.That(r, Is.Not.Null, "RunBalance 에셋 없음 — 메뉴 MoaShowdown/Setup/Run Balance 실행");
+            Assert.That(r.winsToChampion, Is.EqualTo(10));
+            Assert.That(r.startLives, Is.EqualTo(10));
+            CollectionAssert.AreEqual(new[] { 1, 1, 1, 1, 2, 2, 2, 2, 2, 3 }, r.lifeLossByRound);
+            Assert.DoesNotThrow(() => r.ToRules().Validate());
+        }
+
+        [Test]
+        public void Balance9_StartTeam()
+        {
+            var r = AssetDatabase.LoadAssetAtPath<RunBalance>("Assets/_Project/Data/RunBalance.asset");
+            var team = r.ToStartTeam();
+            Assert.That(team.Length, Is.EqualTo(6));
+            Assert.That(team[0].SpeciesId, Is.EqualTo("sprout"));
+            Assert.That(team[3].SpeciesId, Is.EqualTo("ember"));
+            Assert.That(team.Count(m => m != null), Is.EqualTo(2));
+            var species = AssetDatabase.LoadAssetAtPath<SpeciesTable>("Assets/_Project/Data/SpeciesTable.asset").ToCatalog();
+            foreach (var m in team)
+                if (m != null) Assert.That(species.TryGet(m.SpeciesId, out _), Is.True, m.SpeciesId);
         }
 
         [Test]

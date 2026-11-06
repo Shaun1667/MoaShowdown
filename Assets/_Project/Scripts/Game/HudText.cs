@@ -17,5 +17,21 @@ namespace Moa.Showdown.Game
         public const string OpponentFormat = "{0} ({1}승)";
         public const string OpponentBotFormat = "봇 {0}";
         public const string OpponentNotFound = "상대를 못 찾아 디버그 팀으로 대신함";
+
+        // 판 진행 (2-1)
+        public const string MyTeam = "내 팀";
+        public const string RunInfoFormat = "승 {0}/{1}   ·   목숨 {2}/{3}";
+        public const string NextRound = "다음 라운드";
+        public const string NewRun = "새 판";
+        public const string Champion = "챔피언!";
+        public const string Eliminated = "탈락";
+        public const string RoundWinFormat = "승리!  승 {0}/{1}";
+        public const string RoundLoseFormat = "패배 — 목숨 {0}개 잃음  (남은 목숨 {1})";
+        public const string RoundDraw = "무승부 — 승수 · 목숨 변화 없음";
+        public const string RoundBye = "상대가 없어 부전승";
+        public const string ChampionFormat = "{0}라운드 만에 {1}승 달성!";
+        public const string EliminatedFormat = "{0}라운드에서 목숨을 모두 잃었습니다  ({1}승)";
+        public const string DebugLevelUp = "레벨업 (디버그)";
+        public const string DebugLevelUpDoneFormat = "디버그: 팀 레벨 +1 → 레벨 {0}";
     }
 }

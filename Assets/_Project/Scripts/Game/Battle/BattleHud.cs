@@ -20,8 +20,12 @@ namespace Moa.Showdown.Game.Battle
         [SerializeField] private Color buttonActiveColor = new Color(0.85f, 0.35f, 0.5f);
         [SerializeField] private float popupSeconds = 0.7f;
 
+        [SerializeField] private Color panelColor = new Color(0.05f, 0.06f, 0.08f, 0.92f);
+
         public event Action<int> SpeedClicked;
         public event Action ReplayClicked;
+        public event Action ContinueClicked;
+        public event Action DebugLevelUpClicked;
 
         private sealed class HpBar
         {
@@ -54,6 +58,11 @@ namespace Moa.Showdown.Game.Battle
         private readonly List<UnitLabel> _labels = new List<UnitLabel>();
         private readonly List<Popup> _popups = new List<Popup>();
         private RectTransform _labelLayer;
+        private Text _runInfo;
+        private RectTransform _resultPanel;
+        private Text _resultDetail;
+        private Text _continueLabel;
+        private GameObject _debugButton;
 
         public void Build(Camera cam, IReadOnlyList<int> speeds)
         {
@@ -92,7 +101,36 @@ namespace Moa.Showdown.Game.Battle
                 x += 110f;
             }
             NewButton("Replay", HudText.Replay, new Vector2(x + 30f, -95f), new Vector2(160f, 46f), () => ReplayClicked?.Invoke());
+
+            _runInfo = NewText("RunInfo", _canvasRect, new Vector2(0.5f, 1f), new Vector2(0f, -178f), 26, TextAnchor.MiddleCenter);
+
+            // 라운드 결과 패널 (화면 아래 가운데): 내용 + 계속 버튼
+            _resultPanel = NewRect("ResultPanel", _canvasRect, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 190f), new Vector2(760f, 200f));
+            _resultPanel.gameObject.AddComponent<Image>().color = panelColor;
+            _resultDetail = NewText("Detail", _resultPanel, new Vector2(0.5f, 1f), new Vector2(0f, -55f), 28, TextAnchor.MiddleCenter);
+            _resultDetail.rectTransform.sizeDelta = new Vector2(720f, 90f);
+            _continueLabel = NewButton("Continue", "", _resultPanel, new Vector2(0.5f, 0f), new Vector2(0f, 45f), new Vector2(260f, 56f), () => ContinueClicked?.Invoke())
+                .GetComponentInChildren<Text>();
+            _resultPanel.gameObject.SetActive(false);
+
+            _debugButton = NewButton("DebugLevelUp", HudText.DebugLevelUp, _canvasRect, new Vector2(0f, 0f), new Vector2(150f, 40f), new Vector2(260f, 44f), () => DebugLevelUpClicked?.Invoke()).gameObject;
+            _debugButton.SetActive(false);
         }
+
+        public void ShowRunInfo(string text) => _runInfo.text = text;
+
+        public void ShowRoundResult(string detail, string continueLabel)
+        {
+            _resultDetail.text = detail;
+            _continueLabel.text = continueLabel;
+            _resultPanel.gameObject.SetActive(true);
+        }
+
+        public void HideRoundResult() => _resultPanel.gameObject.SetActive(false);
+
+        public bool IsRoundResultVisible => _resultPanel.gameObject.activeSelf;
+
+        public void SetDebugVisible(bool visible) => _debugButton.SetActive(visible);
 
         public void ShowBattle(int round, string teamA, string teamB, int startHp)
         {
@@ -183,9 +221,12 @@ namespace Moa.Showdown.Game.Battle
             return new HpBar { Fill = fill, Label = label };
         }
 
-        private Image NewButton(string name, string label, Vector2 pos, Vector2 size, Action onClick)
+        private Image NewButton(string name, string label, Vector2 pos, Vector2 size, Action onClick) =>
+            NewButton(name, label, _canvasRect, new Vector2(0.5f, 1f), pos, size, onClick);
+
+        private Image NewButton(string name, string label, RectTransform parent, Vector2 anchor, Vector2 pos, Vector2 size, Action onClick)
         {
-            var rt = NewRect(name, _canvasRect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), pos, size);
+            var rt = NewRect(name, parent, anchor, anchor, pos, size);
             var img = rt.gameObject.AddComponent<Image>();
             img.color = buttonColor;
             var button = rt.gameObject.AddComponent<Button>();

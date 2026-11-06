@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e47e491ce2421654ab385839c0a91772, type: 3}
+  m_Name: RunBalance
+  m_EditorClassIdentifier: Moa.Showdown.Game::Moa.Showdown.Game.Data.RunBalance
+  winsToChampion: 10
+  startLives: 10
+  lifeLossByRound: 01000000010000000100000001000000020000000200000002000000020000000200000003000000
+  startTrainerId: debug_trainer
+  startTeam:
+  - slot: 0
+    speciesId: sprout
+    level: 1
+  - slot: 3
+    speciesId: ember
+    level: 1
