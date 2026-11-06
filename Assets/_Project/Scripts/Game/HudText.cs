@@ -87,10 +87,6 @@ namespace Moa.Showdown.Game
         public const string PlacementFormat = "{0}등";
         public const string LobbyOutFormat = "{0}라운드에서 목숨을 모두 잃었습니다 — {1}등";
         public const string GhostFormat = "유령: {0}";
-        public const string StandingsTitle = "순위";
-        public const string StandingsAliveFormat = "{0}   목숨 {1}{2}";
-        public const string StandingsOutFormat = "{0}등  {1}{2}";
-        public const string MeMark = "  (나)";
         public const string InfoBotPlayer = "봇 플레이어";
         public const string InfoGhost = "유령 — 그 플레이어 팀의 복사본 (주인은 영향 없음)";
         public const string InfoLivesFormat = "목숨 {0}/{1}";
@@ -122,6 +118,17 @@ namespace Moa.Showdown.Game
         public const string CarouselPickedAsGoldFormat = "대기석이 가득 — {0} 대신 {1}골드";
         public const string CarouselAutoPicked = "시간이 끝나 자동으로 골랐습니다";
         public const string CarouselContinue = "상점으로";
+
+        // 로비 목록 · 구경 (L-5)
+        public const string LobbyListTitle = "플레이어 (눌러서 보드 구경)";
+        public const string RowLivesFormat = "목숨 {0}";
+        public const string RowPlacementFormat = "{0}등";
+        public const string RowVsFormat = "  vs {0}";
+        public const string RowVsGhostFormat = "  vs 유령({0})";
+        public const string RowVsPve = "  vs 야생";
+        public const string ScoutTitleFormat = "{0}의 보드 — 구경 중";
+        public const string ScoutSideLabelFormat = "{0} (정보)";
+        public const string ScoutBack = "내 보드로";
 
         // 능력 · 상태 (3-1)
         public const string StatusShieldFormat = "방어막 {0}";

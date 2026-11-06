@@ -73,13 +73,20 @@ namespace Moa.Showdown.Game
             shopView.SetTimer(-1, false);
         }
 
-        /// <summary>매 프레임: 상점이 열려 있을 때만 시간이 흐르고, 시작 조건이 되면 전투 (시간 끝 = 보드 그대로, 경고 없이).</summary>
+        /// <summary>매 프레임: 상점 단계(상점 화면 · 상점에서 들어간 구경)에만 시간이 흐르고, 시작 조건이 되면 전투 (시간 끝 = 보드 그대로, 경고 없이).</summary>
         private void TickPrepTimer()
         {
-            if (mode != Mode.Lobby || !_prep.IsRunning || !shopView.IsVisible) return;
+            bool shopPhase = shopView.IsVisible || (_scout >= 0 && _scoutFromShop);
+            if (mode != Mode.Lobby || !_prep.IsRunning || !shopPhase) return;
             _prep.Advance(Time.deltaTime);
-            shopView.SetTimer(_prep.DisplaySeconds, _prep.DisplaySeconds <= prepWarnSeconds);
-            if (_prep.ShouldStart) StartBattleNow(force: true);
+            bool warn = _prep.DisplaySeconds <= prepWarnSeconds;
+            shopView.SetTimer(_prep.DisplaySeconds, warn);
+            lobbyView.SetScoutTimer(_scout >= 0 ? _prep.DisplaySeconds : -1, warn);
+            if (_prep.ShouldStart)
+            {
+                EndScout();
+                StartBattleNow(force: true);
+            }
         }
 
         /// <summary>준비 완료 버튼: 나를 준비 완료로. 모두 준비되면 다음 프레임에 시작 (오프라인은 봇이 이미 준비 → 바로).</summary>
@@ -122,6 +129,8 @@ namespace Moa.Showdown.Game
         {
             _lobby.StartCarousel(Lobby);
             _lobby.AdvanceCarouselBots(Lobby);
+            EndScout();
+            _showOpponents = false;
             _carouselMessage = "";
             _playback = null;
             _roundResultPending = false;
@@ -134,6 +143,7 @@ namespace Moa.Showdown.Game
             hud.ShowShopHeader(State.Round, "", _rules.GetTeamHp(State.Round));
             ShowRunInfo(State.Wins, State.Lives);
             RefreshStandings();
+            lobbyView.SetListVisible(false); // 캐러셀 판과 겹침 — 순서 줄이 대신 보여 줌
             StartCarouselTimerIfMyTurn();
             RefreshCarousel();
         }
@@ -237,9 +247,11 @@ namespace Moa.Showdown.Game
             tooltip.HideAll();
             hud.HideRoundResult();
             int livesBefore = State.Lives;
+            EndScout();
             LobbyRoundReport report = _lobby.ResolveRound(Lobby);
             LastLobbyReport = report;
             ShowRunInfo(State.Wins, livesBefore);
+            _showOpponents = true; // 전투 · 결과 화면: 목록에 이번 상대
 
             LobbyMatch m = report.MatchOf(MeIndex);
             if (m == null)
@@ -252,6 +264,7 @@ namespace Moa.Showdown.Game
             hud.ShowStatus("");
             PlayMyMatch(m, m.Battle);
             _roundResultPending = true;
+            RefreshStandings();
         }
 
         private void PlayMyMatch(LobbyMatch m, BattleResult battle)
@@ -271,6 +284,7 @@ namespace Moa.Showdown.Game
             hud.HideRoundResult();
             PlayMyMatch(m, again);
             _roundResultPending = true;
+            RefreshStandings();
         }
 
         private void ShowLobbyRoundResult()
@@ -326,22 +340,120 @@ namespace Moa.Showdown.Game
             return Lobby.Players[flip ? m.PlayerA : m.PlayerB].Name;
         }
 
-        /// <summary>오른쪽 순위 표: 살아 있는 사람(목숨 많은 순) → 탈락한 사람(순위 순).</summary>
+        // ───────── 로비 목록 · 구경 (L-5) ─────────
+
+        /// <summary>목록에 이번 라운드 상대를 보일지 (전투 · 결과 화면만).</summary>
+        private bool _showOpponents;
+        /// <summary>구경 중인 플레이어 번호 (-1 = 안 함).</summary>
+        private int _scout = -1;
+        /// <summary>상점에서 구경을 시작했는지 (그동안 준비 시간은 계속 흐름, 돌아가면 상점).</summary>
+        private bool _scoutFromShop;
+
+        /// <summary>지금 구경 중인 플레이어 (확인 · 테스트용, -1 = 안 함).</summary>
+        public int ScoutIndex => _scout;
+
+        /// <summary>오른쪽 위 목록 (순서 · 이번 상대는 Core <see cref="LobbyStandings"/>).</summary>
         private void RefreshStandings()
         {
             if (Lobby == null) return;
-            IEnumerable<LobbyPlayer> alive = Lobby.Players.Where(p => p.Placement == 0).OrderByDescending(p => p.Run.Lives).ThenBy(p => p.Index);
-            IEnumerable<LobbyPlayer> done = Lobby.Players.Where(p => p.Placement > 0).OrderBy(p => p.Placement);
-            var lines = new List<string> { HudText.StandingsTitle };
-            foreach (LobbyPlayer p in alive)
-                lines.Add(string.Format(HudText.StandingsAliveFormat, p.Name, p.Run.Lives, p.Index == MeIndex ? HudText.MeMark : ""));
-            foreach (LobbyPlayer p in done)
-                lines.Add(string.Format(HudText.StandingsOutFormat, p.Placement, p.Name, p.Index == MeIndex ? HudText.MeMark : ""));
-            hud.ShowStandings(string.Join("\n", lines));
+            // 전투 재생 중(결과 패널 전)에는 이번 라운드 결과를 숨긴다
+            List<StandingRow> rows = LobbyStandings.Build(Lobby, _showOpponents ? LastLobbyReport : null, beforeResults: _roundResultPending);
+            lobbyView.ShowPlayers(rows.Select(r => new LobbyRowView
+            {
+                PlayerIndex = r.Index,
+                Name = r.Name,
+                Right = (r.IsAlive ? string.Format(HudText.RowLivesFormat, r.Lives) : string.Format(HudText.RowPlacementFormat, r.Placement)) + VsText(r),
+                Me = r.Index == MeIndex,
+                Out = !r.IsAlive,
+                Scouted = r.Index == _scout,
+            }).ToList());
+        }
+
+        private string VsText(StandingRow r)
+        {
+            switch (r.Opponent)
+            {
+                case OpponentKind.Player: return string.Format(HudText.RowVsFormat, Lobby.Players[r.OpponentIndex].Name);
+                case OpponentKind.Ghost: return string.Format(HudText.RowVsGhostFormat, Lobby.Players[r.OpponentIndex].Name);
+                case OpponentKind.Pve: return HudText.RowVsPve;
+                default: return "";
+            }
+        }
+
+        /// <summary>목록 클릭: 다른 사람이면 그 사람 보드 구경, 나 · 지금 구경 중인 사람이면 내 보드로. 전투 재생 · 캐러셀 중에는 안 됨.</summary>
+        private void OnLobbyPlayerClicked(int index)
+        {
+            if (index == MeIndex || index == _scout)
+            {
+                StopScout();
+                return;
+            }
+            bool battlePlaying = _playback != null && !_playback.IsFinished;
+            if (battlePlaying || carouselView.IsVisible || Lobby == null) return;
+            if (_scout < 0) _scoutFromShop = shopView.IsVisible;
+            _scout = index;
+            shopView.Hide();
+            hud.HideRoundResult();
+            tooltip.HideAll();
+            LobbyPlayer p = Lobby.Players[index];
+            hud.SetSideLabels(string.Format(HudText.ScoutSideLabelFormat, p.Name), "");
+            lobbyView.ShowScout(string.Format(HudText.ScoutTitleFormat, p.Name), p.Run.Bench.Select(UnitText).ToList());
+            lobbyView.SetScoutTimer(_scoutFromShop && _prep.IsRunning ? _prep.DisplaySeconds : -1, _prep.DisplaySeconds <= prepWarnSeconds);
+            BattleTeam team = TeamFactory.Build(_run.MakeSnapshot(p.Run), _catalog, _statRules);
+            stage.Build(team, new BattleTeam(), unchecked((ulong)p.Run.Seed));
+            stage.Tick(0f, 0f, true);
+            RefreshStandings();
+        }
+
+        /// <summary>구경 끝 → 원래 화면 (상점 또는 결과 패널 + 내 보드).</summary>
+        private void StopScout()
+        {
+            if (_scout < 0) return;
+            bool fromShop = _scoutFromShop;
+            EndScout();
+            hud.SetSideLabels(HudText.MySideLabel, "");
+            tooltip.HideAll();
+            if (fromShop) RefreshShop();
+            else
+            {
+                BattleTeam mine = TeamFactory.Build(_run.MakeSnapshot(State), _catalog, _statRules);
+                stage.Build(mine, new BattleTeam(), unchecked((ulong)State.Seed));
+                stage.Tick(0f, 0f, true);
+                if (LastLobbyReport != null)
+                {
+                    LobbyMatch mm = LastLobbyReport.MatchOf(MeIndex);
+                    hud.SetSideLabels(HudText.MySideLabel, mm == null ? "" : string.Format(HudText.OpponentTitleFormat, OpponentName(mm)));
+                    ShowLobbyRoundResult();
+                }
+            }
+            RefreshStandings();
+        }
+
+        /// <summary>구경 상태만 지운다 (화면 전환이 따로 그릴 때).</summary>
+        private void EndScout()
+        {
+            if (_scout < 0) return;
+            _scout = -1;
+            _scoutFromShop = false;
+            lobbyView.HideScout();
+            hud.SetSideLabels(HudText.MySideLabel, "");
+        }
+
+        /// <summary>구경 중 대기석 칸 정보 창.</summary>
+        private (string, string)? ScoutBenchInfo(int bench)
+        {
+            if (_scout < 0) return null;
+            MonsterSnapshot m = Lobby.Players[_scout].Run.Bench[bench];
+            return m == null ? ((string, string)?)null : MonsterInfoText(m, enemy: true, price: null, mine: false);
         }
 
         private (string, string)? LobbyBattleUnitInfo(BattleSide side, int slot)
         {
+            if (_scout >= 0)
+            {
+                MonsterSnapshot s = side == BattleSide.A ? Lobby.Players[_scout].Run.Team[slot] : null;
+                return s == null ? ((string, string)?)null : MonsterInfoText(s, enemy: true, price: null, mine: false);
+            }
             LobbyMatch m = LastLobbyReport?.MatchOf(MeIndex);
             if (m == null) return null;
             bool flip = m.PlayerB == MeIndex;
@@ -354,6 +466,14 @@ namespace Moa.Showdown.Game
         private (string, string)? LobbyMyInfo()
         {
             if (Lobby == null) return null;
+            if (_scout >= 0)
+            {
+                LobbyPlayer p = Lobby.Players[_scout];
+                return (p.Name, string.Join("\n",
+                    p.IsBot ? HudText.InfoBotPlayer : HudText.InfoPlayer,
+                    p.IsAlive ? string.Format(HudText.InfoLivesFormat, p.Run.Lives, _run.Rules.StartLives) : string.Format(HudText.PlacementFormat, p.Placement),
+                    string.Format(HudText.InfoMonsterCountFormat, p.Run.Team.Count(x => x != null))));
+            }
             return (HudText.MyTitle, InfoText.MyBody(HudText.MyName, State.Wins, 0, State.Lives, _run.Rules.StartLives, State.Gold, Lobby.Round)
                 + "\n" + string.Format(HudText.LobbyAliveFormat, Lobby.AliveCount, Lobby.Players.Count));
         }

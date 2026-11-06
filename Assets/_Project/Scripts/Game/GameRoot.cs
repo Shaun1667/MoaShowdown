@@ -73,6 +73,7 @@ namespace Moa.Showdown.Game
         [SerializeField] private BattleHud hud;
         [SerializeField] private ShopView shopView;
         [SerializeField] private CarouselView carouselView;
+        [SerializeField] private LobbyView lobbyView;
         [SerializeField] private TooltipView tooltip;
         [Tooltip("전투 중 몬스터 위로 마우스를 올렸다고 보는 거리 (1080p 기준 픽셀)")]
         [SerializeField] private float hoverRadiusPixels = 70f;
@@ -157,6 +158,10 @@ namespace Moa.Showdown.Game
                     carouselView.CardClicked += OnCarouselCard;
                     carouselView.ContinueClicked += OnCarouselContinue;
                     carouselView.SetTooltips(tooltip, CarouselCardInfo);
+                    lobbyView.Build(_lobby.Rules.PlayerCount);
+                    lobbyView.PlayerClicked += OnLobbyPlayerClicked;
+                    lobbyView.BackClicked += StopScout;
+                    lobbyView.SetBenchTooltips(tooltip, ScoutBenchInfo);
                     StartNewLobby();
                     EnterLobbyRound();
                 }
@@ -347,6 +352,13 @@ namespace Moa.Showdown.Game
             if (mode == Mode.Lobby) _lobby.BeginRound(Lobby); // 안 끝난 캐러셀은 여기서 자동으로 마저 고름
             else _shop.BeginRound(State);
             if (carouselView != null) carouselView.Hide();
+            if (mode == Mode.Lobby)
+            {
+                EndScout();
+                _showOpponents = false;
+                lobbyView.SetListVisible(true);
+                RefreshStandings();
+            }
             _selected = null;
             _shopMessage = "";
             _emptyBoardWarned = false;

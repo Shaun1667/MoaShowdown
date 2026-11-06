@@ -321,6 +321,57 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1734223491}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1115247143
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1115247145}
+  - component: {fileID: 1115247144}
+  m_Layer: 0
+  m_Name: Lobby
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1115247144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1115247143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77d68ea81ba7ceb40b68acca68a0f2c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Moa.Showdown.Game::Moa.Showdown.Game.Ui.LobbyView
+  rowColor: {r: 0.12, g: 0.13, b: 0.17, a: 0.85}
+  rowMeColor: {r: 0.2, g: 0.35, b: 0.6, a: 0.9}
+  rowOutColor: {r: 0.08, g: 0.08, b: 0.09, a: 0.7}
+  rowScoutedColor: {r: 0.85, g: 0.65, b: 0.2, a: 0.9}
+  slotColor: {r: 1, g: 1, b: 1, a: 0.08}
+  slotFilledColor: {r: 0.9, g: 0.4, b: 0.35, a: 0.25}
+  backColor: {r: 0.85, g: 0.35, b: 0.5, a: 1}
+--- !u!4 &1115247145
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1115247143}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1734223491}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1253949500
 GameObject:
   m_ObjectHideFlags: 0
@@ -631,6 +682,7 @@ MonoBehaviour:
   hud: {fileID: 392575815}
   shopView: {fileID: 227577147}
   carouselView: {fileID: 1408290845}
+  lobbyView: {fileID: 1115247144}
   tooltip: {fileID: 625706706}
   hoverRadiusPixels: 70
   healColor: {r: 0.45, g: 1, b: 0.5, a: 1}
@@ -655,6 +707,7 @@ Transform:
   - {fileID: 227577148}
   - {fileID: 625706707}
   - {fileID: 1408290846}
+  - {fileID: 1115247145}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
