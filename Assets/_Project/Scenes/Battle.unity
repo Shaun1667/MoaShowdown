@@ -404,6 +404,56 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1408290844
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1408290846}
+  - component: {fileID: 1408290845}
+  m_Layer: 0
+  m_Name: Carousel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1408290845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1408290844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9332326a3d406d48905e8a28d8ac227, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Moa.Showdown.Game::Moa.Showdown.Game.Shop.CarouselView
+  panelColor: {r: 0.05, g: 0.06, b: 0.09, a: 0.88}
+  cardColor: {r: 0.18, g: 0.2, b: 0.26, a: 0.95}
+  cardPickableColor: {r: 0.25, g: 0.45, b: 0.75, a: 0.95}
+  cardTakenColor: {r: 0.12, g: 0.12, b: 0.14, a: 0.85}
+  cardMineColor: {r: 0.85, g: 0.65, b: 0.2, a: 0.95}
+  continueColor: {r: 0.85, g: 0.35, b: 0.5, a: 1}
+--- !u!4 &1408290846
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1408290844}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1734223491}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1556188939
 GameObject:
   m_ObjectHideFlags: 0
@@ -580,6 +630,7 @@ MonoBehaviour:
   stage: {fileID: 967320973}
   hud: {fileID: 392575815}
   shopView: {fileID: 227577147}
+  carouselView: {fileID: 1408290845}
   tooltip: {fileID: 625706706}
   hoverRadiusPixels: 70
   healColor: {r: 0.45, g: 1, b: 0.5, a: 1}
@@ -603,6 +654,7 @@ Transform:
   - {fileID: 392575816}
   - {fileID: 227577148}
   - {fileID: 625706707}
+  - {fileID: 1408290846}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807

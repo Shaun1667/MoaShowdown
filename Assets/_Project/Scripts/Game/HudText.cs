@@ -102,6 +102,27 @@ namespace Moa.Showdown.Game
         public const string ReadyButton = "준비 완료";
         public const string WaitingOthers = "다른 플레이어를 기다리는 중…";
 
+        // PvE · 캐러셀 (L-4)
+        public const string PveName = "야생 몬스터";
+        public const string ShopHeaderPve = "상점 — 이번 라운드는 야생 몬스터와 싸웁니다 (지면 목숨 1)";
+        public const string PveWinFormat = "승리!  (야생 몬스터)  +{0}골드";
+        public const string PveLoseFormat = "패배 — 목숨 {0}개 잃음  (남은 목숨 {1})  ·  +{2}골드";
+        public const string PveDrawFormat = "무승부 (야생 몬스터)  +{0}골드";
+        public const string InfoPve = "PvE — 모두가 같은 야생 몬스터 팀과 싸움";
+        public const string InfoPveRewardFormat = "이기면 +{0}골드 · 지면 목숨 {1} · +{2}골드";
+        public const string CarouselTitle = "캐러셀 — 목숨이 적은 사람부터 한 마리씩 고릅니다";
+        public const string CarouselOrderFormat = "순서: {0}";
+        public const string CarouselOrderSeparator = " → ";
+        public const string CarouselMyTurn = "내 차례 — 한 마리를 고르세요";
+        public const string CarouselWaitingFormat = "{0} 차례…";
+        public const string CarouselDone = "모두 골랐습니다";
+        public const string CarouselCardFormat = "{0}\n{1}";
+        public const string CarouselTakenFormat = "{0}\n→ {1}";
+        public const string CarouselPickedFormat = "{0} 획득!";
+        public const string CarouselPickedAsGoldFormat = "대기석이 가득 — {0} 대신 {1}골드";
+        public const string CarouselAutoPicked = "시간이 끝나 자동으로 골랐습니다";
+        public const string CarouselContinue = "상점으로";
+
         // 능력 · 상태 (3-1)
         public const string StatusShieldFormat = "방어막 {0}";
         public const string StatusBurnFormat = "화상 {0}";

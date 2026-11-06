@@ -10,6 +10,17 @@ using Moa.Showdown.Core.Snapshot;
 
 namespace Moa.Showdown.Core.Lobby
 {
+    public enum CarouselPickResult
+    {
+        Picked = 0,
+        /// <summary>대기석에 자리가 없어 몬스터 대신 가격만큼 골드.</summary>
+        PickedAsGold = 1,
+        NoCarousel = 2,
+        NotYourTurn = 3,
+        Taken = 4,
+        Invalid = 5,
+    }
+
     /// <summary>한 라운드의 대전 하나.</summary>
     public sealed class LobbyMatch
     {
@@ -26,8 +37,12 @@ namespace Moa.Showdown.Core.Lobby
         public ulong Seed;
         public int LivesLostA;
         public int LivesLostB;
+        /// <summary>PvE 라운드 (L-4): 상대는 PvE 팀 (PlayerB = -1).</summary>
+        public bool IsPve;
+        /// <summary>PvE 보상으로 A가 받은 골드.</summary>
+        public int GoldGainedA;
 
-        public bool IsGhost => PlayerB < 0;
+        public bool IsGhost => PlayerB < 0 && !IsPve;
 
         public bool Involves(int player) => PlayerA == player || PlayerB == player;
     }
@@ -45,7 +60,8 @@ namespace Moa.Showdown.Core.Lobby
 
     /// <summary>
     /// 8인 로비 진행 한 곳 (CLAUDE 핵심 규칙 7: 방장 · 오프라인 · 나중의 서버가 모두 이 코드를 실행).
-    /// 라운드 = BeginRound(살아 있는 모두 수입 · 상점 · 라운드 시작 능력, 봇은 바로 행동) → [사람은 상점 · 배치] → ResolveRound(대진 · 전투 · 목숨 · 탈락 · 순위).
+    /// 라운드 = [캐러셀 라운드면 StartCarousel → 차례대로 PickCarousel] → BeginRound(살아 있는 모두 수입 · 상점 · 라운드 시작 능력, 봇은 바로 행동) → [사람은 상점 · 배치] → ResolveRound(대진 · 전투 · 목숨 · 탈락 · 순위).
+    /// PvE 라운드는 대진 대신 모두가 같은 PvE 팀과 싸운다 (BALANCE 16).
     /// 대진: 시드 난수로 섞고 최근 상대를 피해 짝 → 홀수면 한 명은 다른 생존자 팀의 복사본(유령)과 싸움(유령 주인은 영향 없음).
     /// 탈락: 목숨 0 → 순위 = 그 시점 생존자 수 (같은 라운드에 여럿이면 라운드 전 목숨이 많았던 쪽이 높은 순위, 같으면 번호 큰 쪽이 높은 순위). 마지막 1명 = 1등.
     /// </summary>
@@ -74,6 +90,9 @@ namespace Moa.Showdown.Core.Lobby
             _runRules.Validate();
             _battleRules.Validate();
             _bot = new BotBrain(shop, catalog, statRules);
+            foreach (PveTeamDef t in _lobbyRules.PveTeams)
+                foreach (MonsterSnapshot m in t.Board)
+                    if (m != null && !_catalog.TryGet(m.SpeciesId, out _)) throw new ArgumentException($"PvE 팀에 모르는 몬스터 '{m.SpeciesId}'");
         }
 
         public ShopController Shop => _shop;
@@ -84,6 +103,15 @@ namespace Moa.Showdown.Core.Lobby
 
         /// <summary>준비 시간 (초, BALANCE 15).</summary>
         public int PrepSeconds => _lobbyRules.PrepSeconds;
+
+        public LobbyRules Rules => _lobbyRules;
+
+        /// <summary>이 로비의 지금 라운드가 PvE인지 (BALANCE 16).</summary>
+        public bool IsPveRound(LobbyState lobby) => _lobbyRules.IsPveRound(lobby.Round);
+
+        /// <summary>지금 라운드에 캐러셀이 있고 아직 안 끝났는지 (시작 전 포함).</summary>
+        public bool CarouselPending(LobbyState lobby) =>
+            _lobbyRules.IsCarouselRound(lobby.Round) && (lobby.Carousel == null || lobby.Carousel.Round != lobby.Round || !lobby.Carousel.IsDone);
 
         /// <summary>새 로비: 사람 humanNames.Count명 + 나머지는 봇. 플레이어마다 자기 시드(상점 난수용)를 로비 시드에서 뽑는다.</summary>
         public LobbyState NewLobby(string lobbyId, ulong seed, IReadOnlyList<string> humanNames, Func<int, string> botName)
@@ -124,6 +152,12 @@ namespace Moa.Showdown.Core.Lobby
         /// <remarks>사람의 상점 조작(새로고침 · 팔기)도 같은 풀을 써야 한다 → <see cref="PoolOf"/>.</remarks>
         public void BeginRound(LobbyState lobby)
         {
+            // 캐러셀 라운드면 상점보다 먼저 — 아직 안 고른 사람은 봇 규칙으로 대신 고름 (사람이 고르게 하려면 먼저 StartCarousel)
+            if (_lobbyRules.IsCarouselRound(lobby.Round))
+            {
+                StartCarousel(lobby);
+                while (!lobby.Carousel.IsDone) AutoPickCarousel(lobby);
+            }
             var pool = new UnitPool(lobby.Pool);
             foreach (LobbyPlayer p in lobby.Players)
             {
@@ -147,31 +181,47 @@ namespace Moa.Showdown.Core.Lobby
             var livesBefore = lobby.Players.ToDictionary(p => p.Index, p => p.Run.Lives);
             var snapshots = alive.ToDictionary(i => i, i => MakeSnapshot(lobby.Players[i].Run));
 
-            var rng = new DeterministicRandom(SeedMix.Derive(lobbySeed, SeedMix.PurposePairing, round));
-            List<(int a, int b)> pairs = Pair(lobby, alive, rng, out int ghostFighter);
-
             ulong battleBase = SeedMix.Derive(lobbySeed, SeedMix.PurposeBattle, round);
-            int matchIndex = 0;
-            foreach (var (a, b) in pairs)
+            PveTeamDef pve = _lobbyRules.PveTeamFor(round);
+            if (pve != null)
             {
-                var m = new LobbyMatch { PlayerA = a, PlayerB = b, SnapshotA = snapshots[a], SnapshotB = snapshots[b] };
-                Fight(lobby, m, round, battleBase ^ ((ulong)(uint)matchIndex++ * 0x9E3779B97F4A7C15UL));
-                report.Matches.Add(m);
+                // PvE: 살아 있는 모두가 같은 PvE 팀과 싸움 (대진 · 최근 상대 기록 없음)
+                TeamSnapshot wild = PveSnapshot(pve, round);
+                for (int k = 0; k < alive.Count; k++)
+                {
+                    int a = alive[k];
+                    var m = new LobbyMatch { PlayerA = a, PlayerB = -1, IsPve = true, SnapshotA = snapshots[a], SnapshotB = wild };
+                    FightPve(lobby, m, pve, round, battleBase ^ ((ulong)(uint)k * 0x9E3779B97F4A7C15UL));
+                    report.Matches.Add(m);
+                }
             }
-            if (ghostFighter >= 0)
+            else
             {
-                List<int> others = alive.Where(i => i != ghostFighter).ToList();
-                int owner = others[rng.NextInt(others.Count)];
-                var m = new LobbyMatch { PlayerA = ghostFighter, PlayerB = -1, GhostOf = owner, SnapshotA = snapshots[ghostFighter], SnapshotB = snapshots[owner] };
-                Fight(lobby, m, round, battleBase ^ ((ulong)(uint)matchIndex * 0x9E3779B97F4A7C15UL));
-                report.Matches.Add(m);
-            }
+                var rng = new DeterministicRandom(SeedMix.Derive(lobbySeed, SeedMix.PurposePairing, round));
+                List<(int a, int b)> pairs = Pair(lobby, alive, rng, out int ghostFighter);
 
-            // 최근 상대 기록 (유령전 제외)
-            foreach (var (a, b) in pairs)
-            {
-                Remember(lobby.Players[a], b);
-                Remember(lobby.Players[b], a);
+                int matchIndex = 0;
+                foreach (var (a, b) in pairs)
+                {
+                    var m = new LobbyMatch { PlayerA = a, PlayerB = b, SnapshotA = snapshots[a], SnapshotB = snapshots[b] };
+                    Fight(lobby, m, round, battleBase ^ ((ulong)(uint)matchIndex++ * 0x9E3779B97F4A7C15UL));
+                    report.Matches.Add(m);
+                }
+                if (ghostFighter >= 0)
+                {
+                    List<int> others = alive.Where(i => i != ghostFighter).ToList();
+                    int owner = others[rng.NextInt(others.Count)];
+                    var m = new LobbyMatch { PlayerA = ghostFighter, PlayerB = -1, GhostOf = owner, SnapshotA = snapshots[ghostFighter], SnapshotB = snapshots[owner] };
+                    Fight(lobby, m, round, battleBase ^ ((ulong)(uint)matchIndex * 0x9E3779B97F4A7C15UL));
+                    report.Matches.Add(m);
+                }
+
+                // 최근 상대 기록 (유령전 제외)
+                foreach (var (a, b) in pairs)
+                {
+                    Remember(lobby.Players[a], b);
+                    Remember(lobby.Players[b], a);
+                }
             }
 
             // 탈락 · 순위
@@ -248,12 +298,142 @@ namespace Moa.Showdown.Core.Lobby
             }
         }
 
-        private int LoseLives(RunState r, int round)
+        private int LoseLives(RunState r, int round) => LoseLivesExactly(r, _runRules.GetLifeLoss(round));
+
+        private static int LoseLivesExactly(RunState r, int amount)
         {
-            int loss = Math.Min(_runRules.GetLifeLoss(round), r.Lives);
+            int loss = Math.Min(amount, r.Lives);
             r.Lives -= loss;
             r.LivesLost += loss;
             return loss;
+        }
+
+        // ───────── PvE (L-4) ─────────
+
+        /// <summary>PvE 전투: 이기면 승 +1 · 이김 골드, 지면 목숨 PveLifeLoss · 짐 골드, 무승부는 짐 골드만.</summary>
+        private void FightPve(LobbyState lobby, LobbyMatch m, PveTeamDef pve, int round, ulong seed)
+        {
+            m.Seed = seed;
+            m.TeamA = TeamFactory.Build(m.SnapshotA, _catalog, _statRules);
+            m.TeamB = TeamFactory.Build(m.SnapshotB, _catalog, _statRules);
+            m.Battle = BattleSimulator.Run(_battleRules, m.TeamA, m.TeamB, round, seed);
+            RunState a = lobby.Players[m.PlayerA].Run;
+            switch (m.Battle.Outcome)
+            {
+                case BattleOutcome.AWins:
+                    a.Wins++;
+                    m.GoldGainedA = pve.WinGold;
+                    break;
+                case BattleOutcome.BWins:
+                    m.LivesLostA = LoseLivesExactly(a, _lobbyRules.PveLifeLoss);
+                    m.GoldGainedA = pve.LoseGold;
+                    break;
+                default:
+                    m.GoldGainedA = pve.LoseGold;
+                    break;
+            }
+            a.Gold += m.GoldGainedA;
+        }
+
+        /// <summary>PvE 팀의 전투용 스냅샷 (모두 같은 팀과 싸움).</summary>
+        public TeamSnapshot PveSnapshot(PveTeamDef pve, int round)
+        {
+            var snap = new TeamSnapshot
+            {
+                RulesVersion = _rulesVersion,
+                RunId = "pve",
+                Round = round,
+                TrainerId = "pve",
+            };
+            for (int i = 0; i < BattleTeam.SlotCount; i++)
+            {
+                MonsterSnapshot m = pve.Board[i];
+                if (m != null) snap.Board[i] = new MonsterSnapshot { SpeciesId = m.SpeciesId, Level = m.Level };
+            }
+            return snap;
+        }
+
+        // ───────── 캐러셀 (L-4) ─────────
+
+        /// <summary>
+        /// 이 라운드 캐러셀을 연다 (이미 열려 있으면 그대로): 공유 풀에서 (생존자 + 1)마리를 시드 난수로 꺼내 놓고,
+        /// 순서 = 목숨 적은 사람부터, 같으면 번호 순. 캐러셀 라운드가 아니면 예외.
+        /// </summary>
+        public CarouselState StartCarousel(LobbyState lobby)
+        {
+            if (!_lobbyRules.IsCarouselRound(lobby.Round)) throw new InvalidOperationException($"{lobby.Round}라운드는 캐러셀 라운드가 아님");
+            if (lobby.Carousel != null && lobby.Carousel.Round == lobby.Round) return lobby.Carousel;
+
+            List<LobbyPlayer> alive = lobby.Players.Where(p => p.IsAlive).OrderBy(p => p.Run.Lives).ThenBy(p => p.Index).ToList();
+            var c = new CarouselState { Round = lobby.Round };
+            c.Order.AddRange(alive.Select(p => p.Index));
+            var pool = new UnitPool(lobby.Pool);
+            var rng = new DeterministicRandom(SeedMix.Derive(unchecked((ulong)lobby.Seed), SeedMix.PurposeCarousel, lobby.Round));
+            for (int i = 0; i < alive.Count + 1; i++)
+            {
+                string id = pool.Draw(rng);
+                if (id == null) break; // 풀이 비면 놓을 수 있는 만큼만
+                c.Units.Add(id);
+                c.TakenBy.Add(-1);
+            }
+            lobby.Carousel = c;
+            SkipIfNothingLeft(lobby);
+            return c;
+        }
+
+        /// <summary>
+        /// 지금 차례인 player가 units[unitIndex]를 가져간다. 대기석에 자리가 없고 합체도 안 되면 그 몬스터는 풀로 돌아가고 가격만큼 골드.
+        /// 마지막 차례가 끝나면 남은 몬스터는 풀로.
+        /// </summary>
+        public CarouselPickResult PickCarousel(LobbyState lobby, int player, int unitIndex)
+        {
+            CarouselState c = lobby.Carousel;
+            if (c == null || c.Round != lobby.Round || c.IsDone) return CarouselPickResult.NoCarousel;
+            if (c.CurrentPicker != player) return CarouselPickResult.NotYourTurn;
+            if (unitIndex < 0 || unitIndex >= c.Units.Count) return CarouselPickResult.Invalid;
+            if (c.TakenBy[unitIndex] >= 0) return CarouselPickResult.Taken;
+
+            string id = c.Units[unitIndex];
+            c.TakenBy[unitIndex] = player;
+            RunState run = lobby.Players[player].Run;
+            CarouselPickResult result = CarouselPickResult.Picked;
+            if (!_shop.Gain(run, id))
+            {
+                new UnitPool(lobby.Pool).Return(id, 1);
+                run.Gold += _shop.PriceOf(id);
+                result = CarouselPickResult.PickedAsGold;
+            }
+            c.Next++;
+            SkipIfNothingLeft(lobby);
+            return result;
+        }
+
+        /// <summary>지금 차례를 봇 규칙으로 대신 고른다 (봇 차례 · 사람 시간 끝).</summary>
+        public CarouselPickResult AutoPickCarousel(LobbyState lobby)
+        {
+            CarouselState c = lobby.Carousel;
+            if (c == null || c.Round != lobby.Round || c.IsDone) return CarouselPickResult.NoCarousel;
+            int player = c.CurrentPicker;
+            return PickCarousel(lobby, player, _bot.ChooseCarousel(lobby.Players[player].Run, c));
+        }
+
+        /// <summary>지금 차례가 봇이면 봇이 고른다 — 사람 차례가 오거나 끝날 때까지.</summary>
+        public void AdvanceCarouselBots(LobbyState lobby)
+        {
+            CarouselState c = lobby.Carousel;
+            while (c != null && c.Round == lobby.Round && !c.IsDone && lobby.Players[c.CurrentPicker].IsBot)
+                AutoPickCarousel(lobby);
+        }
+
+        /// <summary>남은 몬스터가 없으면 남은 차례를 건너뛰고, 끝났으면 안 가져간 몬스터를 풀로.</summary>
+        private static void SkipIfNothingLeft(LobbyState lobby)
+        {
+            CarouselState c = lobby.Carousel;
+            if (!c.TakenBy.Contains(-1)) c.Next = c.Order.Count;
+            if (!c.IsDone) return;
+            var pool = new UnitPool(lobby.Pool);
+            for (int i = 0; i < c.Units.Count; i++)
+                if (c.TakenBy[i] < 0) pool.Return(c.Units[i], 1);
         }
 
         private void Remember(LobbyPlayer p, int opponent)

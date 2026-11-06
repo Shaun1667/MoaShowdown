@@ -32,6 +32,25 @@ namespace Moa.Showdown.Core.Lobby
             Place(s);
         }
 
+        /// <summary>캐러셀에서 고를 몬스터 칸 (사는 것과 같은 기준: 가진 몬스터 → 초당 피해, 같으면 앞 칸). 남은 게 없으면 -1.</summary>
+        public int ChooseCarousel(RunState s, CarouselState c)
+        {
+            int best = -1;
+            long bestScore = long.MinValue;
+            for (int i = 0; i < c.Units.Count; i++)
+            {
+                string id = c.Units[i];
+                if (id == null || c.TakenBy[i] >= 0) continue;
+                long score = Owned(s, id) * 1_000_000L + Power(new MonsterSnapshot { SpeciesId = id, Level = 1 });
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    best = i;
+                }
+            }
+            return best;
+        }
+
         private void Buy(RunState s, UnitPool pool)
         {
             bool soldOnce = false;

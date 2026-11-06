@@ -37,8 +37,14 @@ namespace Moa.Showdown.Core.Lobby
                 throw new SnapshotFormatException("JSON 파싱 실패", e);
             }
             JToken v = root["formatVersion"];
-            if (v == null || v.Type != JTokenType.Integer || v.Value<int>() != LobbyState.CurrentFormatVersion)
+            if (v == null || v.Type != JTokenType.Integer)
                 throw new SnapshotFormatException("로비 formatVersion을 읽을 수 없음");
+            int version = v.Value<int>();
+            if (version < OldestReadableVersion || version > LobbyState.CurrentFormatVersion)
+                throw new SnapshotFormatException($"로비 formatVersion {version}은 읽을 수 없음");
+            for (; version < LobbyState.CurrentFormatVersion; version++)
+                MigrateStep(root, version);
+            root["formatVersion"] = LobbyState.CurrentFormatVersion;
 
             LobbyState lobby;
             try
@@ -51,6 +57,22 @@ namespace Moa.Showdown.Core.Lobby
             }
             Validate(lobby);
             return lobby;
+        }
+
+        /// <summary>1은 저장된 적이 없어 읽지 않는다.</summary>
+        public const int OldestReadableVersion = 2;
+
+        /// <summary>버전 v → v+1. 버전을 올릴 때 여기에 case를 추가한다.</summary>
+        private static void MigrateStep(JObject root, int v)
+        {
+            switch (v)
+            {
+                case 2: // 2 → 3: 캐러셀 추가 (L-4). 옛 상태에는 캐러셀이 없음
+                    root["carousel"] = JValue.CreateNull();
+                    break;
+                default:
+                    throw new SnapshotFormatException($"로비 formatVersion {v} → {v + 1} 변환이 없음");
+            }
         }
 
         public static void Validate(LobbyState l)
@@ -69,6 +91,17 @@ namespace Moa.Showdown.Core.Lobby
             if (l.Pool == null) throw new SnapshotFormatException("pool 없음");
             foreach (var e in l.Pool)
                 if (e == null || string.IsNullOrEmpty(e.SpeciesId) || e.Count < 0) throw new SnapshotFormatException("pool 항목 오류");
+            CarouselState c = l.Carousel;
+            if (c != null)
+            {
+                if (c.Units == null || c.TakenBy == null || c.Order == null || c.Units.Count != c.TakenBy.Count)
+                    throw new SnapshotFormatException("carousel 목록 오류");
+                if (c.Next < 0 || c.Next > c.Order.Count) throw new SnapshotFormatException("carousel next 오류");
+                foreach (int p in c.Order)
+                    if (p < 0 || p >= l.Players.Count) throw new SnapshotFormatException("carousel order 번호 오류");
+                foreach (int p in c.TakenBy)
+                    if (p < -1 || p >= l.Players.Count) throw new SnapshotFormatException("carousel takenBy 번호 오류");
+            }
         }
     }
 }

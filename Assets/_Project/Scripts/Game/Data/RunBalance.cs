@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Moa.Showdown.Core.Battle;
 using Moa.Showdown.Core.Lobby;
 using Moa.Showdown.Core.Run;
@@ -41,6 +42,17 @@ namespace Moa.Showdown.Game.Data
         [Tooltip("공유 풀: 등급별 종류당 수량 (일반 · 고급 · 희귀 · 영웅 · 전설, BALANCE 14)")] public int[] poolSizeByRarity;
         [Tooltip("준비(상점) 시간 초 (BALANCE 15)")] public int prepSeconds;
 
+        [Header("PvE · 캐러셀 (BALANCE 16)")]
+        [Tooltip("1라운드부터 이만큼 PvE")] public int pveOpeningRounds;
+        [Tooltip("이 라운드부터 반복 PvE (0 = 없음)")] public int pveRepeatStart;
+        [Tooltip("반복 PvE 간격 (라운드)")] public int pveRepeatEvery;
+        [Tooltip("PvE에서 지면 잃는 목숨 (고정)")] public int pveLifeLoss;
+        [Tooltip("PvE 팀 — 나오는 순서대로, 표보다 뒤는 마지막 팀")] public List<PveTeamRow> pveTeams = new List<PveTeamRow>();
+        [Tooltip("1라운드부터 이만큼 캐러셀")] public int carouselOpeningRounds;
+        [Tooltip("이 라운드부터 반복 캐러셀 (0 = 없음)")] public int carouselRepeatStart;
+        [Tooltip("반복 캐러셀 간격 (라운드)")] public int carouselRepeatEvery;
+        [Tooltip("사람 한 명이 고르는 시간 초")] public int carouselPickSeconds;
+
         [Header("시작 (BALANCE 9)")]
         public string startTrainerId;
         public List<StartSlot> startTeam = new List<StartSlot>();
@@ -71,6 +83,15 @@ namespace Moa.Showdown.Game.Data
             RecentOpponentMemory = recentOpponentMemory,
             PoolSizeByRarity = (int[])poolSizeByRarity.Clone(),
             PrepSeconds = prepSeconds,
+            PveOpeningRounds = pveOpeningRounds,
+            PveRepeatStart = pveRepeatStart,
+            PveRepeatEvery = pveRepeatEvery,
+            PveLifeLoss = pveLifeLoss,
+            PveTeams = pveTeams.Select(t => t.ToDef()).ToList(),
+            CarouselOpeningRounds = carouselOpeningRounds,
+            CarouselRepeatStart = carouselRepeatStart,
+            CarouselRepeatEvery = carouselRepeatEvery,
+            CarouselPickSeconds = carouselPickSeconds,
         };
 
         public MonsterSnapshot[] ToStartTeam()
@@ -79,6 +100,24 @@ namespace Moa.Showdown.Game.Data
             foreach (StartSlot s in startTeam)
                 team[s.slot] = new MonsterSnapshot { SpeciesId = s.speciesId, Level = s.level };
             return team;
+        }
+    }
+
+    /// <summary>PvE 팀 한 줄 (BALANCE 16): 몬스터 칸 + 보상.</summary>
+    [Serializable]
+    public sealed class PveTeamRow
+    {
+        public string label;
+        [Tooltip("이기면 골드")] public int winGold;
+        [Tooltip("지거나 비기면 골드")] public int loseGold;
+        public List<StartSlot> monsters = new List<StartSlot>();
+
+        public PveTeamDef ToDef()
+        {
+            var d = new PveTeamDef { WinGold = winGold, LoseGold = loseGold };
+            foreach (StartSlot s in monsters)
+                d.Board[s.slot] = new MonsterSnapshot { SpeciesId = s.speciesId, Level = s.level };
+            return d;
         }
     }
 

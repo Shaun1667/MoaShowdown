@@ -11,6 +11,8 @@ namespace Moa.Showdown.Core.Random
         public const ulong PurposeShop = 3;
         public const ulong PurposePairing = 4;
         public const ulong PurposeLobbyPlayer = 5;
+        /// <summary>캐러셀에 놓을 몬스터 뽑기 (L-4).</summary>
+        public const ulong PurposeCarousel = 6;
 
         public static ulong Derive(ulong runSeed, ulong purpose, int round)
         {

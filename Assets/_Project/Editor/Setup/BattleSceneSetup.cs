@@ -58,6 +58,7 @@ namespace Moa.Showdown.Editor.Setup
             BattleHud hud = GetOrAdd<BattleHud>(FindOrCreateChild(rootGo, "Hud"));
             ShopView shopView = GetOrAdd<ShopView>(FindOrCreateChild(rootGo, "Shop"));
             TooltipView tooltip = GetOrAdd<TooltipView>(FindOrCreateChild(rootGo, "Tooltip"));
+            CarouselView carouselView = GetOrAdd<CarouselView>(FindOrCreateChild(rootGo, "Carousel"));
 
             var so = new SerializedObject(rootGo.GetComponent<GameRoot>());
             SetIfNull(so, "balance", AssetDatabase.LoadAssetAtPath<BattleBalance>(BalanceSetup.BattleBalancePath));
@@ -69,6 +70,7 @@ namespace Moa.Showdown.Editor.Setup
             SetIfNull(so, "hud", hud);
             SetIfNull(so, "shopView", shopView);
             SetIfNull(so, "tooltip", tooltip);
+            SetIfNull(so, "carouselView", carouselView);
             so.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.MarkSceneDirty(scene);

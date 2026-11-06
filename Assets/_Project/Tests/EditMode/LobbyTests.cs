@@ -321,8 +321,10 @@ namespace Moa.Showdown.Tests
         [Test]
         public void LobbyJson_OldVersion1_IsRejected()
         {
-            string v2 = LobbyStateJson.Serialize(New(Ctl()));
-            Assert.Throws<SnapshotFormatException>(() => LobbyStateJson.Deserialize(v2.Replace("\"formatVersion\":2", "\"formatVersion\":1")));
+            string now = LobbyStateJson.Serialize(New(Ctl()));
+            string current = $"\"formatVersion\":{LobbyState.CurrentFormatVersion}";
+            Assert.That(now, Does.Contain(current));
+            Assert.Throws<SnapshotFormatException>(() => LobbyStateJson.Deserialize(now.Replace(current, "\"formatVersion\":1")));
         }
     }
 }

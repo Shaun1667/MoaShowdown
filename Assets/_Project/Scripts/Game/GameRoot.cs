@@ -72,6 +72,7 @@ namespace Moa.Showdown.Game
         [SerializeField] private BattleStage stage;
         [SerializeField] private BattleHud hud;
         [SerializeField] private ShopView shopView;
+        [SerializeField] private CarouselView carouselView;
         [SerializeField] private TooltipView tooltip;
         [Tooltip("전투 중 몬스터 위로 마우스를 올렸다고 보는 거리 (1080p 기준 픽셀)")]
         [SerializeField] private float hoverRadiusPixels = 70f;
@@ -152,10 +153,18 @@ namespace Moa.Showdown.Game
                 if (mode == Mode.Lobby)
                 {
                     _lobby = new Moa.Showdown.Core.Lobby.LobbyController(runBalance.ToLobbyRules(), runBalance.ToRules(), _rules, _statRules, _catalog, _shop, balance.rulesVersion);
+                    carouselView.Build(_lobby.Rules.PlayerCount + 1);
+                    carouselView.CardClicked += OnCarouselCard;
+                    carouselView.ContinueClicked += OnCarouselContinue;
+                    carouselView.SetTooltips(tooltip, CarouselCardInfo);
                     StartNewLobby();
+                    EnterLobbyRound();
                 }
-                else StartNewRun();
-                EnterShop();
+                else
+                {
+                    StartNewRun();
+                    EnterShop();
+                }
             }
             else
             {
@@ -166,6 +175,7 @@ namespace Moa.Showdown.Game
         private void Update()
         {
             TickPrepTimer();
+            TickCarouselTimer();
             if (_playback == null) return;
             float scaled = Time.deltaTime * _speed;
             _playback.Advance(Time.deltaTime, _speed, OnBattleEvent);
@@ -334,8 +344,9 @@ namespace Moa.Showdown.Game
         /// <summary>라운드 시작: 수입 · 진열(라운드당 한 번) → 상점 화면. 보드에는 내 팀만 보인다.</summary>
         public void EnterShop()
         {
-            if (mode == Mode.Lobby) _lobby.BeginRound(Lobby);
+            if (mode == Mode.Lobby) _lobby.BeginRound(Lobby); // 안 끝난 캐러셀은 여기서 자동으로 마저 고름
             else _shop.BeginRound(State);
+            if (carouselView != null) carouselView.Hide();
             _selected = null;
             _shopMessage = "";
             _emptyBoardWarned = false;
@@ -345,7 +356,8 @@ namespace Moa.Showdown.Game
             hud.SetSideLabels(HudText.MySideLabel, "");
             hud.HideRoundResult();
             hud.ShowStatus("");
-            hud.ShowShopHeader(State.Round, HudText.ShopHeader, _rules.GetTeamHp(State.Round));
+            bool pve = mode == Mode.Lobby && _lobby.IsPveRound(Lobby);
+            hud.ShowShopHeader(State.Round, pve ? HudText.ShopHeaderPve : HudText.ShopHeader, _rules.GetTeamHp(State.Round));
             ShowRunInfo(State.Wins, State.Lives);
             RefreshShop();
             if (mode == Mode.Lobby) StartPrepTimer();

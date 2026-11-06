@@ -172,6 +172,30 @@ namespace Moa.Showdown.Core.Shop
             return ShopError.None;
         }
 
+        /// <summary>
+        /// 공짜로 받기 (캐러셀, L-4): 대기석 빈칸으로 → 합체. 대기석이 가득해도 받으면 합체가 되면 받는다. 자리가 없으면 false (아무것도 안 바뀜).
+        /// 사는 게 아니라서 "살 때" 능력은 발동하지 않는다.
+        /// </summary>
+        public bool Gain(RunState s, string speciesId)
+        {
+            Species(speciesId);
+            int bench = FirstEmptyBench(s);
+            if (bench >= 0)
+            {
+                s.Bench[bench] = new MonsterSnapshot { SpeciesId = speciesId, Level = 1 };
+                ResolveMerges(s);
+                return true;
+            }
+            List<Location> copies = FindAll(s, speciesId, 1);
+            int need = _rules.MergeCountFor(1);
+            if (need == 0 || copies.Count < need - 1) return false;
+            MonsterSnapshot keeper = Get(s, copies[0]);
+            for (int i = 1; i < need - 1; i++) Absorb(s, keeper, copies[i]);
+            keeper.Level++;
+            ResolveMerges(s);
+            return true;
+        }
+
         public int SellValue(MonsterSnapshot m)
         {
             long copies = _rules.CopiesAt(m.Level);

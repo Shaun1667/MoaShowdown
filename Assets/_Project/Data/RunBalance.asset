@@ -28,5 +28,103 @@ MonoBehaviour:
   recentOpponentMemory: 3
   poolSizeByRarity: 3c00000016000000120000000c0000000a000000
   prepSeconds: 30
+  pveOpeningRounds: 2
+  pveRepeatStart: 8
+  pveRepeatEvery: 6
+  pveLifeLoss: 1
+  pveTeams:
+  - label: "\uC57C\uC0DD 1 (1R)"
+    winGold: 5
+    loseGold: 2
+    monsters:
+    - slot: 0
+      speciesId: sprout
+      level: 1
+    - slot: 1
+      speciesId: drip
+      level: 1
+  - label: "\uC57C\uC0DD 2 (2R)"
+    winGold: 5
+    loseGold: 2
+    monsters:
+    - slot: 0
+      speciesId: sprout
+      level: 1
+    - slot: 1
+      speciesId: drip
+      level: 1
+    - slot: 3
+      speciesId: gust
+      level: 1
+  - label: "\uC57C\uC0DD 3 (8R)"
+    winGold: 10
+    loseGold: 5
+    monsters:
+    - slot: 0
+      speciesId: ember
+      level: 2
+    - slot: 1
+      speciesId: pebble
+      level: 2
+    - slot: 2
+      speciesId: drip
+      level: 2
+    - slot: 3
+      speciesId: gust
+      level: 2
+    - slot: 4
+      speciesId: zap
+      level: 2
+    - slot: 5
+      speciesId: sprout
+      level: 2
+  - label: "\uC57C\uC0DD 4 (14R)"
+    winGold: 10
+    loseGold: 5
+    monsters:
+    - slot: 0
+      speciesId: ember
+      level: 3
+    - slot: 1
+      speciesId: pebble
+      level: 3
+    - slot: 2
+      speciesId: drip
+      level: 3
+    - slot: 3
+      speciesId: gust
+      level: 2
+    - slot: 4
+      speciesId: zap
+      level: 2
+    - slot: 5
+      speciesId: sprout
+      level: 2
+  - label: "\uC57C\uC0DD 5 (20R~)"
+    winGold: 10
+    loseGold: 5
+    monsters:
+    - slot: 0
+      speciesId: ember
+      level: 3
+    - slot: 1
+      speciesId: pebble
+      level: 3
+    - slot: 2
+      speciesId: drip
+      level: 3
+    - slot: 3
+      speciesId: gust
+      level: 3
+    - slot: 4
+      speciesId: zap
+      level: 3
+    - slot: 5
+      speciesId: sprout
+      level: 3
+  carouselOpeningRounds: 1
+  carouselRepeatStart: 5
+  carouselRepeatEvery: 6
+  carouselPickSeconds: 10
   startTrainerId: debug_trainer
   startTeam: []

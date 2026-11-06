@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Moa.Showdown.Core.Battle;
+using Moa.Showdown.Core.Content;
 using Moa.Showdown.Core.Lobby;
 using Moa.Showdown.Core.Snapshot;
+using Moa.Showdown.Game.Shop;
 using Moa.Showdown.Game.Ui;
 using UnityEngine;
 
@@ -92,12 +94,140 @@ namespace Moa.Showdown.Game
             }
         }
 
-        /// <summary>결과 패널 계속: 내가 살아 있고 로비가 안 끝났으면 다음 라운드 상점, 아니면 새 로비.</summary>
+        /// <summary>결과 패널 계속: 내가 살아 있고 로비가 안 끝났으면 다음 라운드(캐러셀 → 상점), 아니면 새 로비.</summary>
         private void LobbyContinue()
         {
             if (Lobby.IsFinished || !Me.IsAlive) StartNewLobby();
-            EnterShop();
+            EnterLobbyRound();
             RefreshStandings();
+        }
+
+        /// <summary>라운드 시작: 캐러셀 라운드면 캐러셀부터, 아니면 바로 상점.</summary>
+        private void EnterLobbyRound()
+        {
+            if (_lobby.CarouselPending(Lobby)) EnterCarousel();
+            else EnterShop();
+        }
+
+        // ───────── 캐러셀 (L-4) ─────────
+
+        private readonly PrepTimer _carouselTimer = new PrepTimer();
+        private string _carouselMessage = "";
+
+        /// <summary>지금 캐러셀 고르기 시간 (확인 · 테스트용).</summary>
+        public PrepTimer CarouselTimer => _carouselTimer;
+
+        /// <summary>캐러셀 열기: 내 앞 순서의 봇은 바로 고르고, 내 차례면 시간이 흐른다.</summary>
+        private void EnterCarousel()
+        {
+            _lobby.StartCarousel(Lobby);
+            _lobby.AdvanceCarouselBots(Lobby);
+            _carouselMessage = "";
+            _playback = null;
+            _roundResultPending = false;
+            StopPrepTimer();
+            shopView.Hide();
+            tooltip.HideAll();
+            hud.HideRoundResult();
+            hud.ShowStatus("");
+            hud.SetSideLabels(HudText.MySideLabel, "");
+            hud.ShowShopHeader(State.Round, "", _rules.GetTeamHp(State.Round));
+            ShowRunInfo(State.Wins, State.Lives);
+            RefreshStandings();
+            StartCarouselTimerIfMyTurn();
+            RefreshCarousel();
+        }
+
+        private void StartCarouselTimerIfMyTurn()
+        {
+            _carouselTimer.Stop();
+            carouselView.SetTimer(-1, false);
+            if (!usePrepTimer || Lobby.Carousel.CurrentPicker != MeIndex) return;
+            _carouselTimer.Start(1, _lobby.Rules.CarouselPickSeconds, Array.Empty<int>());
+            carouselView.SetTimer(_carouselTimer.DisplaySeconds, _carouselTimer.DisplaySeconds <= prepWarnSeconds);
+        }
+
+        /// <summary>매 프레임: 내 차례 시간이 끝나면 봇 규칙으로 대신 고른다.</summary>
+        private void TickCarouselTimer()
+        {
+            if (mode != Mode.Lobby || !_carouselTimer.IsRunning || !carouselView.IsVisible) return;
+            _carouselTimer.Advance(Time.deltaTime);
+            carouselView.SetTimer(_carouselTimer.DisplaySeconds, _carouselTimer.DisplaySeconds <= prepWarnSeconds);
+            if (!_carouselTimer.ShouldStart) return;
+            _carouselTimer.Stop();
+            CarouselPickResult r = _lobby.AutoPickCarousel(Lobby);
+            AfterMyCarouselPick(r, auto: true);
+        }
+
+        private void OnCarouselCard(int index)
+        {
+            if (Lobby?.Carousel == null || Lobby.Carousel.CurrentPicker != MeIndex) return;
+            CarouselPickResult r = _lobby.PickCarousel(Lobby, MeIndex, index);
+            if (r != CarouselPickResult.Picked && r != CarouselPickResult.PickedAsGold) return;
+            _carouselTimer.Stop();
+            AfterMyCarouselPick(r, auto: false);
+        }
+
+        /// <summary>내가 고른 뒤: 메시지 → 남은 봇이 고름 → 다시 그림.</summary>
+        private void AfterMyCarouselPick(CarouselPickResult r, bool auto)
+        {
+            int mine = MyCarouselPick();
+            string id = mine >= 0 ? Lobby.Carousel.Units[mine] : null;
+            string msg = id == null ? "" : r == CarouselPickResult.PickedAsGold
+                ? string.Format(HudText.CarouselPickedAsGoldFormat, NameOf(id), _shop.PriceOf(id))
+                : string.Format(HudText.CarouselPickedFormat, NameOf(id));
+            _carouselMessage = auto ? HudText.CarouselAutoPicked + "  ·  " + msg : msg;
+            carouselView.SetTimer(-1, false);
+            _lobby.AdvanceCarouselBots(Lobby);
+            RefreshCarousel();
+        }
+
+        private int MyCarouselPick() => Lobby.Carousel.TakenBy.IndexOf(MeIndex);
+
+        private void OnCarouselContinue()
+        {
+            if (Lobby?.Carousel == null || !Lobby.Carousel.IsDone) return;
+            carouselView.Hide();
+            EnterShop();
+        }
+
+        private void RefreshCarousel()
+        {
+            CarouselState c = Lobby.Carousel;
+            int current = c.CurrentPicker;
+            var d = new CarouselViewData
+            {
+                Order = string.Format(HudText.CarouselOrderFormat, string.Join(HudText.CarouselOrderSeparator,
+                    c.Order.Select(i => i == current ? $"[{Lobby.Players[i].Name}]" : Lobby.Players[i].Name))),
+                Status = c.IsDone ? HudText.CarouselDone
+                    : current == MeIndex ? HudText.CarouselMyTurn
+                    : string.Format(HudText.CarouselWaitingFormat, Lobby.Players[current].Name),
+                Message = _carouselMessage,
+                CanPick = !c.IsDone && current == MeIndex,
+                Done = c.IsDone,
+                Cards = c.Units.Select((id, i) => new CarouselCard
+                {
+                    Text = c.TakenBy[i] >= 0
+                        ? string.Format(HudText.CarouselTakenFormat, NameOf(id), Lobby.Players[c.TakenBy[i]].Name)
+                        : string.Format(HudText.CarouselCardFormat, NameOf(id), RarityName(id)),
+                    Taken = c.TakenBy[i] >= 0,
+                    Mine = c.TakenBy[i] == MeIndex,
+                }).ToArray(),
+            };
+            carouselView.Show(d);
+
+            // 보드 미리 보기: 내 팀만
+            BattleTeam mine = TeamFactory.Build(_run.MakeSnapshot(State), _catalog, _statRules);
+            stage.Build(mine, new BattleTeam(), unchecked((ulong)State.Seed));
+            stage.Tick(0f, 0f, true);
+        }
+
+        /// <summary>캐러셀 카드 정보 창: 레벨 1 기준 능력치 · 이미 가진 수.</summary>
+        private (string, string)? CarouselCardInfo(int index)
+        {
+            CarouselState c = Lobby?.Carousel;
+            if (c == null || index < 0 || index >= c.Units.Count) return null;
+            return MonsterInfoText(new MonsterSnapshot { SpeciesId = c.Units[index], Level = 1 }, enemy: false, price: null, mine: false, mergePreview: true);
         }
 
         /// <summary>전투 시작: 로비 전체 라운드를 계산하고 내 대진을 재생.</summary>
@@ -158,7 +288,11 @@ namespace Moa.Showdown.Game
                 bool won = flip ? o == BattleOutcome.BWins : o == BattleOutcome.AWins;
                 bool lost = flip ? o == BattleOutcome.AWins : o == BattleOutcome.BWins;
                 int myLoss = flip ? m.LivesLostB : m.LivesLostA;
-                lines.Add(won ? string.Format(HudText.LobbyWinFormat, OpponentName(m))
+                if (m.IsPve)
+                    lines.Add(won ? string.Format(HudText.PveWinFormat, m.GoldGainedA)
+                        : lost ? string.Format(HudText.PveLoseFormat, myLoss, State.Lives, m.GoldGainedA)
+                        : string.Format(HudText.PveDrawFormat, m.GoldGainedA));
+                else lines.Add(won ? string.Format(HudText.LobbyWinFormat, OpponentName(m))
                     : lost ? string.Format(HudText.RoundLoseFormat, myLoss, State.Lives)
                     : HudText.RoundDraw);
             }
@@ -187,6 +321,7 @@ namespace Moa.Showdown.Game
         private string OpponentName(LobbyMatch m)
         {
             bool flip = m.PlayerB == MeIndex;
+            if (m.IsPve) return HudText.PveName;
             if (m.IsGhost) return string.Format(HudText.GhostFormat, Lobby.Players[m.GhostOf].Name);
             return Lobby.Players[flip ? m.PlayerA : m.PlayerB].Name;
         }
@@ -229,6 +364,14 @@ namespace Moa.Showdown.Game
             if (m == null || shopView.IsVisible) return null;
             bool flip = m.PlayerB == MeIndex;
             TeamSnapshot theirs = flip ? m.SnapshotA : m.SnapshotB;
+            if (m.IsPve)
+            {
+                PveTeamDef pve = _lobby.Rules.PveTeamFor(LastLobbyReport.Round);
+                string pveBody = HudText.InfoPve
+                    + (pve == null ? "" : "\n" + string.Format(HudText.InfoPveRewardFormat, pve.WinGold, _lobby.Rules.PveLifeLoss, pve.LoseGold))
+                    + "\n" + string.Format(HudText.InfoMonsterCountFormat, theirs.Board.Count(x => x != null));
+                return (string.Format(HudText.OpponentTitleFormat, HudText.PveName), pveBody);
+            }
             int owner = m.IsGhost ? m.GhostOf : (flip ? m.PlayerA : m.PlayerB);
             LobbyPlayer p = Lobby.Players[owner];
             string body = string.Join("\n", new[]

@@ -115,6 +115,19 @@ namespace Moa.Showdown.Tests
         }
 
         [Test]
+        public void Balance16_PveAndCarousel()
+        {
+            var r = AssetDatabase.LoadAssetAtPath<RunBalance>("Assets/_Project/Data/RunBalance.asset");
+            Assert.That((r.pveOpeningRounds, r.pveRepeatStart, r.pveRepeatEvery), Is.EqualTo((2, 8, 6)), "PvE 1 · 2라운드 + 8부터 6마다");
+            Assert.That(r.pveLifeLoss, Is.EqualTo(1), "PvE 패배 목숨 1 고정");
+            Assert.That(r.pveTeams.Count, Is.EqualTo(5));
+            Assert.That(r.pveTeams.Select(t => (t.winGold, t.loseGold)), Is.EqualTo(new[] { (5, 2), (5, 2), (10, 5), (10, 5), (10, 5) }), "초반 +5 · 이후 +10, 지면 절반(내림)");
+            Assert.That((r.carouselOpeningRounds, r.carouselRepeatStart, r.carouselRepeatEvery), Is.EqualTo((1, 5, 6)), "캐러셀 1 + 5부터 6마다");
+            Assert.That(r.carouselPickSeconds, Is.EqualTo(10));
+            Assert.DoesNotThrow(() => r.ToLobbyRules().Validate());
+        }
+
+        [Test]
         public void Balance11_DamageOverTime()
         {
             var b = Load();

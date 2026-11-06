@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Moa.Showdown.Game.Data;
 using UnityEditor;
 using UnityEngine;
@@ -15,7 +16,14 @@ namespace Moa.Showdown.Editor.Setup
             var existing = AssetDatabase.LoadAssetAtPath<RunBalance>(RunBalancePath);
             if (existing != null)
             {
-                Debug.Log($"[Setup] {RunBalancePath} 이미 있음 — 값은 그대로 둠");
+                // 새로 생긴 PvE · 캐러셀 칸만 비어 있으면 채운다 (다른 값은 그대로)
+                if (FillPveCarouselDefaults(existing))
+                {
+                    EditorUtility.SetDirty(existing);
+                    AssetDatabase.SaveAssets();
+                    Debug.Log($"[Setup] {RunBalancePath} PvE · 캐러셀 기본값 채움 (다른 값은 그대로)");
+                }
+                else Debug.Log($"[Setup] {RunBalancePath} 이미 있음 — 값은 그대로 둠");
                 return;
             }
 
@@ -41,9 +49,44 @@ namespace Moa.Showdown.Editor.Setup
             r.recentOpponentMemory = 3;
             r.prepSeconds = 30; // 준비 시간 BALANCE 15
             r.poolSizeByRarity = new[] { 60, 22, 18, 12, 10 }; // 공유 풀 BALANCE 14 — 일반은 몬스터가 6종뿐이라 임시 60 (TFT 29, 종류가 늘면 되돌림)
+            FillPveCarouselDefaults(r);
             AssetDatabase.CreateAsset(r, RunBalancePath);
             AssetDatabase.SaveAssets();
             Debug.Log($"[Setup] {RunBalancePath} 생성");
+        }
+
+        /// <summary>
+        /// PvE · 캐러셀 기본값 (BALANCE 16). 시기 · 패배 · 보상 종류는 사용자 결정 (2026-11-06), PvE 팀 구성 · 골드 액수는 임시 (Claude).
+        /// 이미 PvE 팀이 있으면 아무것도 안 함 (값 보존). 옛 에셋에 새 필드를 채울 때도 이것을 부른다.
+        /// </summary>
+        public static bool FillPveCarouselDefaults(RunBalance r)
+        {
+            if (r.pveTeams != null && r.pveTeams.Count > 0) return false;
+            r.pveOpeningRounds = 2;  // 1 · 2라운드
+            r.pveRepeatStart = 8;    // 8 · 14 · 20 …
+            r.pveRepeatEvery = 6;
+            r.pveLifeLoss = 1;
+            r.pveTeams = new List<PveTeamRow>
+            {
+                Pve("야생 1 (1R)", 5, 2, ("sprout", 0, 1), ("drip", 1, 1)),
+                Pve("야생 2 (2R)", 5, 2, ("sprout", 0, 1), ("drip", 1, 1), ("gust", 3, 1)),
+                Pve("야생 3 (8R)", 10, 5, ("ember", 0, 2), ("pebble", 1, 2), ("drip", 2, 2), ("gust", 3, 2), ("zap", 4, 2), ("sprout", 5, 2)),
+                Pve("야생 4 (14R)", 10, 5, ("ember", 0, 3), ("pebble", 1, 3), ("drip", 2, 3), ("gust", 3, 2), ("zap", 4, 2), ("sprout", 5, 2)),
+                Pve("야생 5 (20R~)", 10, 5, ("ember", 0, 3), ("pebble", 1, 3), ("drip", 2, 3), ("gust", 3, 3), ("zap", 4, 3), ("sprout", 5, 3)),
+            };
+            r.carouselOpeningRounds = 1; // 1라운드 (판 시작)
+            r.carouselRepeatStart = 5;   // 5 · 11 · 17 … (PvE 사이 중간)
+            r.carouselRepeatEvery = 6;
+            r.carouselPickSeconds = 10;
+            return true;
+        }
+
+        private static PveTeamRow Pve(string label, int win, int lose, params (string id, int slot, int level)[] monsters)
+        {
+            var row = new PveTeamRow { label = label, winGold = win, loseGold = lose };
+            foreach (var (id, slot, level) in monsters)
+                row.monsters.Add(new StartSlot { slot = slot, speciesId = id, level = level });
+            return row;
         }
     }
 }
