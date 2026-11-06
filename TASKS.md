@@ -1,7 +1,7 @@
 # TASKS.md
 
 ## 진행 요약 (2026-11-06 기준 — 새 세션은 여기부터 읽는다)
-**최신 (2026-11-06): 2-1 한 판 진행 (라운드 · 승수 · 목숨 · 챔피언/탈락 · 결과 패널 · 판 상태 스냅샷) — 브랜치 `phase2-run-flow`(← `phase1-opponent-source` ← `phase1-hp-table`), 모두 main 병합 전. 테스트 87개 (40개 통과 2026-11-06, 47개 실행 안 함 — 꼭 돌릴 때). 플레이 확인 대기: 1-3 · 1-4 · 2-1. 결정 필요: 제품 · 회사 이름(저장 폴더). 다음: 2-2 상점 · 골드 · 배치 (착수 질문부터).**
+**최신 (2026-11-06): 1-1 체력 표 고침 · 1-4 상대 공급자 · 2-1 한 판 진행 main 병합 · 푸시 완료. 테스트 87개 전부 통과 (2026-11-06 사용자 실행). 플레이 확인 대기: 1-3 · 1-4 · 2-1. 결정 필요: 제품 · 회사 이름(저장 폴더). 다음: 2-2 상점 · 골드 · 배치 (착수 질문부터).**
 
 ---
 
@@ -27,7 +27,7 @@
   - 확인: 에디터 컴파일 오류 0 · Setup 메뉴 2번 실행해도 에셋 하나(값 보존) · 실제 에셋 값으로 샘플 전투(1 · 3 · 5라운드 A 승, 75 · 192 · 330틱) · 빈 팀 20라운드는 서든데스로 860틱(86초) 무승부
   - 테스트 통과 (2026-11-06 사용자 실행): `BattleSimulatorTests`(9) · `DeterministicRandomTests`(4) · `BalanceTests`(5)
   - 확인 방법: Window → General → Test Runner → EditMode → Run All → 19개 통과. (화면 확인은 1-3 그레이박스 재생에서)
-  - 고침 (2026-11-06, 사용자 "체력 확인했어 300, 500, 800, 1400, 2400 … 63000"): 임시 체력 표(20라운드, 7400까지) → 원작 값 14라운드(63000까지), 15라운드부터는 마지막 값. 에셋 `BattleBalance.asset` · Setup 기본값 · `BalanceTests.Balance2` · BALANCE 2 · GDD 함께 고침. 확인: 컴파일 오류 0 · 에셋 값 반영 · 서든데스 검산(1R 64초 · 14R 138초, 상한 300초 안). 테스트 고침, 실행 안 함: `BalanceTests.Balance2_TeamHpByRound`
+  - 고침 (2026-11-06, 사용자 "체력 확인했어 300, 500, 800, 1400, 2400 … 63000"): 임시 체력 표(20라운드, 7400까지) → 원작 값 14라운드(63000까지), 15라운드부터는 마지막 값. 에셋 `BattleBalance.asset` · Setup 기본값 · `BalanceTests.Balance2` · BALANCE 2 · GDD 함께 고침. 확인: 컴파일 오류 0 · 에셋 값 반영 · 서든데스 검산(1R 64초 · 14R 138초, 상한 300초 안). 테스트 통과 (2026-11-06 사용자 실행): `BalanceTests.Balance2_TeamHpByRound`
 - [x] **1-2. 팀 스냅샷** (2026-11-06 사용자 "1-2 진행해줘") — 완료 (화면 없음, 테스트로 확인)
   - 결정 (2026-11-06, 사용자): JSON · 몬스터는 ID + 레벨 + 버프만
   - 구현: `TeamSnapshot`/`MonsterSnapshot`/`StatBuff`(Core/Snapshot, formatVersion 1) · `TeamSnapshotJson`(직렬화 · 버전 확인 · 단계 변환 자리 · 구조 검사, 잘못되면 `SnapshotFormatException`) · `Packages/manifest.json`에 Newtonsoft JSON 3.2.1 명시(이미 다른 패키지 의존으로 설치돼 있었음)
@@ -53,7 +53,7 @@
   - 수치: BALANCE 6 · 7 · 8
   - 확인: 컴파일 오류 · 경고 0 · 기존 BattleBalance 에셋에 새 값(배율 2 · 버전 1) 채움 · Setup 메뉴 재실행해도 샘플 파일 동일 · 샘플 42팀 · 봇 5팀 읽기 오류 0 · 플레이: 3라운드 → `sample_r03_0`(0승) 상대로 110틱 승리 · 20라운드 → 샘플 없음 → 봇 `bot_r13`(레벨 5, 공격력 ×16 표시 확인) · 3라운드 다시 보기 → 같은 상대 + "같은 결과 (확인됨)" · 캡처 2장 · 콘솔 오류 0
   - 확인 못 함: 플레이 모드에서 실제 올리기(내 저장 폴더를 더럽히지 않으려고 — 임시 폴더 테스트로만) · 빌드에서 StreamingAssets 읽기
-  - 테스트 작성, 실행 안 함: `TeamFactoryTests`(8) · `OpponentPickerTests`(8) · `LocalFileOpponentSourceTests`(6) · `BalanceTests.Balance6` · `Balance7` (→ 총 65개)
+  - 테스트 통과 (2026-11-06 사용자 실행): `TeamFactoryTests`(8) · `OpponentPickerTests`(8) · `LocalFileOpponentSourceTests`(6) · `BalanceTests.Balance6` · `Balance7` (→ 총 65개)
   - 확인 방법: `Battle.unity` 플레이 → 위 팀 이름이 "고른 팀 vs sample_r03_0 (0승)" → GameRoot 인스펙터에서 라운드 20 → 다시 보기 → "봇 bot_r13" · 오른쪽 공격력이 큰 숫자. `Use Local Opponent` 끄면 예전처럼 디버그 팀
 
 ## Phase 2. 시스템 연결
@@ -65,7 +65,7 @@
   - 확인: 컴파일 오류 · 경고 0 · Setup → RunBalance 생성 · 씬 연결 · 플레이(확인용 쓰기 폴더 `LocalOpponents_ClaudeCheck`, 판 시드 777): ① 1R 승 → 결과 "승리! 승 1/10" + 다음 라운드 ② 2~8R 연패, 목숨 −1 −1 −1 −2 −2 −2 −1(남은 1) → "탈락 · 8라운드에서 목숨을 모두 잃었습니다 (1승)" + 새 판 ③ 새 판 → 새 판 ID · 목숨 10 ④ 디버그 레벨업 ×4 → "레벨 5" ⑤ 10연승 → "챔피언! 11라운드 만에 10승 달성!" ⑥ **3라운드 상대가 앞 판에서 올린 내 팀** → 올리기 → 받기 실제로 이어짐 · 캡처 3장 · 콘솔 오류 0 · 끝난 뒤 씬 설정 되돌리고 확인용 폴더만 삭제
   - 확인 못 함: 실제 마우스 클릭(버튼 onClick 호출로 대신) · 저장 파일 쓰기/읽기(Phase 5)
   - 발견 (결정 필요): 저장 폴더 `AppData/LocalLow/DefaultCompany/My project`에 10월 `Player.log` 등 다른 프로젝트 파일이 있음 → 회사 · 제품 이름이 기본값이라 다른 Unity 프로젝트와 폴더를 함께 씀 (GDD 10 열린 항목)
-  - 테스트 작성, 실행 안 함: `RunControllerTests`(20) · `BalanceTests.Balance5` · `Balance9` (→ 총 87개)
+  - 테스트 통과 (2026-11-06 사용자 실행): `RunControllerTests`(20) · `BalanceTests.Balance5` · `Balance9` (→ 총 87개)
   - 확인 방법: `Battle.unity` 플레이 → 자동으로 1라운드 → 결과 패널 "다음 라운드" → 반복 → 목숨이 줄다가 "탈락" → "새 판". 왼쪽 아래 "레벨업 (디버그)"를 몇 번 누르고 진행하면 이기다가 "챔피언!". 위쪽 "승 N/10 · 목숨 N/10" 확인. GameRoot `Mode`를 BattleTest로 바꾸면 예전 시험 전투
 - [ ] 2-2. 상점 · 골드 · 배치 화면
 - [ ] 2-3. HUD
