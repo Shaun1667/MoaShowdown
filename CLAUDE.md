@@ -42,6 +42,7 @@ MoaShowdown — 몬스터 팀을 3×2 격자에 배치해 싸우는 **비동기 
 | 테스트 | Unity Test Framework (EditMode) | 확정 2026-11-06 |
 | JSON | Newtonsoft JSON (`com.unity.nuget.newtonsoft-json` 3.2.1, Core에서 사용) | 확정 2026-11-06 |
 | 원격 저장소 | github.com/Shaun1667/MoaShowdown | — |
+| 회사 · 제품 이름 | NariGames / MoaShowdown (식별자 `com.NariGames.MoaShowdown`) | 확정 2026-11-06 · **바꾸면 저장 위치(`AppData/LocalLow/NariGames/MoaShowdown`)가 바뀜 — 바꾸기 전에 알린다** |
 
 ## 폴더 구조
 ```

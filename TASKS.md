@@ -1,7 +1,7 @@
 # TASKS.md
 
 ## 진행 요약 (2026-11-06 기준 — 새 세션은 여기부터 읽는다)
-**최신 (2026-11-06): 1-1 체력 표 고침 · 1-4 상대 공급자 · 2-1 한 판 진행 main 병합 · 푸시 완료. 테스트 87개 전부 통과 (2026-11-06 사용자 실행). 플레이 확인 대기: 1-3 · 1-4 · 2-1. 결정 필요: 제품 · 회사 이름(저장 폴더). 다음: 2-2 상점 · 골드 · 배치 (착수 질문부터).**
+**최신 (2026-11-06): 0-2 제품 · 회사 이름 (MoaShowdown / NariGames) — 브랜치 `phase0-product-name`, main 병합 전. 그 전: 1-1 체력 표 고침 · 1-4 · 2-1 main 병합 · 푸시 완료. 테스트 87개 전부 통과 (2026-11-06 사용자 실행). 플레이 확인 대기: 1-3 · 1-4 · 2-1. 다음: 2-2 상점 · 골드 · 배치 (착수 질문부터).**
 
 ---
 
@@ -16,6 +16,12 @@
   - ~~확인 못 함: 에디터 MCP 연결~~ → 2026-11-06 사용자가 Hub 등록 후 MCP 연결 · 콘솔 오류 0 확인
   - 참고: `ProjectSettings` 2개 파일에 Unity AI 패키지가 자동으로 넣은 변경(App UI 설정)이 있어 커밋에서 뺐음
   - 확인 방법: Unity Hub → Add → `MoaShowdown` 폴더 → 열기 → 콘솔 오류 0 → Test Runner(EditMode)에 테스트 1개 보임
+- [x] **0-2. 제품 · 회사 이름** (2026-11-06 사용자 "제품은 MoaShowdown 회사 명은 NariGames") — 완료
+  - 결정 (2026-11-06, 사용자): 제품 MoaShowdown · 회사 NariGames
+  - 구현: PlayerSettings 회사 · 제품 이름 + 앱 식별자(Standalone · Android · iOS) `com.NariGames.MoaShowdown` (템플릿 값이었음)
+  - 정한 것 (Claude, 확인 필요): 앱 식별자도 같이 바꿈
+  - 확인: 에디터에서 `persistentDataPath` = `AppData/LocalLow/NariGames/MoaShowdown`. 예전 위치(`DefaultCompany/My project`)에는 이 프로젝트 데이터가 없어 옮길 것 없음 (확인용 폴더는 2-1에서 이미 지움)
+  - 커밋: ProjectSettings.asset에서 이름 · 식별자 부분만 골라 스테이징 (Unity AI 패키지의 `APP_UI_EDITOR_ONLY` 정의는 계속 제외)
 
 ## Phase 1. 구조 기반 + 핵심 조작
 - [x] **1-1. 전투 시뮬레이션 코어** (2026-11-06 사용자 "체력 300 → 500 → 800 … 1400, 누굴 때리든 상성 없이 공통 체력이 줄고 다 닳면 진다") — 테스트 통과, 화면 확인은 1-3
