@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8dbb74a8d639c03499f5c534996287c7, type: 3}
+  m_Name: BattleBalance
+  m_EditorClassIdentifier: Moa.Showdown.Game::Moa.Showdown.Game.Data.BattleBalance
+  ticksPerSecond: 10
+  teamHpByRound: 2c010000f4010000200300004c040000780500000807000098080000280a0000b80b0000480d0000d80e000068100000f81100008813000018150000a816000038180000c8190000581b0000e81c0000
+  suddenDeathStartTick: 600
+  suddenDeathIntervalTicks: 10
+  suddenDeathBaseDamage: 20
+  suddenDeathDamageStep: 20
+  maxTicks: 3000

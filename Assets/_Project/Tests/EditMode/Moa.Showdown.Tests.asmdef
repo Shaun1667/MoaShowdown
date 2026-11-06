@@ -3,6 +3,7 @@
     "rootNamespace": "Moa.Showdown.Tests",
     "references": [
         "Moa.Showdown.Core",
+        "Moa.Showdown.Game",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

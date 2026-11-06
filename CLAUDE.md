@@ -2,7 +2,7 @@
 
 ## 프로젝트 개요
 MoaShowdown — 몬스터 팀을 3×2 격자에 배치해 싸우는 **비동기 PvP 전략 오토 배틀러** (3D). 참고 게임: Batomon Showdown(berrymint, Godot) — **한 판 구조만 참고**하고 몬스터 · 트레이너 · 능력 · 이름 · 아트는 새로 만든다.
-기획은 GDD.md, 작업 순서와 일지는 TASKS.md, 수치는 BALANCE.md(첫 수치가 생길 때 만든다).
+기획은 GDD.md, 작업 순서와 일지는 TASKS.md, 수치는 BALANCE.md.
 - **새 세션을 시작하면** 이 문서 → TASKS.md 맨 위 "진행 요약" 순서로 읽고 다음 항목을 확인한 뒤 시작한다. 다른 PC면 Docs/진행상황.md도. "다음 작업: 미정"이면 후보를 먼저 묻는다.
 - 수치는 BALANCE.md와 데이터 에셋 기준이며 코드에 임의로 넣지 않는다.
 
@@ -11,7 +11,8 @@ MoaShowdown — 몬스터 팀을 3×2 격자에 배치해 싸우는 **비동기 
 |---|---|---|
 | `GDD.md` | 기획 | 초안 (2026-11-06) |
 | `TASKS.md` | 진행 요약 · 작업 순서 · 일지 | 사용 중 |
-| `BALANCE.md` | 수치 | 첫 수치 때 만든다 |
+| `BALANCE.md` | 수치 · 데이터 에셋 위치(0번) | 사용 중 (2026-11-06) |
+| `Docs/참고게임_분석.md` | 참고 게임 구조 분석 (로컬 데이터 · 상점 페이지) | 2026-11-06 |
 | `Docs/Source/MY_DEV_GUIDE.md` | 내 협업 가이드 원본 | 고치지 않음 |
 
 ## 협업 방식
@@ -53,13 +54,16 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 │  ├─ Scenes/
 │  └─ Tests/EditMode/       Moa.Showdown.Tests
 ├─ Docs/                    설계 문서 · 진행상황 · Source(원본 보존)
-├─ CLAUDE.md  GDD.md  TASKS.md  (BALANCE.md)
+├─ CLAUDE.md  GDD.md  TASKS.md  BALANCE.md
 ```
 
 ## 코딩 규칙
 - 네임스페이스 `Moa.Showdown.<어셈블리>`. 클래스 PascalCase, private 필드 `_camelCase`.
 - 화면 한글 문구는 텍스트 클래스 하나(`HudText`, 생기면 여기 기록)에 모은다.
 - enum은 끝에만 추가한다 (에셋이 정수로 저장).
+- 전투 계산은 `BattleSimulator.Run`(Core/Battle) 한 곳. 수치는 `BattleRules` ← 데이터 에셋 `Data/BattleBalance.asset`(`BattleBalance.ToRules`). 결과는 `BattleEvent` 목록뿐, 화면은 이것만 보고 재생. 피해는 틱 끝에 양쪽 동시 적용.
+- 난수는 `DeterministicRandom`(Core/Random) 하나. 용도마다 인스턴스를 따로, 저장은 `State`. 규칙 코드에서 `System.Random` · `UnityEngine.Random` 사용 금지.
+- 수치 데이터 에셋은 `Editor/Setup/BalanceSetup`이 만든다 (메뉴 MoaShowdown/Setup/…, 이미 있으면 값 보존). 새 수치 = BALANCE 표 + Setup 기본값 + `BalanceTests` 한 줄.
 - (시스템이 생길 때마다 한 줄씩 추가: "이 시스템은 `클래스` 한 곳, 데이터 `에셋`, 새 항목 = 표 한 줄")
 
 ## 핵심 설계 규칙 (변경 금지)
