@@ -150,8 +150,8 @@ namespace Moa.Showdown.Tests
             RerollCost = 3,
             PriceByRarity = new[] { 10, 20, 30, 40, 50 },
             SellPercent = 75,
-            MergeCount = 3,
-            MaxLevel = 4,
+            MergeCountByLevel = new[] { 3, 2 },
+            MaxLevel = 3,
         }, Catalog(), X2);
 
         private static RunState State() => new RunState { RunId = "r", Seed = 1, Round = 1, Lives = 10 };

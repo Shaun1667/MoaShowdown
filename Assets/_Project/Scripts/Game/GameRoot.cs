@@ -261,7 +261,7 @@ namespace Moa.Showdown.Game
                 TicksPerSecond = _rules.TicksPerSecond,
                 Price = price,
                 SellValue = mine && _shop != null ? _shop.SellValue(m) : (int?)null,
-                MergeCount = _shop?.Rules.MergeCount ?? 0,
+                MergeCount = _shop?.Rules.MergeCountFor(m.Level) ?? 0,
                 MaxLevel = _shop?.Rules.MaxLevel ?? int.MaxValue,
                 Enemy = enemy,
             };

@@ -26,11 +26,30 @@ namespace Moa.Showdown.Core.Shop
         /// <summary>판매가 = 들인 골드 × 이 % (반올림).</summary>
         public int SellPercent;
 
-        /// <summary>같은 몬스터 · 같은 레벨이 이만큼 모이면 합체 (레벨 +1).</summary>
-        public int MergeCount;
+        /// <summary>
+        /// 레벨별 합체에 필요한 마리 수: [0] = Lv1 몇 마리 → Lv2, [1] = Lv2 몇 마리 → Lv3 … (같은 몬스터 · 같은 레벨).
+        /// ~~모든 레벨 3마리~~ → Lv1 × 3 → Lv2, Lv2 × 2 → Lv3 (2026-11-06 사용자).
+        /// </summary>
+        public int[] MergeCountByLevel;
 
         /// <summary>합체로 오를 수 있는 최대 레벨.</summary>
         public int MaxLevel;
+
+        /// <summary>이 레벨 몬스터를 다음 레벨로 합치는 데 필요한 마리 수. 최대 레벨이면 0 (합칠 수 없음).</summary>
+        public int MergeCountFor(int level)
+        {
+            if (level < 1 || level >= MaxLevel) return 0;
+            return MergeCountByLevel[level - 1];
+        }
+
+        /// <summary>이 레벨 몬스터 하나에 들어간 Lv1 마리 수 (판매가 계산용). Lv1 = 1, Lv2 = 3, Lv3 = 6 …</summary>
+        public long CopiesAt(int level)
+        {
+            long copies = 1;
+            for (int lv = 1; lv < level && lv - 1 < MergeCountByLevel.Length && copies < int.MaxValue; lv++)
+                copies *= MergeCountByLevel[lv - 1];
+            return copies;
+        }
 
         /// <summary>라운드 시작 때 받는 골드. 1라운드 = 시작 지급, 그 뒤 = 첫 수입 + 증가량 × (라운드 − 2).</summary>
         public int IncomeFor(int round)
@@ -56,8 +75,11 @@ namespace Moa.Showdown.Core.Shop
             foreach (int p in PriceByRarity)
                 if (p < 0) throw new InvalidOperationException("가격 음수");
             if (SellPercent < 0 || SellPercent > 100) throw new InvalidOperationException("SellPercent 범위 밖");
-            if (MergeCount < 2) throw new InvalidOperationException("MergeCount < 2");
             if (MaxLevel < 1) throw new InvalidOperationException("MaxLevel < 1");
+            if (MergeCountByLevel == null || MergeCountByLevel.Length < MaxLevel - 1)
+                throw new InvalidOperationException("MergeCountByLevel이 최대 레벨까지 안 됨");
+            foreach (int n in MergeCountByLevel)
+                if (n < 2) throw new InvalidOperationException("합체 마리 수 < 2");
         }
     }
 }

@@ -34,8 +34,8 @@ namespace Moa.Showdown.Editor.Setup
             r.rerollCost = 3;
             r.priceByRarity = new[] { 10, 20, 30, 40, 50 };
             r.sellPercent = 75;
-            r.mergeCount = 3;
-            r.maxLevel = 4;
+            r.mergeCountByLevel = new[] { 3, 2 }; // Lv1 × 3 → Lv2, Lv2 × 2 → Lv3 (사용자)
+            r.maxLevel = 3; // 합체로는 Lv3까지 (사용자)
             // 로비 (BALANCE 13)
             r.playerCount = 8;
             r.recentOpponentMemory = 3;

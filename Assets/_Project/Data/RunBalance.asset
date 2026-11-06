@@ -22,8 +22,8 @@ MonoBehaviour:
   rerollCost: 3
   priceByRarity: 0a000000140000001e0000002800000032000000
   sellPercent: 75
-  mergeCount: 3
-  maxLevel: 4
+  mergeCountByLevel: 0300000002000000
+  maxLevel: 3
   playerCount: 8
   recentOpponentMemory: 3
   startTrainerId: debug_trainer

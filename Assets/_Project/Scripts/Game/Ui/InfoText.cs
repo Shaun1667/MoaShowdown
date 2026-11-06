@@ -23,7 +23,7 @@ namespace Moa.Showdown.Game.Ui
             public int TicksPerSecond;
             public int? Price;
             public int? SellValue;
-            /// <summary>합체 정보: 같은 몬스터 · 같은 레벨 보유 수 (이 몬스터 포함). null이면 표시 안 함.</summary>
+            /// <summary>합체 정보: 같은 몬스터 · 같은 레벨 보유 수 (이 몬스터 포함). null이면 표시 안 함. MergeCount = 이 레벨에서 필요한 마리 수.</summary>
             public int? OwnedSameLevel;
             public int MergeCount;
             public int MaxLevel;

@@ -32,7 +32,7 @@ namespace Moa.Showdown.Game.Data
         public int rerollCost;
         [Tooltip("등급별 가격: 일반 · 고급 · 희귀 · 영웅 · 전설")] public int[] priceByRarity;
         [Tooltip("판매가 = 들인 골드 × %")] public int sellPercent;
-        [Tooltip("같은 몬스터 · 같은 레벨 몇 마리면 합체")] public int mergeCount;
+        [Tooltip("레벨별 합체 마리 수: [0] Lv1 몇 마리 → Lv2, [1] Lv2 몇 마리 → Lv3")] public int[] mergeCountByLevel;
         public int maxLevel;
 
         [Header("로비 (BALANCE 13)")]
@@ -59,7 +59,7 @@ namespace Moa.Showdown.Game.Data
             RerollCost = rerollCost,
             PriceByRarity = (int[])priceByRarity.Clone(),
             SellPercent = sellPercent,
-            MergeCount = mergeCount,
+            MergeCountByLevel = (int[])mergeCountByLevel.Clone(),
             MaxLevel = maxLevel,
         };
 

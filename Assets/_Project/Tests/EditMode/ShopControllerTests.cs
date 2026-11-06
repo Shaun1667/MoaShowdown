@@ -25,7 +25,7 @@ namespace Moa.Showdown.Tests
             RerollCost = 3,
             PriceByRarity = new[] { 10, 20, 30, 40, 50 },
             SellPercent = 75,
-            MergeCount = 3,
+            MergeCountByLevel = new[] { 3, 2 },
             MaxLevel = maxLevel,
         };
 
@@ -135,12 +135,24 @@ namespace Moa.Showdown.Tests
         }
 
         [Test]
+        public void MergeCounts_ThreeThenTwo_MaxLevel3()
+        {
+            ShopRules r = Rules();
+            Assert.That(r.MergeCountFor(1), Is.EqualTo(3), "Lv1 × 3 → Lv2");
+            Assert.That(r.MergeCountFor(2), Is.EqualTo(2), "Lv2 × 2 → Lv3");
+            Assert.That(r.MergeCountFor(3), Is.EqualTo(0), "Lv3 = 최대");
+            Assert.That(r.CopiesAt(1), Is.EqualTo(1));
+            Assert.That(r.CopiesAt(2), Is.EqualTo(3));
+            Assert.That(r.CopiesAt(3), Is.EqualTo(6), "3 × 2");
+        }
+
+        [Test]
         public void ChainMerge_ToLevel3()
         {
             var shop = Shop();
             RunState s = WithShop(100, "a");
             s.Team[0] = M("a", 2);
-            s.Team[1] = M("a", 2);
+            // Lv2 하나 + Lv1 둘 + 사는 Lv1 → Lv1 × 3 = Lv2(대기석 0) → Lv2 × 2 = Lv3 (보드 0 자리)
             s.Bench[0] = M("a");
             s.Bench[1] = M("a");
             shop.Buy(s, 0);
@@ -201,7 +213,7 @@ namespace Moa.Showdown.Tests
             Assert.That(shop.SellValue(M("a")), Is.EqualTo(8), "10 × 75% = 7.5 → 8");
             Assert.That(shop.SellValue(M("a", 2)), Is.EqualTo(23), "30 × 75% = 22.5 → 23 (원작 공략 Lv2 = $23)");
             Assert.That(shop.SellValue(M("c")), Is.EqualTo(23), "30 × 75%");
-            Assert.That(shop.SellValue(M("a", 3)), Is.EqualTo(68), "90 × 75% = 67.5 → 68");
+            Assert.That(shop.SellValue(M("a", 3)), Is.EqualTo(45), "Lv3 = Lv1 6마리(3 × 2) → 60 × 75% = 45");
         }
 
         [Test]

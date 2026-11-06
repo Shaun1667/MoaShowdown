@@ -27,7 +27,7 @@ namespace Moa.Showdown.Tests
             var shop = new ShopController(new ShopRules
             {
                 StartGold = 30, FirstIncome = 35, IncomeStep = 5, ShopSlots = 5, RerollCost = 3,
-                PriceByRarity = new[] { 10, 20, 30, 40, 50 }, SellPercent = 75, MergeCount = 3, MaxLevel = 4,
+                PriceByRarity = new[] { 10, 20, 30, 40, 50 }, SellPercent = 75, MergeCountByLevel = new[] { 3, 2 }, MaxLevel = 3,
             }, catalog, X2);
             return new LobbyController(
                 new LobbyRules { PlayerCount = players, RecentOpponentMemory = 3 },

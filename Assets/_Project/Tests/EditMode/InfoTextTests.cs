@@ -19,8 +19,8 @@ namespace Moa.Showdown.Tests
             AttackBuff = buff,
             LevelMultiplier = 2,
             TicksPerSecond = 10,
-            MergeCount = 3,
-            MaxLevel = 4,
+            MergeCount = 2, // Lv2 → Lv3은 2마리
+            MaxLevel = 3,
         };
 
         [Test]
@@ -35,7 +35,7 @@ namespace Moa.Showdown.Tests
             StringAssert.Contains("공격 간격: 0.6초", body);
             StringAssert.Contains("초당 피해: 23.3", body);
             StringAssert.Contains("판매가: 23골드", body);
-            StringAssert.Contains("합체: 같은 Lv2 1/3마리 보유", body);
+            StringAssert.Contains("합체: 같은 Lv2 1/2마리 보유", body);
             StringAssert.Contains("등급: 일반", body);
         }
 
@@ -62,7 +62,7 @@ namespace Moa.Showdown.Tests
         [Test]
         public void MaxLevel_SaysMax()
         {
-            var i = Info(4, new BattleUnit(56, 6));
+            var i = Info(3, new BattleUnit(28, 6));
             i.OwnedSameLevel = 1;
             StringAssert.Contains(HudText.InfoMaxLevel, InfoText.MonsterBody(i));
         }

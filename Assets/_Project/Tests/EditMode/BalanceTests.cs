@@ -81,8 +81,8 @@ namespace Moa.Showdown.Tests
             Assert.That(r.rerollCost, Is.EqualTo(3));
             CollectionAssert.AreEqual(new[] { 10, 20, 30, 40, 50 }, r.priceByRarity);
             Assert.That(r.sellPercent, Is.EqualTo(75));
-            Assert.That(r.mergeCount, Is.EqualTo(3));
-            Assert.That(r.maxLevel, Is.EqualTo(4));
+            CollectionAssert.AreEqual(new[] { 3, 2 }, r.mergeCountByLevel, "Lv1 × 3 → Lv2, Lv2 × 2 → Lv3");
+            Assert.That(r.maxLevel, Is.EqualTo(3));
             Assert.DoesNotThrow(() => r.ToShopRules().Validate());
             var species = AssetDatabase.LoadAssetAtPath<SpeciesTable>("Assets/_Project/Data/SpeciesTable.asset");
             Assert.That(species.rows.All(x => x.rarity == Moa.Showdown.Core.Content.Rarity.Common), Is.True, "시험용 6종은 모두 일반 (BALANCE 7)");

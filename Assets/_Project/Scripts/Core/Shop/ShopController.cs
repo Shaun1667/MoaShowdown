@@ -48,8 +48,8 @@ namespace Moa.Showdown.Core.Shop
     /// 상점 · 골드 · 배치 한 곳. 판 상태(<see cref="RunState"/>)의 골드 · 보드 · 대기석 · 상점만 바꾼다.
     /// 라운드 시작(<see cref="BeginRound"/>): 수입 + 상점 진열 (라운드당 한 번).
     /// 사기: 대기석 빈칸으로. 대기석이 가득 차도 이번에 사면 합체가 되는 경우는 살 수 있다.
-    /// 합체: 같은 몬스터 · 같은 레벨이 MergeCount만큼 모이면 보드 → 대기석 순으로 첫 자리에 하나로 (레벨 +1, 버프는 합침), 연쇄 합체.
-    /// 팔기: 들인 골드(가격 × MergeCount^(레벨−1)) × SellPercent%, 반올림.
+    /// 합체: 같은 몬스터 · 같은 레벨이 MergeCountFor(레벨)만큼(Lv1 3 · Lv2 2) 모이면 보드 → 대기석 순으로 첫 자리에 하나로 (레벨 +1, 버프는 합침), 연쇄 합체.
+    /// 팔기: 들인 골드(가격 × CopiesAt(레벨): Lv1 1 · Lv2 3 · Lv3 6) × SellPercent%, 반올림.
     /// 상점 난수 = SeedMix(판 시드, 상점, 라운드) ⊕ 새로고침 횟수 — 같은 판 · 같은 행동 = 같은 상점.
     /// </summary>
     public sealed class ShopController
@@ -146,7 +146,8 @@ namespace Moa.Showdown.Core.Shop
             {
                 // 대기석이 가득: 이번 구매로 합체가 되면 산 몬스터를 자리 없이 바로 합친다
                 List<Location> copies = FindAll(s, id, 1);
-                if (copies.Count < _rules.MergeCount - 1 || _rules.MaxLevel <= 1) return ShopError.BenchFull;
+                int need = _rules.MergeCountFor(1);
+                if (need == 0 || copies.Count < need - 1) return ShopError.BenchFull;
                 s.Gold -= price;
                 s.Shop[shopIndex] = null;
                 // 산 몬스터는 자리 없이 합쳐진다: "살 때" 능력은 합쳐질 자리(keeper)를 제외하고 먼저 발동, 그 버프는 keeper가 물려받음
@@ -154,7 +155,7 @@ namespace Moa.Showdown.Core.Shop
                 AbilityDef ab = Species(id).Ability;
                 if (ab.Trigger == AbilityTrigger.OnBuy) ApplyShopAbility(s, ab, bought, copies[0]);
                 MonsterSnapshot keeper = Get(s, copies[0]);
-                for (int i = 1; i < _rules.MergeCount - 1; i++) Absorb(s, keeper, copies[i]);
+                for (int i = 1; i < need - 1; i++) Absorb(s, keeper, copies[i]);
                 foreach (StatBuff b in bought.Buffs) keeper.Buffs.Add(b);
                 keeper.Level++;
                 ResolveMerges(s);
@@ -173,8 +174,7 @@ namespace Moa.Showdown.Core.Shop
 
         public int SellValue(MonsterSnapshot m)
         {
-            long copies = 1;
-            for (int lv = 1; lv < m.Level && copies < int.MaxValue; lv++) copies *= _rules.MergeCount;
+            long copies = _rules.CopiesAt(m.Level);
             long invested = PriceOf(m.SpeciesId) * copies;
             long value = (invested * _rules.SellPercent + 50) / 100;
             return (int)Math.Min(value, int.MaxValue);
@@ -226,11 +226,12 @@ namespace Moa.Showdown.Core.Shop
                 foreach (Location at in AllLocations())
                 {
                     MonsterSnapshot m = Get(s, at);
-                    if (m == null || m.Level >= _rules.MaxLevel) continue;
+                    int need = m == null ? 0 : _rules.MergeCountFor(m.Level);
+                    if (need == 0) continue;
                     List<Location> same = FindAll(s, m.SpeciesId, m.Level);
-                    if (same.Count < _rules.MergeCount) continue;
+                    if (same.Count < need) continue;
                     MonsterSnapshot keeper = Get(s, same[0]);
-                    for (int i = 1; i < _rules.MergeCount; i++) Absorb(s, keeper, same[i]);
+                    for (int i = 1; i < need; i++) Absorb(s, keeper, same[i]);
                     keeper.Level++;
                     merged = true;
                     break;
