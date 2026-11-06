@@ -37,10 +37,9 @@ namespace Moa.Showdown.Editor.Setup
             b.ticksPerSecond = 10;
             b.teamHpByRound = new[]
             {
-                300, 500, 800, 1100, 1400,
-                1800, 2200, 2600, 3000, 3400,
-                3800, 4200, 4600, 5000, 5400,
-                5800, 6200, 6600, 7000, 7400,
+                300, 500, 800, 1400, 2400,
+                3800, 5700, 8300, 11600, 17300,
+                24900, 34700, 47300, 63000,
             };
             b.suddenDeathStartTick = 600;
             b.suddenDeathIntervalTicks = 10;
