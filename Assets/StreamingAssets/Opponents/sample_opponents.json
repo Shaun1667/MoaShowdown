@@ -1,7 +1,7 @@
 [
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r01_0",
     "round": 1,
     "wins": 0,
@@ -27,7 +27,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r01_1",
     "round": 1,
     "wins": 0,
@@ -53,7 +53,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r01_2",
     "round": 1,
     "wins": 0,
@@ -79,7 +79,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r02_0",
     "round": 2,
     "wins": 0,
@@ -105,7 +105,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r02_1",
     "round": 2,
     "wins": 0,
@@ -131,7 +131,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r02_2",
     "round": 2,
     "wins": 1,
@@ -157,7 +157,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r03_0",
     "round": 3,
     "wins": 0,
@@ -187,7 +187,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r03_1",
     "round": 3,
     "wins": 1,
@@ -217,7 +217,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r03_2",
     "round": 3,
     "wins": 2,
@@ -247,7 +247,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r04_0",
     "round": 4,
     "wins": 0,
@@ -277,7 +277,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r04_1",
     "round": 4,
     "wins": 1,
@@ -307,7 +307,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r04_2",
     "round": 4,
     "wins": 2,
@@ -337,7 +337,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r05_0",
     "round": 5,
     "wins": 1,
@@ -371,7 +371,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r05_1",
     "round": 5,
     "wins": 2,
@@ -405,7 +405,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r05_2",
     "round": 5,
     "wins": 3,
@@ -439,7 +439,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r06_0",
     "round": 6,
     "wins": 1,
@@ -473,7 +473,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r06_1",
     "round": 6,
     "wins": 2,
@@ -507,7 +507,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r06_2",
     "round": 6,
     "wins": 3,
@@ -541,7 +541,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r07_0",
     "round": 7,
     "wins": 2,
@@ -579,7 +579,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r07_1",
     "round": 7,
     "wins": 3,
@@ -617,7 +617,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r07_2",
     "round": 7,
     "wins": 4,
@@ -655,7 +655,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r08_0",
     "round": 8,
     "wins": 2,
@@ -693,7 +693,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r08_1",
     "round": 8,
     "wins": 3,
@@ -731,7 +731,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r08_2",
     "round": 8,
     "wins": 4,
@@ -769,7 +769,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r09_0",
     "round": 9,
     "wins": 3,
@@ -811,7 +811,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r09_1",
     "round": 9,
     "wins": 4,
@@ -853,7 +853,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r09_2",
     "round": 9,
     "wins": 5,
@@ -895,7 +895,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r10_0",
     "round": 10,
     "wins": 3,
@@ -937,7 +937,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r10_1",
     "round": 10,
     "wins": 4,
@@ -979,7 +979,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r10_2",
     "round": 10,
     "wins": 5,
@@ -1021,7 +1021,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r11_0",
     "round": 11,
     "wins": 4,
@@ -1063,7 +1063,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r11_1",
     "round": 11,
     "wins": 5,
@@ -1105,7 +1105,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r11_2",
     "round": 11,
     "wins": 6,
@@ -1147,7 +1147,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r12_0",
     "round": 12,
     "wins": 4,
@@ -1189,7 +1189,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r12_1",
     "round": 12,
     "wins": 5,
@@ -1231,7 +1231,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r12_2",
     "round": 12,
     "wins": 6,
@@ -1273,7 +1273,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r13_0",
     "round": 13,
     "wins": 5,
@@ -1315,7 +1315,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r13_1",
     "round": 13,
     "wins": 6,
@@ -1357,7 +1357,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r13_2",
     "round": 13,
     "wins": 7,
@@ -1399,7 +1399,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r14_0",
     "round": 14,
     "wins": 5,
@@ -1441,7 +1441,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r14_1",
     "round": 14,
     "wins": 6,
@@ -1483,7 +1483,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "sample_r14_2",
     "round": 14,
     "wins": 7,

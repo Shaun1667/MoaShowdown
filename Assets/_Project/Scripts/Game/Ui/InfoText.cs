@@ -37,11 +37,13 @@ namespace Moa.Showdown.Game.Ui
         {
             var lines = new List<string>
             {
-                string.Format(HudText.InfoRarityFormat, RarityName(i.Species.Rarity)),
+                string.Format(HudText.InfoRarityFormat, RarityName(i.Species.Rarity)) + "   " + string.Format(HudText.InfoTypeFormat, TypeName(i.Species.Type)),
                 string.Format(HudText.InfoAttackFormat, i.Unit.Attack, i.Species.Attack, i.LevelMultiplier, i.AttackBuff),
                 string.Format(HudText.InfoIntervalFormat, Seconds(i.Unit.AttackIntervalTicks, i.TicksPerSecond)),
                 string.Format(HudText.InfoDpsFormat, Dps(i.Unit, i.TicksPerSecond)),
             };
+            string ability = AbilityText(i.Species.Ability, i.Level);
+            if (ability != null) lines.Add(ability);
             if (i.Price.HasValue) lines.Add(string.Format(HudText.InfoPriceFormat, i.Price.Value));
             if (i.SellValue.HasValue) lines.Add(string.Format(HudText.InfoSellFormat, i.SellValue.Value));
             if (i.OwnedSameLevel.HasValue)
@@ -76,6 +78,22 @@ namespace Moa.Showdown.Game.Ui
                 string.Format(HudText.RunInfoFormat, wins, winsGoal, lives, startLives),
                 string.Format(HudText.GoldFormat, gold),
             });
+        }
+
+        /// <summary>"능력: 공격할 때 상대에게 화상 1" — 수치는 이 레벨 기준. 능력이 없으면 null.</summary>
+        public static string AbilityText(AbilityDef a, int level)
+        {
+            if (a.IsNone) return null;
+            int t = (int)a.Trigger, e = (int)a.Effect;
+            string when = t >= 0 && t < HudText.TriggerNames.Length ? string.Format(HudText.TriggerNames[t], a.EveryN) : a.Trigger.ToString();
+            string what = e >= 0 && e < HudText.EffectFormats.Length ? string.Format(HudText.EffectFormats[e], a.AmountAt(level)) : a.Effect.ToString();
+            return string.Format(HudText.InfoAbilityFormat, when, what);
+        }
+
+        public static string TypeName(ElementType t)
+        {
+            int i = (int)t;
+            return i >= 0 && i < HudText.TypeNames.Length ? HudText.TypeNames[i] : t.ToString();
         }
 
         public static string RarityName(Rarity r)

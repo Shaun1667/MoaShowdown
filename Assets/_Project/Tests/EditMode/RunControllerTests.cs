@@ -49,6 +49,8 @@ namespace Moa.Showdown.Tests
             SuddenDeathBaseDamage = 5,
             SuddenDeathDamageStep = 5,
             MaxTicks = 2000,
+            BurnIntervalTicks = 10,
+            PoisonIntervalTicks = 20,
         };
 
         private static RunRules Rules(int winsToChampion = 10, int startLives = 10) => new RunRules

@@ -580,6 +580,10 @@ MonoBehaviour:
   shopView: {fileID: 227577147}
   tooltip: {fileID: 625706706}
   hoverRadiusPixels: 70
+  healColor: {r: 0.45, g: 1, b: 0.5, a: 1}
+  burnColor: {r: 1, g: 0.55, b: 0.2, a: 1}
+  poisonColor: {r: 0.75, g: 0.45, b: 1, a: 1}
+  abilityColor: {r: 0.6, g: 0.9, b: 1, a: 1}
 --- !u!4 &1734223491
 Transform:
   m_ObjectHideFlags: 0

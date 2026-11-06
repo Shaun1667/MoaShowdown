@@ -65,6 +65,7 @@ namespace Moa.Showdown.Game.Battle
         private Text _continueLabel;
         private GameObject _debugButton;
         private readonly Text[] _sideLabels = new Text[2];
+        private readonly Text[] _status2 = new Text[2];
 
         public void Build(Camera cam, IReadOnlyList<int> speeds)
         {
@@ -105,6 +106,13 @@ namespace Moa.Showdown.Game.Battle
             NewButton("Replay", HudText.Replay, new Vector2(x + 30f, -95f), new Vector2(160f, 46f), () => ReplayClicked?.Invoke());
 
             _runInfo = NewText("RunInfo", _canvasRect, new Vector2(0.5f, 1f), new Vector2(0f, -178f), 26, TextAnchor.MiddleCenter);
+
+            // HP 바 아래 상태 줄 (방어막 · 화상 · 독)
+            _status2[0] = NewText("StatusA", _canvasRect, new Vector2(0f, 1f), new Vector2(680f, -118f), 24, TextAnchor.MiddleLeft);
+            _status2[1] = NewText("StatusB", _canvasRect, new Vector2(1f, 1f), new Vector2(-680f, -118f), 24, TextAnchor.MiddleRight);
+            _status2[0].rectTransform.sizeDelta = new Vector2(420f, 40f);
+            _status2[1].rectTransform.sizeDelta = new Vector2(420f, 40f);
+            _status2[0].color = _status2[1].color = new Color(0.75f, 0.9f, 1f);
 
             // 라운드 결과 패널 (화면 아래 가운데): 내용 + 계속 버튼
             _resultPanel = NewRect("ResultPanel", _canvasRect, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 190f), new Vector2(760f, 200f));
@@ -149,6 +157,27 @@ namespace Moa.Showdown.Game.Battle
             SetSideLabels(HudText.MySideLabel, "");
         }
 
+        /// <summary>HP 바 아래 상태 줄: 방어막 · 화상 · 독 (0이면 안 보임). 원작 화면의 방패 · 보라 아이콘 자리.</summary>
+        public void SetStatus(BattleSide side, int shield, int burn, int poison)
+        {
+            Text t = _status2[(int)side];
+            if (t == null) return;
+            var parts = new List<string>();
+            if (shield > 0) parts.Add(string.Format(HudText.StatusShieldFormat, shield));
+            if (burn > 0) parts.Add(string.Format(HudText.StatusBurnFormat, burn));
+            if (poison > 0) parts.Add(string.Format(HudText.StatusPoisonFormat, poison));
+            t.text = string.Join("   ", parts);
+        }
+
+        /// <summary>떠오르는 글 (회복 · 지속 피해 · 능력 발동).</summary>
+        public void ShowPopup(Vector3 world, string text, Color color)
+        {
+            Text t = NewText("Popup", _labelLayer, Vector2.zero, Vector2.zero, 28, TextAnchor.MiddleCenter);
+            t.text = text;
+            t.color = color;
+            _popups.Add(new Popup { Text = t, World = world, Time = 0f });
+        }
+
         public void SetSideLabels(string mine, string theirs)
         {
             if (_sideLabels[0] == null) return;
@@ -180,6 +209,8 @@ namespace Moa.Showdown.Game.Battle
             _banner.text = "";
             SetHp(BattleSide.A, startHp, startHp);
             SetHp(BattleSide.B, startHp, startHp);
+            SetStatus(BattleSide.A, 0, 0, 0);
+            SetStatus(BattleSide.B, 0, 0, 0);
             foreach (var l in _labels) Destroy(l.Text.gameObject);
             _labels.Clear();
             foreach (var p in _popups) Destroy(p.Text.gameObject);

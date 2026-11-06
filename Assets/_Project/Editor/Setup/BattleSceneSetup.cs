@@ -24,6 +24,7 @@ namespace Moa.Showdown.Editor.Setup
             BalanceSetup.CreateBattleBalance();
             DebugTeamsSetup.CreateDebugTeams();
             SpeciesSetup.CreateSpeciesTable();
+            SpeciesSetup.FillSpeciesAbilities();
             LocalOpponentsSetup.CreateLocalOpponents();
             RunSetup.CreateRunBalance();
 

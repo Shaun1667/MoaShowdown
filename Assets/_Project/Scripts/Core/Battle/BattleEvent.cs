@@ -24,6 +24,16 @@ namespace Moa.Showdown.Core.Battle
         TeamHpChanged = 2,
         /// <summary>전투 종료. Value = (int)BattleOutcome.</summary>
         End = 3,
+        /// <summary>Side 방어막 변화. Amount = 이번에 흡수한 피해(0이면 늘어남), Value = 남은 방어막.</summary>
+        ShieldChanged = 4,
+        /// <summary>Side에 쌓인 상태이상 변화. Amount = 화상 스택, Value = 독 스택.</summary>
+        StatusChanged = 5,
+        /// <summary>Side 체력 회복. Amount = 실제 회복량, Value = 회복 후 체력.</summary>
+        Heal = 6,
+        /// <summary>Side의 Slot 몬스터 능력 발동. Amount = 수치, Value = (int)AbilityEffect.</summary>
+        Ability = 7,
+        /// <summary>Side가 지속 피해를 받음. Amount = 피해, Value = 0 화상 · 1 독.</summary>
+        DamageOverTime = 8,
     }
 
     /// <summary>

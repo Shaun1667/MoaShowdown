@@ -86,6 +86,10 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 - Run 흐름: 새 판 → `EnterShop`(상점) → 전투 시작 → 전투 재생 → 결과 패널 → 다음 라운드 = `EnterShop` … 판 끝 → 새 판.
 - 정보 창(마우스를 올리면 뜨고 내리면 사라짐)은 `TooltipView`(Game/Ui) 하나 + UI 요소에 `HoverTarget`(Provider는 띄우는 순간 최신 값). 3D 몬스터(전투 중)는 UI가 아니라 `GameRoot.ProbeBattleHover`가 화면상 거리로 판정(`UnitUnderScreenPoint`). 글은 `InfoText` 한 곳, 숫자는 규칙 코드 값 그대로(`TeamFactory.BuildUnit` — 보이는 값 = 실제 값). 정보 창은 owner별로 숨긴다(UI · 3D 판정이 서로 지우지 않게).
 - 확인 요령: UI 올림/내림 = `ExecuteEvents.Execute(go, new PointerEventData(EventSystem.current), ExecuteEvents.pointerEnterHandler / pointerExitHandler)`, 3D = `InputState.Change(Mouse.current.position, 화면좌표)` 후 Step.
+- 몬스터 능력 = 몬스터 표 한 줄의 `ability`(언제 `AbilityTrigger` × 무엇 `AbilityEffect` × 수치, ×레벨 · N번째 선택) — enum은 끝에만 추가. 전투 능력은 `TeamFactory.BuildUnit`이 `BattleAbility`(레벨 반영 수치)로 바꿔 `BattleSimulator`가 처리(전투 시작 · 공격할 때 · N번째 공격), 상점 능력은 `ShopController`(라운드 시작 = 보드만 · 살 때). 새 효과 = enum 끝 + `ApplyAbility`/`ApplyShopAbility`의 case + `HudText.EffectFormats` · `EffectPopupFormats` 한 줄 + 테스트.
+- 전투 상태: 팀마다 방어막(모든 피해를 먼저 받음) · 화상(BurnInterval마다 스택 피해 후 −1) · 독(PoisonInterval마다 스택 피해, 유지) · 회복(시작 체력까지). 화면은 `ShieldChanged` · `StatusChanged` · `Heal` · `DamageOverTime` · `Ability` 이벤트만 보고 HP 바 아래 상태 줄 · 떠오르는 글로 그린다.
+- 속성은 `ElementType`(몬스터 표 `type`, 끝에만 추가). 아직 속성 시너지 규칙은 없음 (다음 묶음).
+- 규칙 · 능력 · 수치를 바꿔 전투 결과가 달라지면 `BattleBalance.rulesVersion` +1 → `Setup/Local Opponents` 다시 실행 (샘플 상대도 새 버전으로).
 - (시스템이 생길 때마다 한 줄씩 추가: "이 시스템은 `클래스` 한 곳, 데이터 `에셋`, 새 항목 = 표 한 줄")
 
 ## 핵심 설계 규칙 (변경 금지)

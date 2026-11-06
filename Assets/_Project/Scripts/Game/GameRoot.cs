@@ -70,6 +70,15 @@ namespace Moa.Showdown.Game
         [Tooltip("전투 중 몬스터 위로 마우스를 올렸다고 보는 거리 (1080p 기준 픽셀)")]
         [SerializeField] private float hoverRadiusPixels = 70f;
 
+        [Header("연출 색")]
+        [SerializeField] private Color healColor = new Color(0.45f, 1f, 0.5f);
+        [SerializeField] private Color burnColor = new Color(1f, 0.55f, 0.2f);
+        [SerializeField] private Color poisonColor = new Color(0.75f, 0.45f, 1f);
+        [SerializeField] private Color abilityColor = new Color(0.6f, 0.9f, 1f);
+
+        private readonly int[] _shieldNow = new int[2];
+        private readonly int[] _burnNow = new int[2];
+        private readonly int[] _poisonNow = new int[2];
         private readonly object _battleHoverOwner = new object();
         private (BattleSide, int)? _battleHoverKey;
 
@@ -124,7 +133,7 @@ namespace Moa.Showdown.Game
             if (mode == Mode.Run)
             {
                 _run = new RunController(runBalance.ToRules(), _rules, _statRules, _catalog, _opponents, balance.rulesVersion);
-                _shop = new ShopController(runBalance.ToShopRules(), _catalog);
+                _shop = new ShopController(runBalance.ToShopRules(), _catalog, _statRules);
                 shopView.Build(mainCamera, slot => stage.SlotPosition(BattleSide.A, slot), _shop.Rules.ShopSlots);
                 shopView.ShopCardClicked += OnShopCard;
                 shopView.RerollClicked += OnReroll;
@@ -612,8 +621,20 @@ namespace Moa.Showdown.Game
 
         // ───────── 공통 ─────────
 
+        private void RefreshStatus(BattleSide side)
+        {
+            int s = (int)side;
+            hud.SetStatus(side, _shieldNow[s], _burnNow[s], _poisonNow[s]);
+        }
+
+        /// <summary>팀 가운데 위 (회복 · 지속 피해 숫자를 띄울 곳).</summary>
+        private Vector3 SideCenter(BattleSide side) => stage.SlotPosition(side, 1) + Vector3.up * 1.2f;
+
         private void PlayBattle(BattleTeam a, BattleTeam b, BattleResult result, int battleRound, string nameA, string nameB, ulong fxSeed)
         {
+            Array.Clear(_shieldNow, 0, 2);
+            Array.Clear(_burnNow, 0, 2);
+            Array.Clear(_poisonNow, 0, 2);
             _playback = new BattlePlayback(result, _rules.TicksPerSecond);
             stage.Build(a, b, fxSeed);
             hud.ShowBattle(battleRound, nameA, nameB, result.StartHp);
@@ -655,6 +676,27 @@ namespace Moa.Showdown.Game
                     break;
                 case BattleEventType.TeamHpChanged:
                     hud.SetHp(e.Side, e.Value, _playback.Result.StartHp);
+                    break;
+                case BattleEventType.Heal:
+                    hud.SetHp(e.Side, e.Value, _playback.Result.StartHp);
+                    hud.ShowPopup(SideCenter(e.Side), string.Format(HudText.HealPopupFormat, e.Amount), healColor);
+                    break;
+                case BattleEventType.ShieldChanged:
+                    _shieldNow[(int)e.Side] = e.Value;
+                    RefreshStatus(e.Side);
+                    break;
+                case BattleEventType.StatusChanged:
+                    _burnNow[(int)e.Side] = e.Amount;
+                    _poisonNow[(int)e.Side] = e.Value;
+                    RefreshStatus(e.Side);
+                    break;
+                case BattleEventType.DamageOverTime:
+                    hud.ShowPopup(SideCenter(e.Side), e.Amount.ToString(), e.Value == 0 ? burnColor : poisonColor);
+                    break;
+                case BattleEventType.Ability:
+                    int fx = e.Value;
+                    if (fx >= 0 && fx < HudText.EffectPopupFormats.Length && HudText.EffectPopupFormats[fx].Length > 0)
+                        hud.ShowPopup(stage.LabelAnchor(e.Side, e.Slot) + Vector3.up * 1.6f, string.Format(HudText.EffectPopupFormats[fx], e.Amount), abilityColor);
                     break;
                 case BattleEventType.End:
                     var outcome = (BattleOutcome)e.Value;

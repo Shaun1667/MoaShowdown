@@ -66,7 +66,9 @@ namespace Moa.Showdown.Core.Content
             if (interval < 1) interval = 1;
             if (interval > StatCap) throw new SnapshotContentException($"{where}: 공격 간격 상한 초과");
 
-            return new BattleUnit((int)attack, (int)interval);
+            AbilityDef a = def.Ability;
+            var ability = a.IsNone ? default : new BattleAbility(a.Trigger, a.Effect, a.AmountAt(m.Level), a.EveryN);
+            return new BattleUnit((int)attack, (int)interval, ability);
         }
 
         /// <summary>이 데이터로 싸울 수 있는 스냅샷인가 (상대 고를 때 거르기용).</summary>

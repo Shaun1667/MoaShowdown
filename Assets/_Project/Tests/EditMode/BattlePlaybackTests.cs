@@ -20,6 +20,8 @@ namespace Moa.Showdown.Tests
                 SuddenDeathBaseDamage = 5,
                 SuddenDeathDamageStep = 5,
                 MaxTicks = 2000,
+                BurnIntervalTicks = 10,
+                PoisonIntervalTicks = 20,
             };
             var a = new BattleTeam { [0] = new BattleUnit(10, 4) };
             var b = new BattleTeam { [3] = new BattleUnit(10, 5) };

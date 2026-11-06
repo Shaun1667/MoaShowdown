@@ -93,8 +93,40 @@ namespace Moa.Showdown.Tests
         {
             var b = Load();
             Assert.That(b.levelAttackMultiplier, Is.EqualTo(2));
-            Assert.That(b.rulesVersion, Is.EqualTo(1));
+            Assert.That(b.rulesVersion, Is.EqualTo(2), "3-1 능력 추가로 1 → 2");
             Assert.DoesNotThrow(() => b.ToStatRules().Validate());
+        }
+
+        [Test]
+        public void Balance11_DamageOverTime()
+        {
+            var b = Load();
+            Assert.That(b.burnIntervalTicks, Is.EqualTo(10), "화상 1초마다");
+            Assert.That(b.poisonIntervalTicks, Is.EqualTo(20), "독 2초마다");
+        }
+
+        [Test]
+        public void Balance12_SpeciesAbilities()
+        {
+            var t = AssetDatabase.LoadAssetAtPath<SpeciesTable>("Assets/_Project/Data/SpeciesTable.asset");
+            void Check(string id, Moa.Showdown.Core.Content.ElementType type, Moa.Showdown.Core.Battle.AbilityTrigger trig, Moa.Showdown.Core.Battle.AbilityEffect eff, int amount, bool perLevel, int everyN)
+            {
+                var row = t.rows.Find(r => r.id == id);
+                Assert.That(row, Is.Not.Null, id);
+                Assert.That(row.type, Is.EqualTo(type), id);
+                Assert.That(row.ability.trigger, Is.EqualTo(trig), id);
+                Assert.That(row.ability.effect, Is.EqualTo(eff), id);
+                Assert.That(row.ability.amount, Is.EqualTo(amount), id);
+                Assert.That(row.ability.perLevel, Is.EqualTo(perLevel), id);
+                Assert.That(row.ability.everyN, Is.EqualTo(everyN), id);
+            }
+            Check("sprout", Moa.Showdown.Core.Content.ElementType.Grass, Moa.Showdown.Core.Battle.AbilityTrigger.ShopRoundStart, Moa.Showdown.Core.Battle.AbilityEffect.PermAttackSelf, 1, false, 0);
+            Check("ember", Moa.Showdown.Core.Content.ElementType.Fire, Moa.Showdown.Core.Battle.AbilityTrigger.OnAttack, Moa.Showdown.Core.Battle.AbilityEffect.Burn, 1, false, 0);
+            Check("pebble", Moa.Showdown.Core.Content.ElementType.Rock, Moa.Showdown.Core.Battle.AbilityTrigger.BattleStart, Moa.Showdown.Core.Battle.AbilityEffect.Shield, 20, true, 0);
+            Check("zap", Moa.Showdown.Core.Content.ElementType.Electric, Moa.Showdown.Core.Battle.AbilityTrigger.EveryNthAttack, Moa.Showdown.Core.Battle.AbilityEffect.DamageMultiplier, 2, false, 3);
+            Check("drip", Moa.Showdown.Core.Content.ElementType.Water, Moa.Showdown.Core.Battle.AbilityTrigger.OnAttack, Moa.Showdown.Core.Battle.AbilityEffect.Heal, 3, true, 0);
+            Check("gust", Moa.Showdown.Core.Content.ElementType.Flying, Moa.Showdown.Core.Battle.AbilityTrigger.OnBuy, Moa.Showdown.Core.Battle.AbilityEffect.PermAttackWeakestAlly, 2, false, 0);
+            Assert.DoesNotThrow(() => t.ToCatalog());
         }
 
         [Test]

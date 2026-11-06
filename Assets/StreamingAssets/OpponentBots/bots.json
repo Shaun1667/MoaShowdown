@@ -1,7 +1,7 @@
 [
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "bot_r01",
     "round": 1,
     "wins": 0,
@@ -27,7 +27,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "bot_r04",
     "round": 4,
     "wins": 0,
@@ -57,7 +57,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "bot_r07",
     "round": 7,
     "wins": 0,
@@ -95,7 +95,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "bot_r10",
     "round": 10,
     "wins": 0,
@@ -137,7 +137,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 1,
+    "rulesVersion": 2,
     "runId": "bot_r13",
     "round": 13,
     "wins": 0,

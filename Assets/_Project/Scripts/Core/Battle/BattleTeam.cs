@@ -9,13 +9,20 @@ namespace Moa.Showdown.Core.Battle
     {
         public readonly int Attack;
         public readonly int AttackIntervalTicks;
+        /// <summary>전투 능력 (없으면 IsNone). 상점 단계 능력은 전투에서 무시한다.</summary>
+        public readonly BattleAbility Ability;
 
-        public BattleUnit(int attack, int attackIntervalTicks)
+        public BattleUnit(int attack, int attackIntervalTicks) : this(attack, attackIntervalTicks, default)
+        {
+        }
+
+        public BattleUnit(int attack, int attackIntervalTicks, BattleAbility ability)
         {
             if (attack < 0) throw new ArgumentOutOfRangeException(nameof(attack));
             if (attackIntervalTicks < 1) throw new ArgumentOutOfRangeException(nameof(attackIntervalTicks));
             Attack = attack;
             AttackIntervalTicks = attackIntervalTicks;
+            Ability = ability;
         }
 
         public bool IsEmpty => AttackIntervalTicks == 0;

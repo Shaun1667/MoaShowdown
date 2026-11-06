@@ -57,17 +57,24 @@ namespace Moa.Showdown.Core.Shop
         private readonly ShopRules _rules;
         private readonly SpeciesCatalog _catalog;
 
-        public ShopController(ShopRules rules, SpeciesCatalog catalog)
+        private readonly UnitStatRules _statRules;
+
+        public ShopController(ShopRules rules, SpeciesCatalog catalog, UnitStatRules statRules)
         {
             _rules = rules ?? throw new ArgumentNullException(nameof(rules));
             _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
+            _statRules = statRules ?? throw new ArgumentNullException(nameof(statRules));
             _rules.Validate();
+            _statRules.Validate();
             if (_catalog.Count == 0) throw new ArgumentException("몬스터 표가 비어 있음");
         }
 
         public ShopRules Rules => _rules;
 
-        /// <summary>라운드 시작: 이 라운드 수입을 받고 상점을 새로 진열. 같은 라운드에 다시 불러도 아무 일 없음.</summary>
+        /// <summary>
+        /// 라운드 시작: 이 라운드 수입을 받고 상점을 새로 진열, 보드의 "라운드 시작" 능력 발동 (보드 칸 순서).
+        /// 같은 라운드에 다시 불러도 아무 일 없음.
+        /// </summary>
         public void BeginRound(RunState s)
         {
             if (s.ShopRound == s.Round) return;
@@ -75,6 +82,44 @@ namespace Moa.Showdown.Core.Shop
             s.ShopRound = s.Round;
             s.ShopRollIndex = 0;
             Roll(s);
+            for (int i = 0; i < BattleTeam.SlotCount; i++)
+            {
+                MonsterSnapshot m = s.Team[i];
+                if (m == null) continue;
+                AbilityDef a = Species(m.SpeciesId).Ability;
+                if (a.Trigger == AbilityTrigger.ShopRoundStart) ApplyShopAbility(s, a, m, Location.Board(i));
+            }
+        }
+
+        /// <summary>
+        /// 상점 단계 능력 효과. PermAttackSelf = 자기 공격력 영구 +, PermAttackWeakestAlly = 자기 말고 가장 약한(실제 공격력, 같으면 보드 → 대기석 앞 칸) 몬스터 +.
+        /// self가 null이면 (대기석이 가득해 바로 합쳐진 경우) 자기 대상 효과는 keeper에게.
+        /// </summary>
+        private void ApplyShopAbility(RunState s, AbilityDef a, MonsterSnapshot self, Location? selfAt)
+        {
+            int amount = a.AmountAt(self.Level);
+            switch (a.Effect)
+            {
+                case AbilityEffect.PermAttackSelf:
+                    self.Buffs.Add(new StatBuff(StatIds.Attack, amount));
+                    break;
+                case AbilityEffect.PermAttackWeakestAlly:
+                    MonsterSnapshot weakest = null;
+                    int weakestAttack = int.MaxValue;
+                    foreach (Location at in AllLocations())
+                    {
+                        MonsterSnapshot m = Get(s, at);
+                        if (m == null || ReferenceEquals(m, self) || (selfAt.HasValue && at.Equals(selfAt.Value))) continue;
+                        int attack = TeamFactory.BuildUnit(m, _catalog, _statRules).Attack;
+                        if (attack < weakestAttack)
+                        {
+                            weakestAttack = attack;
+                            weakest = m;
+                        }
+                    }
+                    weakest?.Buffs.Add(new StatBuff(StatIds.Attack, amount));
+                    break;
+            }
         }
 
         public ShopError Reroll(RunState s)
@@ -104,8 +149,13 @@ namespace Moa.Showdown.Core.Shop
                 if (copies.Count < _rules.MergeCount - 1 || _rules.MaxLevel <= 1) return ShopError.BenchFull;
                 s.Gold -= price;
                 s.Shop[shopIndex] = null;
+                // 산 몬스터는 자리 없이 합쳐진다: "살 때" 능력은 합쳐질 자리(keeper)를 제외하고 먼저 발동, 그 버프는 keeper가 물려받음
+                var bought = new MonsterSnapshot { SpeciesId = id, Level = 1 };
+                AbilityDef ab = Species(id).Ability;
+                if (ab.Trigger == AbilityTrigger.OnBuy) ApplyShopAbility(s, ab, bought, copies[0]);
                 MonsterSnapshot keeper = Get(s, copies[0]);
                 for (int i = 1; i < _rules.MergeCount - 1; i++) Absorb(s, keeper, copies[i]);
+                foreach (StatBuff b in bought.Buffs) keeper.Buffs.Add(b);
                 keeper.Level++;
                 ResolveMerges(s);
                 return ShopError.None;
@@ -113,7 +163,10 @@ namespace Moa.Showdown.Core.Shop
 
             s.Gold -= price;
             s.Shop[shopIndex] = null;
-            s.Bench[bench] = new MonsterSnapshot { SpeciesId = id, Level = 1 };
+            var placed = new MonsterSnapshot { SpeciesId = id, Level = 1 };
+            s.Bench[bench] = placed;
+            AbilityDef onBuy = Species(id).Ability;
+            if (onBuy.Trigger == AbilityTrigger.OnBuy) ApplyShopAbility(s, onBuy, placed, Location.Bench(bench));
             ResolveMerges(s);
             return ShopError.None;
         }

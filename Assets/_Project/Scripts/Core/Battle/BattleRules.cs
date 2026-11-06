@@ -28,6 +28,12 @@ namespace Moa.Showdown.Core.Battle
         /// <summary>안전 상한. 여기까지 안 끝나면 무승부.</summary>
         public int MaxTicks;
 
+        /// <summary>화상 피해 간격(틱): 이 간격마다 쌓인 만큼 피해 후 1 감소 (BALANCE 11).</summary>
+        public int BurnIntervalTicks;
+
+        /// <summary>독 피해 간격(틱): 이 간격마다 쌓인 만큼 피해, 줄지 않음 (BALANCE 11).</summary>
+        public int PoisonIntervalTicks;
+
         public int GetTeamHp(int round)
         {
             if (round < 1) throw new ArgumentOutOfRangeException(nameof(round));
@@ -46,6 +52,8 @@ namespace Moa.Showdown.Core.Battle
             if (SuddenDeathBaseDamage < 1) throw new InvalidOperationException("SuddenDeathBaseDamage < 1");
             if (SuddenDeathDamageStep < 0) throw new InvalidOperationException("SuddenDeathDamageStep < 0");
             if (MaxTicks <= SuddenDeathStartTick) throw new InvalidOperationException("MaxTicks <= SuddenDeathStartTick");
+            if (BurnIntervalTicks < 1) throw new InvalidOperationException("BurnIntervalTicks < 1");
+            if (PoisonIntervalTicks < 1) throw new InvalidOperationException("PoisonIntervalTicks < 1");
         }
     }
 }

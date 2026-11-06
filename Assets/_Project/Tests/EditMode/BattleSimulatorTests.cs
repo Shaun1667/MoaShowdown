@@ -16,6 +16,8 @@ namespace Moa.Showdown.Tests
             SuddenDeathBaseDamage = 5,
             SuddenDeathDamageStep = 5,
             MaxTicks = maxTicks,
+            BurnIntervalTicks = 10,
+            PoisonIntervalTicks = 20,
         };
 
         private static BattleTeam Team(params (int slot, int attack, int interval)[] units)

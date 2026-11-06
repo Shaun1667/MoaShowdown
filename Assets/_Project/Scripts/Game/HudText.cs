@@ -75,5 +75,31 @@ namespace Moa.Showdown.Game
         public const string OpponentSideLabel = "상대 (정보)";
         public const string OpponentTitleFormat = "상대: {0}";
         public const string MyTitle = "나";
+
+        // 능력 · 상태 (3-1)
+        public const string StatusShieldFormat = "방어막 {0}";
+        public const string StatusBurnFormat = "화상 {0}";
+        public const string StatusPoisonFormat = "독 {0}";
+        public const string HealPopupFormat = "+{0}";
+        public const string InfoTypeFormat = "속성: {0}";
+        public const string InfoAbilityFormat = "능력: {0} {1}";
+        public static readonly string[] TypeNames = { "없음", "풀", "불", "물", "전기", "바위", "비행", "독" };
+        /// <summary>AbilityTrigger 번호 순.</summary>
+        public static readonly string[] TriggerNames = { "", "전투 시작 시", "공격할 때", "{0}번째 공격마다", "라운드 시작마다", "살 때" };
+        /// <summary>AbilityEffect 번호 순. {0} = 수치.</summary>
+        public static readonly string[] EffectFormats =
+        {
+            "",
+            "피해 +{0}",
+            "상대에게 화상 {0}",
+            "상대에게 독 {0}",
+            "우리 팀 방어막 {0}",
+            "우리 팀 체력 {0} 회복",
+            "피해 ×{0}",
+            "자기 공격력 영구 +{0}",
+            "가장 약한 아군 공격력 영구 +{0}",
+        };
+        /// <summary>전투 중 능력 발동 때 떠오르는 짧은 글. AbilityEffect 번호 순.</summary>
+        public static readonly string[] EffectPopupFormats = { "", "+{0}", "화상+{0}", "독+{0}", "방어막+{0}", "", "×{0}!", "", "" };
     }
 }

@@ -25,6 +25,10 @@ namespace Moa.Showdown.Game.Data
         [Tooltip("안전 상한. 여기까지 안 끝나면 무승부 (BALANCE 4)")]
         public int maxTicks;
 
+        [Header("지속 피해 (BALANCE 11)")]
+        [Tooltip("화상: 이 간격(틱)마다 쌓인 만큼 피해 후 1 감소")] public int burnIntervalTicks;
+        [Tooltip("독: 이 간격(틱)마다 쌓인 만큼 피해, 줄지 않음")] public int poisonIntervalTicks;
+
         [Header("능력치 · 버전 (BALANCE 6)")]
         [Tooltip("레벨이 1 오를 때마다 공격력 배율")]
         public int levelAttackMultiplier;
@@ -45,6 +49,8 @@ namespace Moa.Showdown.Game.Data
                 SuddenDeathBaseDamage = suddenDeathBaseDamage,
                 SuddenDeathDamageStep = suddenDeathDamageStep,
                 MaxTicks = maxTicks,
+                BurnIntervalTicks = burnIntervalTicks,
+                PoisonIntervalTicks = poisonIntervalTicks,
             };
         }
     }

@@ -29,7 +29,7 @@ namespace Moa.Showdown.Tests
             MaxLevel = maxLevel,
         };
 
-        private static ShopController Shop(int maxLevel = 3) => new ShopController(Rules(maxLevel), Catalog());
+        private static ShopController Shop(int maxLevel = 3) => new ShopController(Rules(maxLevel), Catalog(), new UnitStatRules { LevelAttackMultiplier = 2 });
 
         private static RunState State(long seed = 1) => new RunState { RunId = "r", Seed = seed, Round = 1, Lives = 10 };
 

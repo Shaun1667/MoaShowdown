@@ -17,23 +17,71 @@ MonoBehaviour:
     displayName: "\uC0C8\uC2F9\uC774"
     attack: 8
     attackIntervalTicks: 8
+    rarity: 0
+    type: 1
+    ability:
+      trigger: 4
+      effect: 7
+      amount: 1
+      perLevel: 0
+      everyN: 0
   - id: ember
     displayName: "\uBD88\uC528"
     attack: 14
     attackIntervalTicks: 12
+    rarity: 0
+    type: 2
+    ability:
+      trigger: 2
+      effect: 2
+      amount: 1
+      perLevel: 0
+      everyN: 0
   - id: pebble
     displayName: "\uC790\uAC08\uC774"
     attack: 20
     attackIntervalTicks: 18
+    rarity: 0
+    type: 5
+    ability:
+      trigger: 1
+      effect: 4
+      amount: 20
+      perLevel: 1
+      everyN: 0
   - id: zap
     displayName: "\uCC0C\uB9BF"
     attack: 5
     attackIntervalTicks: 4
+    rarity: 0
+    type: 4
+    ability:
+      trigger: 3
+      effect: 6
+      amount: 2
+      perLevel: 0
+      everyN: 3
   - id: drip
     displayName: "\uBB3C\uBC29\uC6B8"
     attack: 10
     attackIntervalTicks: 10
+    rarity: 0
+    type: 3
+    ability:
+      trigger: 2
+      effect: 5
+      amount: 3
+      perLevel: 1
+      everyN: 0
   - id: gust
     displayName: "\uBC14\uB78C\uAC1C\uBE44"
     attack: 7
     attackIntervalTicks: 6
+    rarity: 0
+    type: 6
+    ability:
+      trigger: 5
+      effect: 8
+      amount: 2
+      perLevel: 0
+      everyN: 0
