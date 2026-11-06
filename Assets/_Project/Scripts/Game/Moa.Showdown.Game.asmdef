@@ -3,7 +3,8 @@
     "rootNamespace": "Moa.Showdown.Game",
     "references": [
         "Moa.Showdown.Core",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

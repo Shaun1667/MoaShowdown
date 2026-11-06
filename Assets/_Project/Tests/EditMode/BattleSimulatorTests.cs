@@ -112,7 +112,7 @@ namespace Moa.Showdown.Tests
         }
 
         [Test]
-        public void SlotOf_FrontRowFirst()
+        public void SlotOf_RowMajor()
         {
             Assert.That(BattleTeam.SlotOf(0, 0), Is.EqualTo(0));
             Assert.That(BattleTeam.SlotOf(0, 2), Is.EqualTo(2));

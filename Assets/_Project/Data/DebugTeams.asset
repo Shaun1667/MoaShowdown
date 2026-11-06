@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2580fed4e06989e498bd7a80c630d521, type: 3}
+  m_Name: DebugTeams
+  m_EditorClassIdentifier: Moa.Showdown.Game::Moa.Showdown.Game.Data.DebugTeamSet
+  teams:
+  - name: "\uACE0\uB978 \uD300"
+    slots:
+    - present: 1
+      attack: 12
+      attackIntervalTicks: 8
+    - present: 1
+      attack: 9
+      attackIntervalTicks: 6
+    - present: 1
+      attack: 20
+      attackIntervalTicks: 15
+    - present: 1
+      attack: 7
+      attackIntervalTicks: 4
+    - present: 1
+      attack: 15
+      attackIntervalTicks: 10
+    - present: 0
+      attack: 0
+      attackIntervalTicks: 0
+  - name: "\uBE60\uB978 \uD300"
+    slots:
+    - present: 1
+      attack: 5
+      attackIntervalTicks: 3
+    - present: 1
+      attack: 5
+      attackIntervalTicks: 3
+    - present: 1
+      attack: 5
+      attackIntervalTicks: 3
+    - present: 1
+      attack: 5
+      attackIntervalTicks: 3
+    - present: 1
+      attack: 5
+      attackIntervalTicks: 3
+    - present: 1
+      attack: 5
+      attackIntervalTicks: 3
+  - name: "\uD55C \uBC29 \uD300"
+    slots:
+    - present: 1
+      attack: 60
+      attackIntervalTicks: 30
+    - present: 1
+      attack: 60
+      attackIntervalTicks: 30
+    - present: 0
+      attack: 0
+      attackIntervalTicks: 0
+    - present: 1
+      attack: 40
+      attackIntervalTicks: 20
+    - present: 0
+      attack: 0
+      attackIntervalTicks: 0
+    - present: 0
+      attack: 0
+      attackIntervalTicks: 0
+  - name: "\uBE48 \uD300"
+    slots:
+    - present: 0
+      attack: 0
+      attackIntervalTicks: 0
+    - present: 0
+      attack: 0
+      attackIntervalTicks: 0
+    - present: 0
+      attack: 0
+      attackIntervalTicks: 0
+    - present: 0
+      attack: 0
+      attackIntervalTicks: 0
+    - present: 0
+      attack: 0
+      attackIntervalTicks: 0
+    - present: 0
+      attack: 0
+      attackIntervalTicks: 0

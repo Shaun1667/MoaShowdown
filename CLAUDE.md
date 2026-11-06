@@ -66,6 +66,11 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 - 난수는 `DeterministicRandom`(Core/Random) 하나. 용도마다 인스턴스를 따로, 저장은 `State`. 규칙 코드에서 `System.Random` · `UnityEngine.Random` 사용 금지.
 - 수치 데이터 에셋은 `Editor/Setup/BalanceSetup`이 만든다 (메뉴 MoaShowdown/Setup/…, 이미 있으면 값 보존). 새 수치 = BALANCE 표 + Setup 기본값 + `BalanceTests` 한 줄.
 - 팀 스냅샷은 `TeamSnapshot`(Core/Snapshot) 하나, JSON 변환은 `TeamSnapshotJson` 한 곳(읽기 = 버전 확인 → `MigrateStep` 단계 변환 → 검사). JSON 이름은 `[JsonProperty]`로 고정. 필드를 바꾸면 `CurrentFormatVersion` +1, `MigrateStep`에 case 추가, `TeamSnapshotTests`의 옛 고정 JSON은 지우지 않는다. 몬스터는 ID · 레벨 · 버프만, 목록은 순서 고정(딕셔너리 금지).
+- 씬 연결은 `GameRoot`(Game) 한 곳. 전투 화면 = `BattlePlayback`(기록을 시간에 맞춰 내보냄) → `BattleStage`(3D 그레이박스: 캡슐 · 공격 게이지 · 투사체) + `BattleHud`(uGUI 코드 생성: HP 바 · 속도 1/2/4x · 다시 보기 · 피해 숫자). 화면은 규칙을 계산하지 않는다. 연출 난수는 전투와 별도 `DeterministicRandom`.
+- 화면 한글 문구는 `HudText` 한 곳. 글꼴은 지금 내장 `LegacyRuntime.ttf`(Windows 한글 대체 글꼴로 표시) — 다른 OS · 빌드 전 한글 글꼴 에셋 필요.
+- 전투 씬은 메뉴 MoaShowdown/Setup/Battle Scene이 만든다 (`Scenes/Battle.unity`, 없는 것만 생성 · 빈 참조만 채움, 빌드 목록 맨 앞). 시험 팀은 `Data/DebugTeams.asset`(메뉴 Setup/Debug Teams), GameRoot 인스펙터에서 팀 번호 · 라운드 · 시드를 고른다.
+- 칸 배치(화면): 왼쪽 = 내 팀(A), 오른쪽 = 상대(B). 줄 0 = 위 줄 · 1 = 아래 줄, 열 0 = 가운데 쪽 (원작 화면, 2026-11-06).
+- 플레이 모드 확인(에디터 포커스 없을 때): `EditorApplication.isPaused = true` 후 `EditorApplication.Step()`을 반복 — 한 명령 안에서 바로 진행된다. 진행 확인은 `GameRoot.Playback`, 캡처는 `ScreenCapture.CaptureScreenshot` 후 Step 2번.
 - (시스템이 생길 때마다 한 줄씩 추가: "이 시스템은 `클래스` 한 곳, 데이터 `에셋`, 새 항목 = 표 한 줄")
 
 ## 핵심 설계 규칙 (변경 금지)

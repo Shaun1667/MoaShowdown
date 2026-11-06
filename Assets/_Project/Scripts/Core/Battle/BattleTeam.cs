@@ -24,7 +24,7 @@ namespace Moa.Showdown.Core.Battle
     }
 
     /// <summary>
-    /// 3×2 보드 한 쪽. 칸 번호 = 줄 × 3 + 열 (줄 0 = 앞줄, 1 = 뒷줄).
+    /// 3×2 보드 한 쪽. 칸 번호 = 줄 × 3 + 열. 줄 = 화면의 위(0) · 아래(1) 줄, 열 = 가운데에서 바깥으로 0 · 1 · 2 (원작 화면, 2026-11-06).
     /// </summary>
     public sealed class BattleTeam
     {
