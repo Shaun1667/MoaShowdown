@@ -26,6 +26,6 @@ MonoBehaviour:
   maxLevel: 3
   playerCount: 8
   recentOpponentMemory: 3
-  poolSizeByRarity: 1d00000016000000120000000c0000000a000000
+  poolSizeByRarity: 3c00000016000000120000000c0000000a000000
   startTrainerId: debug_trainer
   startTeam: []

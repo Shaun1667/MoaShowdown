@@ -110,7 +110,7 @@ namespace Moa.Showdown.Tests
         public void Balance14_PoolSizes()
         {
             var r = AssetDatabase.LoadAssetAtPath<RunBalance>("Assets/_Project/Data/RunBalance.asset");
-            CollectionAssert.AreEqual(new[] { 29, 22, 18, 12, 10 }, r.poolSizeByRarity, "일반 · 고급 · 희귀 · 영웅 · 전설 (TFT 값)");
+            CollectionAssert.AreEqual(new[] { 60, 22, 18, 12, 10 }, r.poolSizeByRarity, "일반 · 고급 · 희귀 · 영웅 · 전설 (일반은 임시 60, TFT 29)");
         }
 
         [Test]

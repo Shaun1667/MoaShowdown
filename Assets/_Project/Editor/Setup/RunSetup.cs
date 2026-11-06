@@ -39,7 +39,7 @@ namespace Moa.Showdown.Editor.Setup
             // 로비 (BALANCE 13)
             r.playerCount = 8;
             r.recentOpponentMemory = 3;
-            r.poolSizeByRarity = new[] { 29, 22, 18, 12, 10 }; // 공유 풀 (TFT 값, 임시) BALANCE 14
+            r.poolSizeByRarity = new[] { 60, 22, 18, 12, 10 }; // 공유 풀 BALANCE 14 — 일반은 몬스터가 6종뿐이라 임시 60 (TFT 29, 종류가 늘면 되돌림)
             AssetDatabase.CreateAsset(r, RunBalancePath);
             AssetDatabase.SaveAssets();
             Debug.Log($"[Setup] {RunBalancePath} 생성");
