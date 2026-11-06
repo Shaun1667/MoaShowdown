@@ -66,6 +66,9 @@ namespace Moa.Showdown.Core.Lobby
                 RunStateJson.Validate(p.Run);
             }
             if (l.EliminationOrder == null) throw new SnapshotFormatException("eliminationOrder 없음");
+            if (l.Pool == null) throw new SnapshotFormatException("pool 없음");
+            foreach (var e in l.Pool)
+                if (e == null || string.IsNullOrEmpty(e.SpeciesId) || e.Count < 0) throw new SnapshotFormatException("pool 항목 오류");
         }
     }
 }

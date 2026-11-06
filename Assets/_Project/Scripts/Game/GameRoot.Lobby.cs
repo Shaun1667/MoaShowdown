@@ -27,6 +27,9 @@ namespace Moa.Showdown.Game
 
         private LobbyPlayer Me => Lobby.Players[MeIndex];
 
+        /// <summary>내 상점 조작에 쓰는 공유 풀 (Lobby 모드만, 아니면 null = 무한 상점).</summary>
+        private Moa.Showdown.Core.Shop.UnitPool CurrentPool => mode == Mode.Lobby && Lobby != null ? LobbyController.PoolOf(Lobby) : null;
+
         public void StartNewLobby()
         {
             ulong s = runSeed != 0 ? (ulong)runSeed : (ulong)DateTime.UtcNow.Ticks;

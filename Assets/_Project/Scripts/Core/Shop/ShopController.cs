@@ -73,15 +73,15 @@ namespace Moa.Showdown.Core.Shop
 
         /// <summary>
         /// 라운드 시작: 이 라운드 수입을 받고 상점을 새로 진열, 보드의 "라운드 시작" 능력 발동 (보드 칸 순서).
-        /// 같은 라운드에 다시 불러도 아무 일 없음.
+        /// 같은 라운드에 다시 불러도 아무 일 없음. pool이 있으면(로비) 지난 라운드에 안 산 카드는 풀로 돌아가고 풀에서 새로 뽑는다.
         /// </summary>
-        public void BeginRound(RunState s)
+        public void BeginRound(RunState s, UnitPool pool = null)
         {
             if (s.ShopRound == s.Round) return;
             s.Gold += _rules.IncomeFor(s.Round);
             s.ShopRound = s.Round;
             s.ShopRollIndex = 0;
-            Roll(s);
+            Roll(s, pool);
             for (int i = 0; i < BattleTeam.SlotCount; i++)
             {
                 MonsterSnapshot m = s.Team[i];
@@ -122,12 +122,12 @@ namespace Moa.Showdown.Core.Shop
             }
         }
 
-        public ShopError Reroll(RunState s)
+        public ShopError Reroll(RunState s, UnitPool pool = null)
         {
             if (s.Gold < _rules.RerollCost) return ShopError.NotEnoughGold;
             s.Gold -= _rules.RerollCost;
             s.ShopRollIndex++;
-            Roll(s);
+            Roll(s, pool);
             return ShopError.None;
         }
 
@@ -180,12 +180,13 @@ namespace Moa.Showdown.Core.Shop
             return (int)Math.Min(value, int.MaxValue);
         }
 
-        public ShopError Sell(RunState s, Location at)
+        public ShopError Sell(RunState s, Location at, UnitPool pool = null)
         {
             if (!IsValid(at)) return ShopError.Invalid;
             MonsterSnapshot m = Get(s, at);
             if (m == null) return ShopError.Empty;
             s.Gold += SellValue(m);
+            pool?.Return(m.SpeciesId, (int)_rules.CopiesAt(m.Level)); // 들어간 마리 수만큼 풀로
             Set(s, at, null);
             return ShopError.None;
         }
@@ -207,13 +208,37 @@ namespace Moa.Showdown.Core.Shop
 
         // ───────── 내부 ─────────
 
-        private void Roll(RunState s)
+        /// <summary>
+        /// 상점 진열. 풀이 없으면(혼자 하는 Run 모드) 몬스터 표에서 균등하게, 풀이 있으면(로비) 안 산 카드를 풀에 돌려놓고 남은 수에 비례해 뽑는다(빈 풀 = 빈칸).
+        /// </summary>
+        private void Roll(RunState s, UnitPool pool)
         {
             ulong baseSeed = SeedMix.Derive(unchecked((ulong)s.Seed), SeedMix.PurposeShop, s.Round);
             var rng = new DeterministicRandom(baseSeed ^ ((ulong)(uint)s.ShopRollIndex * 0x9E3779B97F4A7C15UL));
-            IReadOnlyList<SpeciesDef> all = _catalog.All;
+            if (pool != null)
+                foreach (string id in s.Shop) pool.Return(id, 1);
             s.Shop.Clear();
-            for (int i = 0; i < _rules.ShopSlots; i++) s.Shop.Add(all[rng.NextInt(all.Count)].Id);
+            IReadOnlyList<SpeciesDef> all = _catalog.All;
+            for (int i = 0; i < _rules.ShopSlots; i++)
+                s.Shop.Add(pool != null ? pool.Draw(rng) : all[rng.NextInt(all.Count)].Id);
+        }
+
+        /// <summary>판 몬스터 · 상점 카드를 모두 풀로 돌려놓고 비운다 (탈락했을 때).</summary>
+        public void ReturnEverything(RunState s, UnitPool pool)
+        {
+            if (pool == null) return;
+            foreach (string id in s.Shop) pool.Return(id, 1);
+            s.Shop.Clear();
+            for (int i = 0; i < s.Team.Length; i++)
+            {
+                if (s.Team[i] != null) pool.Return(s.Team[i].SpeciesId, (int)_rules.CopiesAt(s.Team[i].Level));
+                s.Team[i] = null;
+            }
+            for (int i = 0; i < s.Bench.Length; i++)
+            {
+                if (s.Bench[i] != null) pool.Return(s.Bench[i].SpeciesId, (int)_rules.CopiesAt(s.Bench[i].Level));
+                s.Bench[i] = null;
+            }
         }
 
         /// <summary>합칠 수 있는 묶음이 없어질 때까지 합체 (낮은 레벨부터, 보드 → 대기석 순서).</summary>

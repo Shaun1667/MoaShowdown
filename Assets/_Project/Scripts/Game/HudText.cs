@@ -95,6 +95,7 @@ namespace Moa.Showdown.Game
         public const string InfoGhost = "유령 — 그 플레이어 팀의 복사본 (주인은 영향 없음)";
         public const string InfoLivesFormat = "목숨 {0}/{1}";
         public const string LobbyAliveFormat = "생존 {0}/{1}";
+        public const string InfoPoolFormat = "풀에 남은 수: {0}";
 
         // 능력 · 상태 (3-1)
         public const string StatusShieldFormat = "방어막 {0}";

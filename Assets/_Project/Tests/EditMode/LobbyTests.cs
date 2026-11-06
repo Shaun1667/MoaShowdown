@@ -30,7 +30,7 @@ namespace Moa.Showdown.Tests
                 PriceByRarity = new[] { 10, 20, 30, 40, 50 }, SellPercent = 75, MergeCountByLevel = new[] { 3, 2 }, MaxLevel = 3,
             }, catalog, X2);
             return new LobbyController(
-                new LobbyRules { PlayerCount = players, RecentOpponentMemory = 3 },
+                new LobbyRules { PlayerCount = players, RecentOpponentMemory = 3, PoolSizeByRarity = new[] { 29, 22, 18, 12, 10 } },
                 new RunRules { WinsToChampion = 10, StartLives = 10, LifeLossByRound = new[] { 1, 1, 2, 3 } },
                 new BattleRules
                 {
@@ -215,6 +215,114 @@ namespace Moa.Showdown.Tests
             Assert.That(snap.Board.Count(m => m != null), Is.EqualTo(1), "대기석은 전투에 안 나감");
             me.Team[2].Level = 1;
             Assert.That(snap.Board[2].Level, Is.EqualTo(3), "복사본");
+        }
+
+        // ───────── L-2 공유 풀 ─────────
+
+        /// <summary>전체 마리 수 = 풀 + 모든 상점 카드 + 모든 보유 몬스터(Lv1 1 · Lv2 3 · Lv3 6). 처음 총량과 항상 같아야 한다.</summary>
+        private static int Units(LobbyController c, LobbyState l)
+        {
+            int n = new UnitPool(l.Pool).Total;
+            foreach (LobbyPlayer p in l.Players)
+            {
+                n += p.Run.Shop.Count(id => id != null);
+                foreach (MonsterSnapshot m in p.Run.Team.Concat(p.Run.Bench))
+                    if (m != null) n += (int)c.Shop.Rules.CopiesAt(m.Level);
+            }
+            return n;
+        }
+
+        [Test]
+        public void Pool_StartsWithRaritySizes()
+        {
+            LobbyState l = New(Ctl());
+            Assert.That(l.Pool.Select(e => (e.SpeciesId, e.Count)), Is.EqualTo(new[] { ("s", 29), ("w", 29) }), "시험 2종 모두 일반 → 29");
+        }
+
+        [Test]
+        public void Pool_TotalUnitsConserved_AcrossRoundsSellsRerollsAndEliminations()
+        {
+            var c = Ctl();
+            LobbyState l = New(c, 21);
+            int total = Units(c, l);
+            Assert.That(total, Is.EqualTo(58));
+            UnitPool pool = LobbyController.PoolOf(l);
+            for (int i = 0; i < 12 && !l.IsFinished; i++)
+            {
+                c.BeginRound(l);
+                Assert.That(Units(c, l), Is.EqualTo(total), $"R{l.Round} 진열 후");
+                RunState me = l.Players[0].Run;
+                if (me.Gold >= 3) c.Shop.Reroll(me, pool);
+                for (int k = 0; k < me.Shop.Count; k++) c.Shop.Buy(me, k);
+                if (me.Bench[0] != null) c.Shop.Sell(me, Location.Bench(0), pool);
+                for (int b = 0; b < 4; b++)
+                {
+                    int empty = System.Array.IndexOf(me.Team, null);
+                    if (empty >= 0 && me.Bench[b] != null) c.Shop.Move(me, Location.Bench(b), Location.Board(empty));
+                }
+                Assert.That(Units(c, l), Is.EqualTo(total), $"R{l.Round} 사람 조작 후");
+                c.ResolveRound(l);
+                Assert.That(Units(c, l), Is.EqualTo(total), $"R{l.Round} 전투 · 탈락 후");
+            }
+        }
+
+        [Test]
+        public void Pool_Draw_ProportionalAndNeverEmptySpecies()
+        {
+            var entries = new List<PoolEntry> { new PoolEntry { SpeciesId = "a", Count = 0 }, new PoolEntry { SpeciesId = "b", Count = 5 } };
+            var pool = new UnitPool(entries);
+            var rng = new Moa.Showdown.Core.Random.DeterministicRandom(3);
+            for (int i = 0; i < 5; i++) Assert.That(pool.Draw(rng), Is.EqualTo("b"), "0인 a는 안 나옴");
+            Assert.That(pool.Draw(rng), Is.Null, "다 뽑으면 null");
+            pool.Return("a", 2);
+            Assert.That(pool.CountOf("a"), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Pool_Empty_ShopShowsEmptySlots()
+        {
+            var c = Ctl();
+            LobbyState l = New(c);
+            foreach (PoolEntry e in l.Pool) e.Count = 2; // 풀에 4마리뿐
+            c.BeginRound(l);
+            int shown = l.Players.Sum(p => p.Run.Shop.Count(id => id != null));
+            int bought = l.Players.Sum(p => p.Run.Team.Concat(p.Run.Bench).Where(m => m != null).Sum(m => (int)c.Shop.Rules.CopiesAt(m.Level)));
+            Assert.That(shown + bought + new UnitPool(l.Pool).Total, Is.EqualTo(4));
+            Assert.That(l.Players[7].Run.Shop.All(id => id == null), Is.True, "늦게 뽑는 사람은 빈 상점");
+        }
+
+        [Test]
+        public void Pool_SellReturnsCopies_EliminationReturnsAll()
+        {
+            var c = Ctl(players: 2);
+            LobbyState l = New(c);
+            foreach (LobbyPlayer p in l.Players) p.IsBot = false;
+            UnitPool pool = LobbyController.PoolOf(l);
+            int before = pool.CountOf("s");
+            RunState me = l.Players[0].Run;
+            me.Team[0] = new MonsterSnapshot { SpeciesId = "s", Level = 2 };
+            c.Shop.Sell(me, Location.Board(0), pool);
+            Assert.That(pool.CountOf("s"), Is.EqualTo(before + 3), "Lv2 = 3마리 돌아감");
+
+            RunState other = l.Players[1].Run;
+            other.Bench[1] = new MonsterSnapshot { SpeciesId = "w", Level = 3 };
+            other.Lives = 1;
+            me.Team[0] = Strong();
+            int wBefore = pool.CountOf("w");
+            c.BeginRound(l);
+            int myShopW = me.Shop.Count(id => id == "w"); // 내 상점에 나온 w는 계속 빠져 있음
+            c.ResolveRound(l);
+            Assert.That(l.Players[1].Placement, Is.EqualTo(2));
+            Assert.That(other.Bench.All(m => m == null) && other.Shop.Count == 0, Is.True, "탈락자는 비워짐");
+            // 풀 w = 처음 − (내 상점 w + 탈락자 상점 w) + 탈락자 상점 w(돌아옴) + Lv3 6마리(돌아옴)
+            Assert.That(pool.CountOf("w"), Is.EqualTo(wBefore - myShopW + 6), "Lv3 = 6마리 + 상점 카드가 돌아감");
+        }
+
+        [Test]
+        public void LobbyJson_OldVersion1_IsRejected()
+        {
+            string v2 = LobbyStateJson.Serialize(New(Ctl()));
+            Assert.Throws<SnapshotFormatException>(() => LobbyStateJson.Deserialize(v2.Replace("\"formatVersion\":2", "\"formatVersion\":1")));
         }
     }
 }

@@ -93,6 +93,7 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 - 8인 로비 진행은 `LobbyController`(Core/Lobby) 한 곳: `NewLobby`(사람 + 봇, 플레이어마다 자기 `RunState`와 시드) → `BeginRound`(살아 있는 모두 수입 · 상점 · 라운드 시작 능력, 봇은 `BotBrain`이 바로 행동) → [사람 상점 · 배치] → `ResolveRound`(대진 · 전투 · 목숨 · 탈락 순위). 상태는 `LobbyState` 하나(JSON `LobbyStateJson`). 대진 난수 = `SeedMix.PurposePairing`, 플레이어 시드 = `PurposeLobbyPlayer`, 대전 시드는 `LobbyMatch.Seed`에 남김. 수치 `LobbyRules` ← `RunBalance`(BALANCE 13).
 - 봇은 `BotBrain`(난수 없음): 가진 몬스터 → 초당 피해 높은 순으로 사고, 대기석이 차면 가장 약한 것 팔고, 보드 빈칸을 강한 것부터 채우고 더 강하면 맞바꿈. 새로고침 안 함.
 - GameRoot 모드 Lobby(기본, `GameRoot.Lobby.cs` partial): 나 = 0번. 내 대진만 재생하고, 기록상 내가 B면 `PlayBattle(…, flip: true)` → `ViewSide`로 좌우를 바꿔 그린다(나는 항상 왼쪽). 오른쪽 위 순위 표 `BattleHud.ShowStandings`.
+- 공유 몬스터 풀은 `UnitPool`(Core/Shop) — 상태는 `LobbyState.Pool`(몬스터 표 순서 목록)에 있고 `UnitPool`은 그걸 다루기만. 상점 조작은 풀을 인자로 받는다: `BeginRound/Reroll(s, pool)`(안 산 카드 돌려놓고 남은 수 비례로 뽑기) · `Sell(s, at, pool)`(`CopiesAt` 마리 돌려놓기) · `ReturnEverything`(탈락). pool = null이면 예전처럼 무한 상점(Run 모드). GameRoot는 `CurrentPool`을 넘긴다. **불변식: 풀 + 모든 상점 카드 + 모든 보유 몬스터 마리 수 = 처음 총량** (`LobbyTests.Pool_TotalUnitsConserved…`).
 - (시스템이 생길 때마다 한 줄씩 추가: "이 시스템은 `클래스` 한 곳, 데이터 `에셋`, 새 항목 = 표 한 줄")
 
 ## 핵심 설계 규칙 (변경 금지)

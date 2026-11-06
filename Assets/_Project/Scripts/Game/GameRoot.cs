@@ -237,7 +237,10 @@ namespace Moa.Showdown.Game
         {
             if (State == null || index < 0 || index >= State.Shop.Count || State.Shop[index] == null) return null;
             var m = new MonsterSnapshot { SpeciesId = State.Shop[index], Level = 1 };
-            return MonsterInfoText(m, enemy: false, price: _shop.PriceOf(m.SpeciesId), mine: false, mergePreview: true);
+            var info = MonsterInfoText(m, enemy: false, price: _shop.PriceOf(m.SpeciesId), mine: false, mergePreview: true);
+            UnitPool pool = CurrentPool;
+            if (info == null || pool == null) return info;
+            return (info.Value.Item1, info.Value.Item2 + "\n" + string.Format(HudText.InfoPoolFormat, pool.CountOf(m.SpeciesId)));
         }
 
         /// <summary>내 보드 · 대기석 몬스터 정보: 능력치 · 판매가 · 합체 진행.</summary>
@@ -361,7 +364,7 @@ namespace Moa.Showdown.Game
 
         private void OnReroll()
         {
-            ShopError e = _shop.Reroll(State);
+            ShopError e = _shop.Reroll(State, CurrentPool);
             _shopMessage = e == ShopError.None ? "" : ErrorText(e);
             RefreshShop();
         }
@@ -373,7 +376,7 @@ namespace Moa.Showdown.Game
             if (m == null) return;
             int value = _shop.SellValue(m);
             string name = NameOf(m.SpeciesId);
-            if (_shop.Sell(State, _selected.Value) == ShopError.None) _shopMessage = string.Format(HudText.SoldFormat, name, value);
+            if (_shop.Sell(State, _selected.Value, CurrentPool) == ShopError.None) _shopMessage = string.Format(HudText.SoldFormat, name, value);
             _selected = null;
             RefreshShop();
         }

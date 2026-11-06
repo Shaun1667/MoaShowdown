@@ -38,6 +38,7 @@ namespace Moa.Showdown.Game.Data
         [Header("로비 (BALANCE 13)")]
         [Tooltip("로비 인원 (모자라면 봇)")] public int playerCount;
         [Tooltip("최근 몇 라운드의 상대를 피할지")] public int recentOpponentMemory;
+        [Tooltip("공유 풀: 등급별 종류당 수량 (일반 · 고급 · 희귀 · 영웅 · 전설, BALANCE 14)")] public int[] poolSizeByRarity;
 
         [Header("시작 (BALANCE 9)")]
         public string startTrainerId;
@@ -63,7 +64,12 @@ namespace Moa.Showdown.Game.Data
             MaxLevel = maxLevel,
         };
 
-        public LobbyRules ToLobbyRules() => new LobbyRules { PlayerCount = playerCount, RecentOpponentMemory = recentOpponentMemory };
+        public LobbyRules ToLobbyRules() => new LobbyRules
+        {
+            PlayerCount = playerCount,
+            RecentOpponentMemory = recentOpponentMemory,
+            PoolSizeByRarity = (int[])poolSizeByRarity.Clone(),
+        };
 
         public MonsterSnapshot[] ToStartTeam()
         {

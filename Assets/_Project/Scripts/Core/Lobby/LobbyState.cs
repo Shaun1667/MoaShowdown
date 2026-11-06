@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Moa.Showdown.Core.Run;
+using Moa.Showdown.Core.Shop;
 using Newtonsoft.Json;
 
 namespace Moa.Showdown.Core.Lobby
@@ -13,10 +14,16 @@ namespace Moa.Showdown.Core.Lobby
         /// <summary>최근 몇 라운드의 상대를 피할지 (살아남은 사람이 적으면 자동으로 줄임).</summary>
         public int RecentOpponentMemory;
 
+        /// <summary>공유 풀: 등급(Rarity 번호 순)별 종류당 수량 (L-2, TFT 값).</summary>
+        public int[] PoolSizeByRarity;
+
         public void Validate()
         {
             if (PlayerCount < 2) throw new InvalidOperationException("PlayerCount < 2");
             if (RecentOpponentMemory < 0) throw new InvalidOperationException("RecentOpponentMemory < 0");
+            if (PoolSizeByRarity == null || PoolSizeByRarity.Length == 0) throw new InvalidOperationException("PoolSizeByRarity 없음");
+            foreach (int n in PoolSizeByRarity)
+                if (n < 0) throw new InvalidOperationException("풀 수량 음수");
         }
     }
 
@@ -26,7 +33,8 @@ namespace Moa.Showdown.Core.Lobby
     /// </summary>
     public sealed class LobbyState
     {
-        public const int CurrentFormatVersion = 1;
+        /// <summary>1 = L-1 · 2 = L-2 (공유 풀 추가). 1은 저장된 적이 없어 변환 없이 거부한다.</summary>
+        public const int CurrentFormatVersion = 2;
 
         [JsonProperty("formatVersion", Order = 0)]
         public int FormatVersion = CurrentFormatVersion;
@@ -46,6 +54,10 @@ namespace Moa.Showdown.Core.Lobby
         /// <summary>탈락한 순서 (플레이어 번호). 마지막 생존자는 들어가지 않는다.</summary>
         [JsonProperty("eliminationOrder", Order = 5)]
         public List<int> EliminationOrder = new List<int>();
+
+        /// <summary>공유 몬스터 풀 (몬스터 표 순서). 진열된 카드 · 산 몬스터는 여기서 빠져 있다.</summary>
+        [JsonProperty("pool", Order = 6)]
+        public List<PoolEntry> Pool = new List<PoolEntry>();
 
         public bool IsFinished => AliveCount <= 1;
 

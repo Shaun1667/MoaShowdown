@@ -8,7 +8,7 @@
 |---|---|---|---|
 | BattleBalance | `Assets/_Project/Data/BattleBalance.asset` | MoaShowdown/Setup/Battle Balance | 1~4 · 6 · 11 |
 | SpeciesTable | `Assets/_Project/Data/SpeciesTable.asset` | MoaShowdown/Setup/Species Table (+ Species Abilities) | 7 · 12 |
-| RunBalance | `Assets/_Project/Data/RunBalance.asset` | MoaShowdown/Setup/Run Balance | 5 · 9 · 10 · 13 |
+| RunBalance | `Assets/_Project/Data/RunBalance.asset` | MoaShowdown/Setup/Run Balance | 5 · 9 · 10 · 13 · 14 |
 
 ## 1. 전투 틱
 | 항목 | 값 | 비고 |
@@ -132,3 +132,14 @@ Setup/Local Opponents가 고정 시드(20261106)로 만든다. 라운드 r마다
 | 목숨 · 패배 비용 | BALANCE 5 그대로 (10개, 라운드별 1 · 2 · 3) | 결정 (사용자 "목숨 10개 유지") |
 
 검산 (2026-11-06 에디터 플레이, 시드 2026, 나 + 봇 7): 1R 봇 7명 모두 30골드로 3마리 · 보드 3칸 · 대진 4경기 → 9R 동안 진행, 4R에 내가 B쪽(화면 뒤집힘, 기록 "A 승" = 화면 "패배") · 5R 무승부 · 9R 목숨 0 → 8등.
+
+## 14. 공유 몬스터 풀 (L-2, 데이터 에셋 RunBalance)
+| 항목 | 값 | 출처 |
+|---|---|---|
+| 종류당 수량 | 일반 29 · 고급 22 · 희귀 18 · 영웅 12 · 전설 10 | TFT 값 (사용자 2026-11-06, 임시) |
+| 뽑기 | 남은 수에 비례 (몬스터 표 순서, 시드 난수) · 0이면 안 나옴 · 풀이 비면 빈 칸 | 결정 (사용자) |
+| 빠짐 | 상점에 진열되는 순간 | 결정 (사용자, TFT) |
+| 돌아옴 | 새로고침 · 다음 라운드에 안 산 카드 / 팔면 들어간 마리 수(Lv1 1 · Lv2 3 · Lv3 6) / 탈락하면 그 사람 몬스터 · 카드 전부 | 결정 (사용자, TFT) |
+| 진열 순서 | 플레이어 번호 순 (0번부터) | 정한 것 (Claude, 확인 필요) — 풀이 모자라면 뒤 번호가 불리 |
+
+검산 (2026-11-06 에디터, 실제 데이터, 봇 8명, 시드 2026): 시작 6종 × 29 = 174 → 14라운드 동안 (풀 + 상점 + 보유) 항상 174 · **6라운드에 풀이 모두 0** (시험 몬스터 6종뿐 — 8명 × (보드 6 + 대기석 4 + 상점 5)를 감당 못 함) → 결정 필요 · 14R 봇 2 우승(마지막 둘이 같은 라운드 탈락 → 순위 규칙대로).

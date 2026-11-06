@@ -107,6 +107,13 @@ namespace Moa.Showdown.Tests
         }
 
         [Test]
+        public void Balance14_PoolSizes()
+        {
+            var r = AssetDatabase.LoadAssetAtPath<RunBalance>("Assets/_Project/Data/RunBalance.asset");
+            CollectionAssert.AreEqual(new[] { 29, 22, 18, 12, 10 }, r.poolSizeByRarity, "일반 · 고급 · 희귀 · 영웅 · 전설 (TFT 값)");
+        }
+
+        [Test]
         public void Balance11_DamageOverTime()
         {
             var b = Load();

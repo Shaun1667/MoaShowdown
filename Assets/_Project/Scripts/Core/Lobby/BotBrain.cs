@@ -26,13 +26,13 @@ namespace Moa.Showdown.Core.Lobby
             _statRules = statRules;
         }
 
-        public void Act(RunState s)
+        public void Act(RunState s, UnitPool pool = null)
         {
-            Buy(s);
+            Buy(s, pool);
             Place(s);
         }
 
-        private void Buy(RunState s)
+        private void Buy(RunState s, UnitPool pool)
         {
             bool soldOnce = false;
             while (true)
@@ -58,7 +58,7 @@ namespace Moa.Showdown.Core.Lobby
                 {
                     soldOnce = true;
                     int weakest = WeakestBench(s);
-                    if (weakest >= 0 && _shop.Sell(s, Location.Bench(weakest)) == ShopError.None) continue;
+                    if (weakest >= 0 && _shop.Sell(s, Location.Bench(weakest), pool) == ShopError.None) continue;
                 }
                 return;
             }

@@ -77,6 +77,9 @@ namespace Moa.Showdown.Core.Lobby
         }
 
         public ShopController Shop => _shop;
+
+        /// <summary>이 로비의 공유 풀 (사람의 새로고침 · 팔기에 넘긴다).</summary>
+        public static UnitPool PoolOf(LobbyState lobby) => new UnitPool(lobby.Pool);
         public RunRules RunRules => _runRules;
 
         /// <summary>새 로비: 사람 humanNames.Count명 + 나머지는 봇. 플레이어마다 자기 시드(상점 난수용)를 로비 시드에서 뽑는다.</summary>
@@ -84,6 +87,12 @@ namespace Moa.Showdown.Core.Lobby
         {
             if (humanNames == null || humanNames.Count > _lobbyRules.PlayerCount) throw new ArgumentException("사람 수가 로비 인원보다 많음");
             var lobby = new LobbyState { LobbyId = lobbyId, Seed = unchecked((long)seed), Round = 1 };
+            // 공유 풀: 몬스터 표 순서대로, 등급별 수량 (BALANCE 14)
+            foreach (SpeciesDef d in _catalog.All)
+            {
+                int r = Math.Min((int)d.Rarity, _lobbyRules.PoolSizeByRarity.Length - 1);
+                lobby.Pool.Add(new PoolEntry { SpeciesId = d.Id, Count = _lobbyRules.PoolSizeByRarity[r] });
+            }
             int botNumber = 1;
             for (int i = 0; i < _lobbyRules.PlayerCount; i++)
             {
@@ -108,16 +117,18 @@ namespace Moa.Showdown.Core.Lobby
             return lobby;
         }
 
-        /// <summary>라운드 시작: 살아 있는 모두 수입 · 상점 · 라운드 시작 능력 (라운드당 한 번), 봇은 바로 사고 배치.</summary>
+        /// <summary>라운드 시작: 살아 있는 모두 수입 · 상점(공유 풀에서, 번호 순) · 라운드 시작 능력 (라운드당 한 번), 봇은 바로 사고 배치.</summary>
+        /// <remarks>사람의 상점 조작(새로고침 · 팔기)도 같은 풀을 써야 한다 → <see cref="PoolOf"/>.</remarks>
         public void BeginRound(LobbyState lobby)
         {
+            var pool = new UnitPool(lobby.Pool);
             foreach (LobbyPlayer p in lobby.Players)
             {
                 if (!p.IsAlive) continue;
                 p.Run.Round = lobby.Round;
                 bool fresh = p.Run.ShopRound != lobby.Round;
-                _shop.BeginRound(p.Run);
-                if (fresh && p.IsBot) _bot.Act(p.Run);
+                _shop.BeginRound(p.Run, pool);
+                if (fresh && p.IsBot) _bot.Act(p.Run, pool);
             }
         }
 
@@ -167,9 +178,11 @@ namespace Moa.Showdown.Core.Lobby
                 .ThenBy(p => p.Index)
                 .ToList();
             int place = alive.Count;
+            var deadPool = new UnitPool(lobby.Pool);
             foreach (LobbyPlayer p in dead)
             {
                 p.Placement = place--;
+                _shop.ReturnEverything(p.Run, deadPool); // 탈락자 몬스터 · 상점 카드는 풀로
                 lobby.EliminationOrder.Add(p.Index);
                 report.Eliminated.Add(p.Index);
             }
