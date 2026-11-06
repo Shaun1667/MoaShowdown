@@ -67,7 +67,10 @@ namespace Moa.Showdown.Tests
             foreach (LobbyPlayer bot in l.Players.Skip(1))
             {
                 Assert.That(bot.Run.Gold, Is.LessThan(10), bot.Name + ": 살 수 있는 만큼 산다 (가격 10)");
-                Assert.That(bot.Run.Team.Count(m => m != null), Is.EqualTo(3), bot.Name + ": 30골드 = 3마리 → 보드에");
+                // 30골드 = 3마리 → 모두 보드에. 같은 몬스터 3장이면 합체해 Lv2 1마리가 되므로 "들어간 마리 수"(Lv1 = 1, Lv2 = 3)로 센다
+                int copies = bot.Run.Team.Where(m => m != null).Sum(m => m.Level == 1 ? 1 : 3);
+                Assert.That(copies, Is.EqualTo(3), bot.Name + ": 30골드 = 3마리 → 보드에 (합체 포함)");
+                Assert.That(bot.Run.Bench.All(m => m == null), Is.True, bot.Name + ": 대기석은 비어 있음");
             }
             int goldBefore = l.Players[1].Run.Gold;
             c.BeginRound(l);
