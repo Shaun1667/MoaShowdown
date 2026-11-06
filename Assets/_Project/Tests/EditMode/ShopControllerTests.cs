@@ -83,7 +83,7 @@ namespace Moa.Showdown.Tests
             Assert.That(shop.Reroll(a), Is.EqualTo(ShopError.None));
             Assert.That(shop.Reroll(b), Is.EqualTo(ShopError.None));
             Assert.That(a.Shop, Is.EqualTo(b.Shop));
-            Assert.That(a.Gold, Is.EqualTo(24));
+            Assert.That(a.Gold, Is.EqualTo(27), "30 − 새로고침 1번(3)");
             Assert.That(a.ShopRollIndex, Is.EqualTo(1));
         }
 
