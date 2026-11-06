@@ -36,6 +36,9 @@ namespace Moa.Showdown.Editor.Setup
             r.sellPercent = 75;
             r.mergeCount = 3;
             r.maxLevel = 4;
+            // 로비 (BALANCE 13)
+            r.playerCount = 8;
+            r.recentOpponentMemory = 3;
             AssetDatabase.CreateAsset(r, RunBalancePath);
             AssetDatabase.SaveAssets();
             Debug.Log($"[Setup] {RunBalancePath} 생성");

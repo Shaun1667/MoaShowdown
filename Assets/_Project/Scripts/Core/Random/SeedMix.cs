@@ -9,6 +9,8 @@ namespace Moa.Showdown.Core.Random
         public const ulong PurposeBattle = 1;
         public const ulong PurposeOpponent = 2;
         public const ulong PurposeShop = 3;
+        public const ulong PurposePairing = 4;
+        public const ulong PurposeLobbyPlayer = 5;
 
         public static ulong Derive(ulong runSeed, ulong purpose, int round)
         {

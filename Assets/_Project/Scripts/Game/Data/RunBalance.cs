@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Moa.Showdown.Core.Battle;
+using Moa.Showdown.Core.Lobby;
 using Moa.Showdown.Core.Run;
 using Moa.Showdown.Core.Shop;
 using Moa.Showdown.Core.Snapshot;
@@ -34,6 +35,10 @@ namespace Moa.Showdown.Game.Data
         [Tooltip("같은 몬스터 · 같은 레벨 몇 마리면 합체")] public int mergeCount;
         public int maxLevel;
 
+        [Header("로비 (BALANCE 13)")]
+        [Tooltip("로비 인원 (모자라면 봇)")] public int playerCount;
+        [Tooltip("최근 몇 라운드의 상대를 피할지")] public int recentOpponentMemory;
+
         [Header("시작 (BALANCE 9)")]
         public string startTrainerId;
         public List<StartSlot> startTeam = new List<StartSlot>();
@@ -57,6 +62,8 @@ namespace Moa.Showdown.Game.Data
             MergeCount = mergeCount,
             MaxLevel = maxLevel,
         };
+
+        public LobbyRules ToLobbyRules() => new LobbyRules { PlayerCount = playerCount, RecentOpponentMemory = recentOpponentMemory };
 
         public MonsterSnapshot[] ToStartTeam()
         {

@@ -24,5 +24,7 @@ MonoBehaviour:
   sellPercent: 75
   mergeCount: 3
   maxLevel: 4
+  playerCount: 8
+  recentOpponentMemory: 3
   startTrainerId: debug_trainer
   startTeam: []

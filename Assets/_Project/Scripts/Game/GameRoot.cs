@@ -24,12 +24,14 @@ namespace Moa.Showdown.Game
     /// BattleTest 모드: 1-3 · 1-4의 1:1 시험 전투 (디버그 팀 vs 로컬 상대 또는 디버그 팀).
     /// 다시 보기 = 같은 입력 · 같은 시드로 다시 계산 → 기록이 똑같은지 확인 후 처음부터 재생.
     /// </summary>
-    public sealed class GameRoot : MonoBehaviour
+    public sealed partial class GameRoot : MonoBehaviour
     {
         public enum Mode
         {
             Run = 0,
             BattleTest = 1,
+            /// <summary>8인 로비 (TFT 흐름, L-1). 나 + 봇.</summary>
+            Lobby = 2,
         }
 
         private static readonly int[] Speeds = { 1, 2, 4 };
@@ -76,6 +78,7 @@ namespace Moa.Showdown.Game
         [SerializeField] private Color poisonColor = new Color(0.75f, 0.45f, 1f);
         [SerializeField] private Color abilityColor = new Color(0.6f, 0.9f, 1f);
 
+        private bool _flipSides;
         private readonly int[] _shieldNow = new int[2];
         private readonly int[] _burnNow = new int[2];
         private readonly int[] _poisonNow = new int[2];
@@ -130,7 +133,7 @@ namespace Moa.Showdown.Game
             hud.DebugLevelUpClicked += DebugLevelUp;
             SetSpeed(_speed);
 
-            if (mode == Mode.Run)
+            if (mode == Mode.Run || mode == Mode.Lobby)
             {
                 _run = new RunController(runBalance.ToRules(), _rules, _statRules, _catalog, _opponents, balance.rulesVersion);
                 _shop = new ShopController(runBalance.ToShopRules(), _catalog, _statRules);
@@ -142,7 +145,12 @@ namespace Moa.Showdown.Game
                 shopView.StartBattleClicked += OnStartBattle;
                 shopView.SetTooltips(tooltip, CardInfo, LocationInfo);
                 hud.SetDebugVisible(showDebugButtons);
-                StartNewRun();
+                if (mode == Mode.Lobby)
+                {
+                    _lobby = new Moa.Showdown.Core.Lobby.LobbyController(runBalance.ToLobbyRules(), runBalance.ToRules(), _rules, _statRules, _catalog, _shop, balance.rulesVersion);
+                    StartNewLobby();
+                }
+                else StartNewRun();
                 EnterShop();
             }
             else
@@ -161,7 +169,8 @@ namespace Moa.Showdown.Game
             if (_roundResultPending && _playback.IsFinished)
             {
                 _roundResultPending = false;
-                ShowRoundResult();
+                if (mode == Mode.Lobby) ShowLobbyRoundResult();
+                else ShowRoundResult();
             }
             ProbeBattleHover();
         }
@@ -216,6 +225,7 @@ namespace Moa.Showdown.Game
         /// <summary>전투 중 몬스터 정보 (Run 모드: 이번 라운드 스냅샷에서).</summary>
         public (string, string)? BattleUnitInfo(BattleSide side, int slot)
         {
+            if (mode == Mode.Lobby) return LobbyBattleUnitInfo(side, slot);
             if (mode != Mode.Run || LastReport == null) return null;
             TeamSnapshot snap = side == BattleSide.A ? LastReport.MySnapshot : LastReport.Opponent?.Snapshot;
             MonsterSnapshot m = snap?.Board[slot];
@@ -265,6 +275,7 @@ namespace Moa.Showdown.Game
 
         public (string, string)? MyInfo()
         {
+            if (mode == Mode.Lobby) return LobbyMyInfo();
             if (mode != Mode.Run || State == null) return null;
             RunRules r = _run.Rules;
             return (HudText.MyTitle, InfoText.MyBody(State.TrainerId, State.Wins, r.WinsToChampion, State.Lives, r.StartLives, State.Gold, State.Round));
@@ -272,6 +283,7 @@ namespace Moa.Showdown.Game
 
         public (string, string)? OpponentInfo()
         {
+            if (mode == Mode.Lobby) return LobbyOpponentInfo();
             OpponentResult o = mode == Mode.Run ? LastReport?.Opponent : LastOpponent;
             if (o?.Snapshot == null || (mode == Mode.Run && shopView.IsVisible)) return null;
             int count = o.Snapshot.Board.Count(m => m != null);
@@ -299,6 +311,11 @@ namespace Moa.Showdown.Game
         /// <summary>결과 패널의 계속 버튼: 판이 진행 중이면 다음 라운드 상점, 끝났으면 새 판을 시작하고 1라운드 상점.</summary>
         public void Continue()
         {
+            if (mode == Mode.Lobby)
+            {
+                LobbyContinue();
+                return;
+            }
             if (mode != Mode.Run) return;
             if (State.GetOutcome(_run.Rules) != RunOutcome.InProgress) StartNewRun();
             EnterShop();
@@ -309,7 +326,8 @@ namespace Moa.Showdown.Game
         /// <summary>라운드 시작: 수입 · 진열(라운드당 한 번) → 상점 화면. 보드에는 내 팀만 보인다.</summary>
         public void EnterShop()
         {
-            _shop.BeginRound(State);
+            if (mode == Mode.Lobby) _lobby.BeginRound(Lobby);
+            else _shop.BeginRound(State);
             _selected = null;
             _shopMessage = "";
             _emptyBoardWarned = false;
@@ -388,7 +406,8 @@ namespace Moa.Showdown.Game
             shopView.Hide();
             try
             {
-                await PlayNextRoundAsync();
+                if (mode == Mode.Lobby) PlayLobbyRound();
+                else await PlayNextRoundAsync();
             }
             catch (Exception e)
             {
@@ -518,13 +537,18 @@ namespace Moa.Showdown.Game
         private void ShowRunInfo(int winsNow, int livesNow)
         {
             RunRules rules = _run.Rules;
+            if (mode == Mode.Lobby)
+            {
+                hud.ShowRunInfo(string.Format(HudText.LobbyInfoFormat, livesNow, rules.StartLives, Lobby.AliveCount, Lobby.Players.Count));
+                return;
+            }
             hud.ShowRunInfo(string.Format(HudText.RunInfoFormat, winsNow, rules.WinsToChampion, livesNow, rules.StartLives));
         }
 
         /// <summary>디버그: 팀 전체 레벨 +1 (라운드 사이에만, 다음 라운드부터 적용).</summary>
         public void DebugLevelUp()
         {
-            if (mode != Mode.Run || State == null) return;
+            if ((mode != Mode.Run && mode != Mode.Lobby) || State == null) return;
             RunController.DebugLevelUpAll(State);
             int level = State.Team.Where(m => m != null).Select(m => m.Level).DefaultIfEmpty(0).Max();
             hud.ShowStatus(string.Format(HudText.DebugLevelUpDoneFormat, level));
@@ -541,7 +565,8 @@ namespace Moa.Showdown.Game
         {
             try
             {
-                if (mode == Mode.Run) ReplayLastRound();
+                if (mode == Mode.Lobby) ReplayLobbyMatch();
+                else if (mode == Mode.Run) ReplayLastRound();
                 else await StartTestBattleAsync();
             }
             catch (Exception e)
@@ -630,8 +655,10 @@ namespace Moa.Showdown.Game
         /// <summary>팀 가운데 위 (회복 · 지속 피해 숫자를 띄울 곳).</summary>
         private Vector3 SideCenter(BattleSide side) => stage.SlotPosition(side, 1) + Vector3.up * 1.2f;
 
-        private void PlayBattle(BattleTeam a, BattleTeam b, BattleResult result, int battleRound, string nameA, string nameB, ulong fxSeed)
+        /// <summary>a = 화면 왼쪽(나), b = 오른쪽. flip = 기록상 내가 B (로비).</summary>
+        private void PlayBattle(BattleTeam a, BattleTeam b, BattleResult result, int battleRound, string nameA, string nameB, ulong fxSeed, bool flip = false)
         {
+            _flipSides = flip;
             Array.Clear(_shieldNow, 0, 2);
             Array.Clear(_burnNow, 0, 2);
             Array.Clear(_poisonNow, 0, 2);
@@ -663,46 +690,50 @@ namespace Moa.Showdown.Game
             }
         }
 
+        /// <summary>화면 쪽: 기록의 A/B를 화면의 왼쪽(나)/오른쪽(상대)으로. 로비에서 내가 대진의 B면 뒤집는다.</summary>
+        private BattleSide ViewSide(BattleSide s) => !_flipSides ? s : s == BattleSide.A ? BattleSide.B : BattleSide.A;
+
         private void OnBattleEvent(BattleEvent e)
         {
+            BattleSide side = ViewSide(e.Side);
             switch (e.Type)
             {
                 case BattleEventType.Attack:
-                    Vector3 hit = stage.PlayAttack(e.Side, e.Slot);
+                    Vector3 hit = stage.PlayAttack(side, e.Slot);
                     hud.ShowDamage(hit, e.Amount);
                     break;
                 case BattleEventType.SuddenDeath:
                     hud.ShowBanner(HudText.SuddenDeath);
                     break;
                 case BattleEventType.TeamHpChanged:
-                    hud.SetHp(e.Side, e.Value, _playback.Result.StartHp);
+                    hud.SetHp(side, e.Value, _playback.Result.StartHp);
                     break;
                 case BattleEventType.Heal:
-                    hud.SetHp(e.Side, e.Value, _playback.Result.StartHp);
-                    hud.ShowPopup(SideCenter(e.Side), string.Format(HudText.HealPopupFormat, e.Amount), healColor);
+                    hud.SetHp(side, e.Value, _playback.Result.StartHp);
+                    hud.ShowPopup(SideCenter(side), string.Format(HudText.HealPopupFormat, e.Amount), healColor);
                     break;
                 case BattleEventType.ShieldChanged:
-                    _shieldNow[(int)e.Side] = e.Value;
-                    RefreshStatus(e.Side);
+                    _shieldNow[(int)side] = e.Value;
+                    RefreshStatus(side);
                     break;
                 case BattleEventType.StatusChanged:
-                    _burnNow[(int)e.Side] = e.Amount;
-                    _poisonNow[(int)e.Side] = e.Value;
-                    RefreshStatus(e.Side);
+                    _burnNow[(int)side] = e.Amount;
+                    _poisonNow[(int)side] = e.Value;
+                    RefreshStatus(side);
                     break;
                 case BattleEventType.DamageOverTime:
-                    hud.ShowPopup(SideCenter(e.Side), e.Amount.ToString(), e.Value == 0 ? burnColor : poisonColor);
+                    hud.ShowPopup(SideCenter(side), e.Amount.ToString(), e.Value == 0 ? burnColor : poisonColor);
                     break;
                 case BattleEventType.Ability:
                     int fx = e.Value;
                     if (fx >= 0 && fx < HudText.EffectPopupFormats.Length && HudText.EffectPopupFormats[fx].Length > 0)
-                        hud.ShowPopup(stage.LabelAnchor(e.Side, e.Slot) + Vector3.up * 1.6f, string.Format(HudText.EffectPopupFormats[fx], e.Amount), abilityColor);
+                        hud.ShowPopup(stage.LabelAnchor(side, e.Slot) + Vector3.up * 1.6f, string.Format(HudText.EffectPopupFormats[fx], e.Amount), abilityColor);
                     break;
                 case BattleEventType.End:
                     var outcome = (BattleOutcome)e.Value;
-                    hud.ShowBanner(outcome == BattleOutcome.AWins ? HudText.Win
-                        : outcome == BattleOutcome.BWins ? HudText.Lose
-                        : HudText.Draw);
+                    bool iWon = _flipSides ? outcome == BattleOutcome.BWins : outcome == BattleOutcome.AWins;
+                    bool iLost = _flipSides ? outcome == BattleOutcome.AWins : outcome == BattleOutcome.BWins;
+                    hud.ShowBanner(iWon ? HudText.Win : iLost ? HudText.Lose : HudText.Draw);
                     break;
             }
         }

@@ -8,7 +8,7 @@
 |---|---|---|---|
 | BattleBalance | `Assets/_Project/Data/BattleBalance.asset` | MoaShowdown/Setup/Battle Balance | 1~4 · 6 · 11 |
 | SpeciesTable | `Assets/_Project/Data/SpeciesTable.asset` | MoaShowdown/Setup/Species Table (+ Species Abilities) | 7 · 12 |
-| RunBalance | `Assets/_Project/Data/RunBalance.asset` | MoaShowdown/Setup/Run Balance | 5 · 9 · 10 |
+| RunBalance | `Assets/_Project/Data/RunBalance.asset` | MoaShowdown/Setup/Run Balance | 5 · 9 · 10 · 13 |
 
 ## 1. 전투 틱
 | 항목 | 값 | 비고 |
@@ -121,3 +121,14 @@ Setup/Local Opponents가 고정 시드(20261106)로 만든다. 라운드 r마다
 능력 = 언제(AbilityTrigger) × 무엇(AbilityEffect) × 수치(×레벨 선택) — 새 능력 = 이 표 한 줄. 원작 능력 분석은 `Docs/참고게임_능력분석.md`.
 
 검산 (2026-11-06 에디터 플레이, 시드 2026): 불씨 → 자갈이 → 바람개비 구매 → 불씨 +2(16) → 전투: 시작 방어막 20 · 능력 발동 8번 · 지속 피해 7번 → 1R 90틱 승.
+
+## 13. 로비 (L-1, 데이터 에셋 RunBalance)
+| 항목 | 값 | 출처 |
+|---|---|---|
+| 인원 | 8 (사람 + 봇) | 결정 (사용자 2026-11-06, TFT) |
+| 최근 상대 피하기 | 최근 3라운드 상대 (생존자가 적으면 자동으로 줄임, 0이면 아무나) | 정한 것 (Claude, 확인 필요) — 결정은 "최근 만난 상대는 피함" |
+| 홀수 | 섞은 순서 맨 끝 1명이 유령전 (다른 생존자 팀 복사본, 주인은 영향 없음) | 결정 (사용자) |
+| 같은 라운드 여럿 탈락 | 라운드 전 목숨이 많았던 쪽이 높은 순위, 같으면 번호 큰 쪽이 높은 순위 | 정한 것 (Claude, 확인 필요) |
+| 목숨 · 패배 비용 | BALANCE 5 그대로 (10개, 라운드별 1 · 2 · 3) | 결정 (사용자 "목숨 10개 유지") |
+
+검산 (2026-11-06 에디터 플레이, 시드 2026, 나 + 봇 7): 1R 봇 7명 모두 30골드로 3마리 · 보드 3칸 · 대진 4경기 → 9R 동안 진행, 4R에 내가 B쪽(화면 뒤집힘, 기록 "A 승" = 화면 "패배") · 5R 무승부 · 9R 목숨 0 → 8등.

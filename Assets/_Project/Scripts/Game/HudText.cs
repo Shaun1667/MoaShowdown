@@ -76,6 +76,26 @@ namespace Moa.Showdown.Game
         public const string OpponentTitleFormat = "상대: {0}";
         public const string MyTitle = "나";
 
+        // 로비 (L-1)
+        public const string MyName = "나";
+        public const string BotNameFormat = "봇 {0}";
+        public const string LobbyInfoFormat = "목숨 {0}/{1}   ·   생존 {2}/{3}";
+        public const string LobbyWinFormat = "승리!  ({0})";
+        public const string LobbyEliminatedFormat = "{0} 탈락 — {1}등";
+        public const string LobbyFirst = "1등!";
+        public const string LobbyFirstFormat = "{0}라운드 — 마지막까지 살아남았습니다!";
+        public const string PlacementFormat = "{0}등";
+        public const string LobbyOutFormat = "{0}라운드에서 목숨을 모두 잃었습니다 — {1}등";
+        public const string GhostFormat = "유령: {0}";
+        public const string StandingsTitle = "순위";
+        public const string StandingsAliveFormat = "{0}   목숨 {1}{2}";
+        public const string StandingsOutFormat = "{0}등  {1}{2}";
+        public const string MeMark = "  (나)";
+        public const string InfoBotPlayer = "봇 플레이어";
+        public const string InfoGhost = "유령 — 그 플레이어 팀의 복사본 (주인은 영향 없음)";
+        public const string InfoLivesFormat = "목숨 {0}/{1}";
+        public const string LobbyAliveFormat = "생존 {0}/{1}";
+
         // 능력 · 상태 (3-1)
         public const string StatusShieldFormat = "방어막 {0}";
         public const string StatusBurnFormat = "화상 {0}";

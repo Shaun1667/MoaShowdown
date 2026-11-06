@@ -560,7 +560,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07877de9f3eac97499fa01e4f1adab78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Moa.Showdown.Game::Moa.Showdown.Game.GameRoot
-  mode: 0
+  mode: 2
   balance: {fileID: 11400000, guid: 8238de04230599c4988b3422d7d03fa1, type: 2}
   runBalance: {fileID: 11400000, guid: 3f10e60482647b5489b5295c7317c8b8, type: 2}
   speciesTable: {fileID: 11400000, guid: 366a36993b9dc9f4b99bcd3900158a87, type: 2}

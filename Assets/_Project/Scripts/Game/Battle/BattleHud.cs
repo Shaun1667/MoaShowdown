@@ -66,6 +66,7 @@ namespace Moa.Showdown.Game.Battle
         private GameObject _debugButton;
         private readonly Text[] _sideLabels = new Text[2];
         private readonly Text[] _status2 = new Text[2];
+        private Text _standings;
 
         public void Build(Camera cam, IReadOnlyList<int> speeds)
         {
@@ -167,6 +168,19 @@ namespace Moa.Showdown.Game.Battle
             if (burn > 0) parts.Add(string.Format(HudText.StatusBurnFormat, burn));
             if (poison > 0) parts.Add(string.Format(HudText.StatusPoisonFormat, poison));
             t.text = string.Join("   ", parts);
+        }
+
+        /// <summary>오른쪽 가운데 순위 표 (로비). 처음 부를 때 만든다.</summary>
+        public void ShowStandings(string text)
+        {
+            if (_standings == null)
+            {
+                // 오른쪽 위, 상대 이름표 아래 (보드와 겹치지 않게)
+                _standings = NewText("Standings", _canvasRect, new Vector2(1f, 1f), new Vector2(-40f, -160f), 19, TextAnchor.UpperLeft);
+                _standings.rectTransform.pivot = new Vector2(1f, 1f);
+                _standings.rectTransform.sizeDelta = new Vector2(230f, 230f);
+            }
+            _standings.text = text;
         }
 
         /// <summary>떠오르는 글 (회복 · 지속 피해 · 능력 발동).</summary>

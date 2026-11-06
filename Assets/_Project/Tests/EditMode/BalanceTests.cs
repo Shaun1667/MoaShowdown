@@ -98,6 +98,15 @@ namespace Moa.Showdown.Tests
         }
 
         [Test]
+        public void Balance13_Lobby()
+        {
+            var r = AssetDatabase.LoadAssetAtPath<RunBalance>("Assets/_Project/Data/RunBalance.asset");
+            Assert.That(r.playerCount, Is.EqualTo(8));
+            Assert.That(r.recentOpponentMemory, Is.EqualTo(3));
+            Assert.DoesNotThrow(() => r.ToLobbyRules().Validate());
+        }
+
+        [Test]
         public void Balance11_DamageOverTime()
         {
             var b = Load();
