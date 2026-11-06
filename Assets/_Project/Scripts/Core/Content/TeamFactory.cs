@@ -34,32 +34,39 @@ namespace Moa.Showdown.Core.Content
             {
                 MonsterSnapshot m = snapshot.Board[slot];
                 if (m == null) continue;
-                if (!catalog.TryGet(m.SpeciesId, out SpeciesDef def))
-                    throw new SnapshotContentException($"board[{slot}]: 모르는 몬스터 '{m.SpeciesId}'");
-
-                long attack = def.Attack;
-                for (int lv = 1; lv < m.Level && rules.LevelAttackMultiplier > 1; lv++)
-                {
-                    attack *= rules.LevelAttackMultiplier;
-                    if (attack > StatCap) throw new SnapshotContentException($"board[{slot}]: 레벨 {m.Level} 공격력 상한 초과");
-                }
-
-                long interval = def.AttackIntervalTicks;
-                foreach (StatBuff b in m.Buffs)
-                {
-                    if (b.Stat == StatIds.Attack) attack += b.Value;
-                    else if (b.Stat == StatIds.Interval) interval += b.Value;
-                    // 모르는 능력치 ID는 무시 (새 버전 클라이언트가 만든 버프일 수 있음)
-                }
-
-                if (attack < 0) attack = 0;
-                if (attack > StatCap) throw new SnapshotContentException($"board[{slot}]: 공격력 상한 초과");
-                if (interval < 1) interval = 1;
-                if (interval > StatCap) throw new SnapshotContentException($"board[{slot}]: 공격 간격 상한 초과");
-
-                team[slot] = new BattleUnit((int)attack, (int)interval);
+                team[slot] = BuildUnit(m, catalog, rules, $"board[{slot}]");
             }
             return team;
+        }
+
+        /// <summary>몬스터 하나의 전투 능력치 (전투 · 화면 정보 창 공용 — 보이는 값 = 실제 값).</summary>
+        public static BattleUnit BuildUnit(MonsterSnapshot m, SpeciesCatalog catalog, UnitStatRules rules, string where = "monster")
+        {
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            if (!catalog.TryGet(m.SpeciesId, out SpeciesDef def))
+                throw new SnapshotContentException($"{where}: 모르는 몬스터 '{m.SpeciesId}'");
+
+            long attack = def.Attack;
+            for (int lv = 1; lv < m.Level && rules.LevelAttackMultiplier > 1; lv++)
+            {
+                attack *= rules.LevelAttackMultiplier;
+                if (attack > StatCap) throw new SnapshotContentException($"{where}: 레벨 {m.Level} 공격력 상한 초과");
+            }
+
+            long interval = def.AttackIntervalTicks;
+            foreach (StatBuff b in m.Buffs)
+            {
+                if (b.Stat == StatIds.Attack) attack += b.Value;
+                else if (b.Stat == StatIds.Interval) interval += b.Value;
+                // 모르는 능력치 ID는 무시 (새 버전 클라이언트가 만든 버프일 수 있음)
+            }
+
+            if (attack < 0) attack = 0;
+            if (attack > StatCap) throw new SnapshotContentException($"{where}: 공격력 상한 초과");
+            if (interval < 1) interval = 1;
+            if (interval > StatCap) throw new SnapshotContentException($"{where}: 공격 간격 상한 초과");
+
+            return new BattleUnit((int)attack, (int)interval);
         }
 
         /// <summary>이 데이터로 싸울 수 있는 스냅샷인가 (상대 고를 때 거르기용).</summary>

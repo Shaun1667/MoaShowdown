@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Moa.Showdown.Core.Battle;
 using Moa.Showdown.Core.Run;
 using Moa.Showdown.Core.Shop;
+using Moa.Showdown.Game.Ui;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -122,6 +123,33 @@ namespace Moa.Showdown.Game.Shop
             _message.color = new Color(1f, 0.7f, 0.6f);
             _message.rectTransform.sizeDelta = new Vector2(1100f, 44f);
             Hide();
+        }
+
+        /// <summary>마우스를 올리면 정보 창: 상점 카드 · 대기석 · 보드 칸. 내용은 GameRoot가 준다 (빈 칸이면 null).</summary>
+        public void SetTooltips(TooltipView tooltip, Func<int, (string, string)?> card, Func<Location, (string, string)?> location)
+        {
+            for (int i = 0; i < _cards.Count; i++)
+            {
+                int c = i;
+                Hover(_cards[i].image.gameObject, tooltip, () => card(c));
+            }
+            for (int i = 0; i < _bench.Count; i++)
+            {
+                int b = i;
+                Hover(_bench[i].image.gameObject, tooltip, () => location(Location.Bench(b)));
+            }
+            for (int i = 0; i < _board.Count; i++)
+            {
+                int s = i;
+                Hover(_board[i].image.gameObject, tooltip, () => location(Location.Board(s)));
+            }
+        }
+
+        private static void Hover(GameObject go, TooltipView tooltip, Func<(string, string)?> provider)
+        {
+            var h = go.AddComponent<HoverTarget>();
+            h.Tooltip = tooltip;
+            h.Provider = provider;
         }
 
         public void Show(ShopViewData d)

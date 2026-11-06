@@ -84,6 +84,8 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 - 상점 난수 = `SeedMix(판 시드, PurposeShop 3, 라운드)` ⊕ `ShopRollIndex` — 몬스터 표 순서(`SpeciesCatalog.All`)를 바꾸면 같은 시드의 상점이 달라진다.
 - 상점 화면은 `ShopView`(Game/Shop, uGUI 코드 생성, 별도 캔버스): 카드 클릭 = 사기, 내 몬스터 클릭 = 선택, 다른 칸 클릭 = 옮기기/맞바꾸기, 판매 · 새로고침 · 전투 시작 버튼. 그릴 내용은 GameRoot가 `ShopViewData`로 만든다 (뷰는 규칙을 모름). 보드 칸 버튼은 3D 칸 위치를 화면 좌표로 따라간다.
 - Run 흐름: 새 판 → `EnterShop`(상점) → 전투 시작 → 전투 재생 → 결과 패널 → 다음 라운드 = `EnterShop` … 판 끝 → 새 판.
+- 정보 창(마우스를 올리면 뜨고 내리면 사라짐)은 `TooltipView`(Game/Ui) 하나 + UI 요소에 `HoverTarget`(Provider는 띄우는 순간 최신 값). 3D 몬스터(전투 중)는 UI가 아니라 `GameRoot.ProbeBattleHover`가 화면상 거리로 판정(`UnitUnderScreenPoint`). 글은 `InfoText` 한 곳, 숫자는 규칙 코드 값 그대로(`TeamFactory.BuildUnit` — 보이는 값 = 실제 값). 정보 창은 owner별로 숨긴다(UI · 3D 판정이 서로 지우지 않게).
+- 확인 요령: UI 올림/내림 = `ExecuteEvents.Execute(go, new PointerEventData(EventSystem.current), ExecuteEvents.pointerEnterHandler / pointerExitHandler)`, 3D = `InputState.Change(Mouse.current.position, 화면좌표)` 후 Step.
 - (시스템이 생길 때마다 한 줄씩 추가: "이 시스템은 `클래스` 한 곳, 데이터 `에셋`, 새 항목 = 표 한 줄")
 
 ## 핵심 설계 규칙 (변경 금지)

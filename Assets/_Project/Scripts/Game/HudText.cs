@@ -51,5 +51,29 @@ namespace Moa.Showdown.Game
         public const string SoldFormat = "{0} 판매 (+{1})";
         public const string EmptyBoardWarning = "보드에 몬스터가 없습니다 — 그래도 전투를 시작하려면 한 번 더 누르세요";
         public static readonly string[] RarityNames = { "일반", "고급", "희귀", "영웅", "전설" };
+
+        // 정보 창 (2-3)
+        public const string InfoMonsterTitleFormat = "{0}  Lv{1}{2}";
+        public const string InfoEnemyTag = "  (상대)";
+        public const string InfoRarityFormat = "등급: {0}";
+        public const string InfoAttackFormat = "공격력: {0}   (기본 {1} × {2}^(Lv−1) + 버프 {3})";
+        public const string InfoIntervalFormat = "공격 간격: {0}초";
+        public const string InfoDpsFormat = "초당 피해: {0}";
+        public const string InfoPriceFormat = "가격: {0}골드";
+        public const string InfoSellFormat = "판매가: {0}골드";
+        public const string InfoMergeFormat = "합체: 같은 Lv{0} {1}/{2}마리 보유";
+        public const string InfoMaxLevel = "최대 레벨";
+        public const string InfoBot = "봇 (개발자가 만든 팀)";
+        public const string InfoPlayer = "다른 플레이어의 팀";
+        public const string InfoRunIdFormat = "판 ID: {0}";
+        public const string InfoTrainerFormat = "트레이너: {0}";
+        public const string InfoWinsLivesLostFormat = "그때 승수 {0} · 잃은 목숨 {1}";
+        public const string InfoMonsterCountFormat = "몬스터 {0}마리";
+        public const string InfoSourceFormat = "출처: {0}";
+        public const string InfoRoundFormat = "라운드 {0}";
+        public const string MySideLabel = "나 (정보)";
+        public const string OpponentSideLabel = "상대 (정보)";
+        public const string OpponentTitleFormat = "상대: {0}";
+        public const string MyTitle = "나";
     }
 }

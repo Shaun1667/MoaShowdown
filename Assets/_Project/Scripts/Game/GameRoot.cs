@@ -11,7 +11,10 @@ using Moa.Showdown.Core.Snapshot;
 using Moa.Showdown.Game.Battle;
 using Moa.Showdown.Game.Data;
 using Moa.Showdown.Game.Shop;
+using Moa.Showdown.Game.Ui;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 namespace Moa.Showdown.Game
 {
@@ -63,6 +66,12 @@ namespace Moa.Showdown.Game
         [SerializeField] private BattleStage stage;
         [SerializeField] private BattleHud hud;
         [SerializeField] private ShopView shopView;
+        [SerializeField] private TooltipView tooltip;
+        [Tooltip("전투 중 몬스터 위로 마우스를 올렸다고 보는 거리 (1080p 기준 픽셀)")]
+        [SerializeField] private float hoverRadiusPixels = 70f;
+
+        private readonly object _battleHoverOwner = new object();
+        private (BattleSide, int)? _battleHoverKey;
 
         private BattleRules _rules;
         private ShopController _shop;
@@ -103,7 +112,9 @@ namespace Moa.Showdown.Game
                 Path.Combine(Application.persistentDataPath, localWriteFolder),
                 s => TeamFactory.IsPlayable(s, _catalog, _statRules));
 
+            tooltip.Build();
             hud.Build(mainCamera, Speeds);
+            hud.AddSideInfo(tooltip, MyInfo, OpponentInfo);
             hud.SpeedClicked += SetSpeed;
             hud.ReplayClicked += Replay;
             hud.ContinueClicked += Continue;
@@ -120,6 +131,7 @@ namespace Moa.Showdown.Game
                 shopView.SellClicked += OnSell;
                 shopView.LocationClicked += OnLocation;
                 shopView.StartBattleClicked += OnStartBattle;
+                shopView.SetTooltips(tooltip, CardInfo, LocationInfo);
                 hud.SetDebugVisible(showDebugButtons);
                 StartNewRun();
                 EnterShop();
@@ -142,6 +154,119 @@ namespace Moa.Showdown.Game
                 _roundResultPending = false;
                 ShowRoundResult();
             }
+            ProbeBattleHover();
+        }
+
+        // ───────── 정보 창 (2-3) ─────────
+
+        /// <summary>전투 화면의 3D 몬스터는 UI가 아니라서, 마우스와 화면상 거리로 올라갔는지 본다 (상점에서는 보드 칸 버튼이 맡음).</summary>
+        private void ProbeBattleHover()
+        {
+            if (shopView != null && shopView.IsVisible) return;
+            if (Mouse.current == null) return;
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                tooltip.Hide(_battleHoverOwner); // UI 위에서는 UI 정보 창이 우선
+                return;
+            }
+            Vector2 mouse = Mouse.current.position.ReadValue();
+            (BattleSide side, int slot)? hit = UnitUnderScreenPoint(mouse);
+            if (hit == null)
+            {
+                tooltip.Hide(_battleHoverOwner);
+                return;
+            }
+            var info = BattleUnitInfo(hit.Value.side, hit.Value.slot);
+            if (info == null) tooltip.Hide(_battleHoverOwner);
+            else if (!ReferenceEquals(tooltip.Owner, _battleHoverOwner) || _battleHoverKey != hit.Value)
+                tooltip.Show(_battleHoverOwner, info.Value.Item1, info.Value.Item2);
+            _battleHoverKey = hit.Value;
+        }
+
+        /// <summary>화면 좌표에 가장 가까운 몬스터 (반경 안). 확인 · 테스트용으로도 쓴다.</summary>
+        public (BattleSide side, int slot)? UnitUnderScreenPoint(Vector2 screen)
+        {
+            float radius = hoverRadiusPixels * (Screen.height / 1080f);
+            float best = radius * radius;
+            (BattleSide, int)? found = null;
+            foreach (BattleSide side in new[] { BattleSide.A, BattleSide.B })
+            for (int slot = 0; slot < BattleTeam.SlotCount; slot++)
+            {
+                if (!stage.HasUnit(side, slot)) continue;
+                Vector3 p = mainCamera.WorldToScreenPoint(stage.SlotPosition(side, slot));
+                float d = ((Vector2)p - screen).sqrMagnitude;
+                if (p.z > 0f && d < best)
+                {
+                    best = d;
+                    found = (side, slot);
+                }
+            }
+            return found;
+        }
+
+        /// <summary>전투 중 몬스터 정보 (Run 모드: 이번 라운드 스냅샷에서).</summary>
+        public (string, string)? BattleUnitInfo(BattleSide side, int slot)
+        {
+            if (mode != Mode.Run || LastReport == null) return null;
+            TeamSnapshot snap = side == BattleSide.A ? LastReport.MySnapshot : LastReport.Opponent?.Snapshot;
+            MonsterSnapshot m = snap?.Board[slot];
+            return m == null ? ((string, string)?)null : MonsterInfoText(m, enemy: side == BattleSide.B, price: null, mine: false);
+        }
+
+        /// <summary>상점 카드 정보: 레벨 1 기준 능력치 · 가격 · 이미 가진 수.</summary>
+        public (string, string)? CardInfo(int index)
+        {
+            if (State == null || index < 0 || index >= State.Shop.Count || State.Shop[index] == null) return null;
+            var m = new MonsterSnapshot { SpeciesId = State.Shop[index], Level = 1 };
+            return MonsterInfoText(m, enemy: false, price: _shop.PriceOf(m.SpeciesId), mine: false, mergePreview: true);
+        }
+
+        /// <summary>내 보드 · 대기석 몬스터 정보: 능력치 · 판매가 · 합체 진행.</summary>
+        public (string, string)? LocationInfo(Location at)
+        {
+            if (State == null) return null;
+            MonsterSnapshot m = ShopController.Get(State, at);
+            return m == null ? ((string, string)?)null : MonsterInfoText(m, enemy: false, price: null, mine: true);
+        }
+
+        private (string, string)? MonsterInfoText(MonsterSnapshot m, bool enemy, int? price, bool mine, bool mergePreview = false)
+        {
+            if (!_catalog.TryGet(m.SpeciesId, out SpeciesDef def)) return (m.SpeciesId, "");
+            var info = new InfoText.MonsterInfo
+            {
+                Species = def,
+                Level = m.Level,
+                Unit = TeamFactory.BuildUnit(m, _catalog, _statRules),
+                AttackBuff = m.Buffs.Where(b => b.Stat == StatIds.Attack).Sum(b => b.Value),
+                LevelMultiplier = _statRules.LevelAttackMultiplier,
+                TicksPerSecond = _rules.TicksPerSecond,
+                Price = price,
+                SellValue = mine && _shop != null ? _shop.SellValue(m) : (int?)null,
+                MergeCount = _shop?.Rules.MergeCount ?? 0,
+                MaxLevel = _shop?.Rules.MaxLevel ?? int.MaxValue,
+                Enemy = enemy,
+            };
+            if (_shop != null && State != null && (mine || mergePreview))
+            {
+                int owned = State.Team.Concat(State.Bench).Count(x => x != null && x.SpeciesId == m.SpeciesId && x.Level == m.Level);
+                info.OwnedSameLevel = owned; // 카드: 이미 가진 수 (사면 +1) · 내 몬스터: 자신 포함
+            }
+            return (InfoText.MonsterTitle(info), InfoText.MonsterBody(info));
+        }
+
+        public (string, string)? MyInfo()
+        {
+            if (mode != Mode.Run || State == null) return null;
+            RunRules r = _run.Rules;
+            return (HudText.MyTitle, InfoText.MyBody(State.TrainerId, State.Wins, r.WinsToChampion, State.Lives, r.StartLives, State.Gold, State.Round));
+        }
+
+        public (string, string)? OpponentInfo()
+        {
+            OpponentResult o = mode == Mode.Run ? LastReport?.Opponent : LastOpponent;
+            if (o?.Snapshot == null || (mode == Mode.Run && shopView.IsVisible)) return null;
+            int count = o.Snapshot.Board.Count(m => m != null);
+            return (string.Format(HudText.OpponentTitleFormat, o.Snapshot.RunId), InfoText.OpponentBody(o.Snapshot, o.IsBot, o.Source, count));
         }
 
         public void SetSpeed(int speed)
@@ -181,6 +306,8 @@ namespace Moa.Showdown.Game
             _emptyBoardWarned = false;
             _playback = null;
             _roundResultPending = false;
+            tooltip.HideAll();
+            hud.SetSideLabels(HudText.MySideLabel, "");
             hud.HideRoundResult();
             hud.ShowStatus("");
             hud.ShowShopHeader(State.Round, HudText.ShopHeader, _rules.GetTeamHp(State.Round));
@@ -325,6 +452,7 @@ namespace Moa.Showdown.Game
         private async Task PlayNextRoundAsync()
         {
             shopView.Hide();
+            tooltip.HideAll();
             hud.HideRoundResult();
             int winsBefore = State.Wins;
             int livesBefore = State.Lives;
@@ -489,6 +617,7 @@ namespace Moa.Showdown.Game
             _playback = new BattlePlayback(result, _rules.TicksPerSecond);
             stage.Build(a, b, fxSeed);
             hud.ShowBattle(battleRound, nameA, nameB, result.StartHp);
+            hud.SetSideLabels(HudText.MySideLabel, string.Format(HudText.OpponentTitleFormat, nameB));
             AddLabels(BattleSide.A, a);
             AddLabels(BattleSide.B, b);
         }

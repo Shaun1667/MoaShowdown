@@ -3,6 +3,7 @@ using Moa.Showdown.Game;
 using Moa.Showdown.Game.Battle;
 using Moa.Showdown.Game.Data;
 using Moa.Showdown.Game.Shop;
+using Moa.Showdown.Game.Ui;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -55,6 +56,7 @@ namespace Moa.Showdown.Editor.Setup
             BattleStage stage = GetOrAdd<BattleStage>(FindOrCreateChild(rootGo, "Stage"));
             BattleHud hud = GetOrAdd<BattleHud>(FindOrCreateChild(rootGo, "Hud"));
             ShopView shopView = GetOrAdd<ShopView>(FindOrCreateChild(rootGo, "Shop"));
+            TooltipView tooltip = GetOrAdd<TooltipView>(FindOrCreateChild(rootGo, "Tooltip"));
 
             var so = new SerializedObject(rootGo.GetComponent<GameRoot>());
             SetIfNull(so, "balance", AssetDatabase.LoadAssetAtPath<BattleBalance>(BalanceSetup.BattleBalancePath));
@@ -65,6 +67,7 @@ namespace Moa.Showdown.Editor.Setup
             SetIfNull(so, "stage", stage);
             SetIfNull(so, "hud", hud);
             SetIfNull(so, "shopView", shopView);
+            SetIfNull(so, "tooltip", tooltip);
             so.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.MarkSceneDirty(scene);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Moa.Showdown.Core.Battle;
+using Moa.Showdown.Game.Ui;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -63,6 +64,7 @@ namespace Moa.Showdown.Game.Battle
         private Text _resultDetail;
         private Text _continueLabel;
         private GameObject _debugButton;
+        private readonly Text[] _sideLabels = new Text[2];
 
         public void Build(Camera cam, IReadOnlyList<int> speeds)
         {
@@ -138,6 +140,38 @@ namespace Moa.Showdown.Game.Battle
         public bool IsRoundResultVisible => _resultPanel.gameObject.activeSelf;
 
         public void SetDebugVisible(bool visible) => _debugButton.SetActive(visible);
+
+        /// <summary>HP 바 아래 "나" · "상대" 이름표 — 마우스를 올리면 정보 창 (원작의 트레이너 초상화 자리).</summary>
+        public void AddSideInfo(TooltipView tooltip, Func<(string, string)?> mine, Func<(string, string)?> theirs)
+        {
+            _sideLabels[0] = SideLabel("MyInfo", new Vector2(0f, 1f), new Vector2(40f, -118f), TextAnchor.MiddleLeft, tooltip, mine);
+            _sideLabels[1] = SideLabel("OpponentInfo", new Vector2(1f, 1f), new Vector2(-40f, -118f), TextAnchor.MiddleRight, tooltip, theirs);
+            SetSideLabels(HudText.MySideLabel, "");
+        }
+
+        public void SetSideLabels(string mine, string theirs)
+        {
+            if (_sideLabels[0] == null) return;
+            _sideLabels[0].text = mine;
+            _sideLabels[1].text = theirs;
+            _sideLabels[1].transform.parent.gameObject.SetActive(!string.IsNullOrEmpty(theirs));
+        }
+
+        private Text SideLabel(string name, Vector2 anchor, Vector2 pos, TextAnchor align, TooltipView tooltip, Func<(string, string)?> provider)
+        {
+            var rt = NewRect(name, _canvasRect, anchor, anchor, pos, new Vector2(420f, 40f));
+            rt.pivot = anchor;
+            var bg = rt.gameObject.AddComponent<Image>();
+            bg.color = new Color(1f, 1f, 1f, 0.06f);
+            var hover = rt.gameObject.AddComponent<HoverTarget>();
+            hover.Tooltip = tooltip;
+            hover.Provider = provider;
+            Text t = NewText("Label", rt, new Vector2(0.5f, 0.5f), Vector2.zero, 24, align);
+            t.rectTransform.anchorMin = Vector2.zero;
+            t.rectTransform.anchorMax = Vector2.one;
+            t.rectTransform.sizeDelta = new Vector2(-16f, 0f);
+            return t;
+        }
 
         public void ShowBattle(int round, string teamA, string teamB, int startHp)
         {
