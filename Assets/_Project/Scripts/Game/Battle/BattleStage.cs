@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using Moa.Showdown.Core.Battle;
 using Moa.Showdown.Core.Random;
+using Moa.Showdown.Game.Data;
 using UnityEngine;
 
 namespace Moa.Showdown.Game.Battle
 {
     /// <summary>
-    /// 3D 전투 무대 (그레이박스). 몬스터 = 캡슐, 옆 세로 막대 = 다음 공격까지 게이지.
+    /// 3D 전투 무대. 몬스터 = 3D 모델(<see cref="MonsterVisualTable"/>, 없으면 캡슐) + 팀 색 발판, 옆 세로 막대 = 다음 공격까지 게이지.
     /// 배치: 왼쪽 = A(내 팀), 오른쪽 = B. 줄 0 = 위 줄(화면 안쪽), 줄 1 = 아래 줄. 열 0 = 가운데 쪽.
     /// 규칙은 모른다 — <see cref="BattleTeam"/>(모양)과 이벤트만 받아 그린다.
     /// </summary>
@@ -29,9 +30,24 @@ namespace Moa.Showdown.Game.Battle
         [SerializeField] private Color gaugeColor = new Color(1f, 0.95f, 0.6f);
         [SerializeField] private Color groundColor = new Color(0.22f, 0.26f, 0.24f);
 
+        [Header("모델 (Phase G)")]
+        [Tooltip("몬스터 ID → 3D 모델. 비었거나 모델이 없는 몬스터는 캡슐")]
+        [SerializeField] private MonsterVisualTable visuals;
+        [Tooltip("왼쪽(A) 몬스터가 보는 방향 (도). 90 = 오른쪽, 180 = 카메라 쪽. B는 좌우 반대")]
+        [SerializeField] private float facingYawA = 125f;
+        [SerializeField] private float idleBobAmount = 0.04f;
+        [SerializeField] private float idleBobSpeed = 1.6f;
+        [SerializeField] private float hitSquashSeconds = 0.2f;
+        [SerializeField] private float hitSquashAmount = 0.18f;
+
         private sealed class UnitView
         {
             public Transform Body;
+            /// <summary>숨쉬기 · 맞으면 찌그러지기를 적용할 모양 (모델이면 모델, 아니면 캡슐).</summary>
+            public Transform Shape;
+            public Vector3 ShapeScale;
+            public float Phase;
+            public float HitTime;
             public Vector3 Home;
             public Transform GaugePivot;
             public int Interval;
@@ -45,6 +61,7 @@ namespace Moa.Showdown.Game.Battle
             public Vector3 From;
             public Vector3 To;
             public float Time;
+            public UnitView Target;
         }
 
         private readonly UnitView[,] _units = new UnitView[2, BattleTeam.SlotCount];
@@ -52,7 +69,8 @@ namespace Moa.Showdown.Game.Battle
         private Transform _root;
         private DeterministicRandom _fxRng;
 
-        public void Build(BattleTeam teamA, BattleTeam teamB, ulong fxSeed)
+        /// <param name="speciesA">칸별 몬스터 ID (모델을 고르는 데만 씀, null이면 모두 캡슐).</param>
+        public void Build(BattleTeam teamA, BattleTeam teamB, ulong fxSeed, IReadOnlyList<string> speciesA = null, IReadOnlyList<string> speciesB = null)
         {
             Clear();
             _fxRng = new DeterministicRandom(fxSeed); // 연출 전용 난수 (전투 난수와 분리, CLAUDE 핵심 규칙 4)
@@ -66,11 +84,11 @@ namespace Moa.Showdown.Game.Battle
             ground.transform.localScale = new Vector3(16f, 0.1f, 6f);
             SetColor(ground, groundColor);
 
-            BuildSide(BattleSide.A, teamA, colorA);
-            BuildSide(BattleSide.B, teamB, colorB);
+            BuildSide(BattleSide.A, teamA, colorA, speciesA);
+            BuildSide(BattleSide.B, teamB, colorB, speciesB);
         }
 
-        private void BuildSide(BattleSide side, BattleTeam team, Color color)
+        private void BuildSide(BattleSide side, BattleTeam team, Color color, IReadOnlyList<string> species)
         {
             float sign = side == BattleSide.A ? -1f : 1f;
             for (int slot = 0; slot < BattleTeam.SlotCount; slot++)
@@ -82,19 +100,42 @@ namespace Moa.Showdown.Game.Battle
                 marker.transform.SetParent(_root, false);
                 marker.transform.position = new Vector3(pos.x, pos.y - 0.48f, pos.z);
                 marker.transform.localScale = new Vector3(0.9f, 0.02f, 0.9f);
-                SetColor(marker, Color.Lerp(groundColor, color, 0.25f));
+                BattleUnit unit = team[slot];
+                // 몬스터가 있는 칸은 팀 색을 진하게 (모델은 팀 색이 없어서 발판으로 구분)
+                SetColor(marker, Color.Lerp(groundColor, color, unit.IsEmpty ? 0.25f : 0.75f));
                 Destroy(marker.GetComponent<Collider>());
 
-                BattleUnit unit = team[slot];
                 if (unit.IsEmpty) continue;
 
-                var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                body.name = $"Unit_{side}_{slot}";
-                body.transform.SetParent(_root, false);
-                body.transform.position = pos;
-                body.transform.localScale = new Vector3(0.7f, 0.45f, 0.7f);
-                SetColor(body, color);
-                Destroy(body.GetComponent<Collider>());
+                string id = species != null && slot < species.Count ? species[slot] : null;
+                MonsterVisualRow visual = visuals != null ? visuals.Find(id) : null;
+                Transform body, shape;
+                if (visual != null)
+                {
+                    body = new GameObject($"Unit_{side}_{slot}").transform;
+                    body.SetParent(_root, false);
+                    body.position = pos;
+                    // 프리팹은 바닥 = 원점 → 발판 높이에 세운다. 방향 = 팀 기본 방향 + 줄 보정
+                    float yaw = (side == BattleSide.A ? facingYawA : -facingYawA) + visual.yaw;
+                    GameObject model = Instantiate(visual.prefab, body);
+                    model.name = $"Model_{id}";
+                    shape = model.transform;
+                    shape.localPosition = new Vector3(0f, -0.48f + visual.yOffset, 0f);
+                    shape.localRotation = Quaternion.Euler(0f, yaw, 0f);
+                    shape.localScale = Vector3.one * Mathf.Max(0.01f, visual.scale);
+                    foreach (Collider c in model.GetComponentsInChildren<Collider>()) Destroy(c);
+                }
+                else
+                {
+                    var capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                    capsule.name = $"Unit_{side}_{slot}";
+                    capsule.transform.SetParent(_root, false);
+                    capsule.transform.position = pos;
+                    capsule.transform.localScale = new Vector3(0.7f, 0.45f, 0.7f);
+                    SetColor(capsule, color);
+                    Destroy(capsule.GetComponent<Collider>());
+                    body = shape = capsule.transform;
+                }
 
                 // 게이지: 몬스터 바깥쪽 옆, 아래를 기준으로 위로 자란다
                 var pivot = new GameObject($"Gauge_{side}_{slot}").transform;
@@ -110,7 +151,10 @@ namespace Moa.Showdown.Game.Battle
 
                 _units[(int)side, slot] = new UnitView
                 {
-                    Body = body.transform,
+                    Body = body,
+                    Shape = shape,
+                    ShapeScale = shape.localScale,
+                    Phase = slot * 0.9f + (side == BattleSide.A ? 0f : 0.45f), // 다 같이 출렁이지 않게
                     Home = pos,
                     GaugePivot = pivot,
                     Interval = unit.AttackIntervalTicks,
@@ -139,7 +183,8 @@ namespace Moa.Showdown.Game.Battle
         {
             UnitView u = _units[(int)side, slot];
             BattleSide target = side == BattleSide.A ? BattleSide.B : BattleSide.A;
-            Vector3 hit = SlotPosition(target, _fxRng.NextInt(BattleTeam.SlotCount)) + Vector3.up * 0.3f;
+            int targetSlot = _fxRng.NextInt(BattleTeam.SlotCount);
+            Vector3 hit = SlotPosition(target, targetSlot) + Vector3.up * 0.3f;
             if (u == null) return hit;
 
             u.LungeTime = lungeSeconds;
@@ -149,7 +194,7 @@ namespace Moa.Showdown.Game.Battle
             ball.transform.localScale = Vector3.one * 0.2f;
             SetColor(ball, gaugeColor);
             Destroy(ball.GetComponent<Collider>());
-            _projectiles.Add(new Projectile { Tr = ball.transform, From = u.Home + Vector3.up * 0.3f, To = hit, Time = 0f });
+            _projectiles.Add(new Projectile { Tr = ball.transform, From = u.Home + Vector3.up * 0.3f, To = hit, Time = 0f, Target = _units[(int)target, targetSlot] });
             return hit;
         }
 
@@ -183,9 +228,36 @@ namespace Moa.Showdown.Game.Battle
                 p.Tr.position = Vector3.Lerp(p.From, p.To, t) + Vector3.up * Mathf.Sin(t * Mathf.PI) * 0.6f;
                 if (t >= 1f)
                 {
+                    if (p.Target != null) p.Target.HitTime = hitSquashSeconds; // 맞은 몬스터 찌그러짐
                     Destroy(p.Tr.gameObject);
                     _projectiles.RemoveAt(i);
                 }
+            }
+        }
+
+        /// <summary>
+        /// 모양 연출 (표현 전용, 실제 시간): 숨쉬기(위아래로 살짝 늘었다 줄었다) + 맞으면 납작해졌다 돌아오기.
+        /// 상점 · 구경 화면에서도 움직이도록 전투 재생(Tick)과 따로 매 프레임 돈다.
+        /// </summary>
+        private void LateUpdate()
+        {
+            float now = Time.time;
+            float dt = Time.deltaTime;
+            for (int s = 0; s < 2; s++)
+            for (int slot = 0; slot < BattleTeam.SlotCount; slot++)
+            {
+                UnitView u = _units[s, slot];
+                if (u?.Shape == null) continue;
+                float bob = Mathf.Sin((now * idleBobSpeed + u.Phase) * Mathf.PI * 2f) * idleBobAmount;
+                float squash = 0f;
+                if (u.HitTime > 0f)
+                {
+                    u.HitTime = Mathf.Max(0f, u.HitTime - dt);
+                    squash = Mathf.Sin((1f - u.HitTime / hitSquashSeconds) * Mathf.PI) * hitSquashAmount;
+                }
+                float y = 1f + bob - squash;
+                float xz = 1f - bob * 0.5f + squash * 0.6f;
+                u.Shape.localScale = new Vector3(u.ShapeScale.x * xz, u.ShapeScale.y * y, u.ShapeScale.z * xz);
             }
         }
 

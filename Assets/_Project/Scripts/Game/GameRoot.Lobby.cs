@@ -235,9 +235,7 @@ namespace Moa.Showdown.Game
             carouselView.Show(d);
 
             // 보드 미리 보기: 내 팀만
-            BattleTeam mine = TeamFactory.Build(_run.MakeSnapshot(State), _catalog, _statRules);
-            stage.Build(mine, new BattleTeam(), unchecked((ulong)State.Seed));
-            stage.Tick(0f, 0f, true);
+            ShowBoardPreview(State);
         }
 
         /// <summary>캐러셀 카드 정보 창: 레벨 1 기준 능력치 · 이미 가진 수.</summary>
@@ -280,7 +278,8 @@ namespace Moa.Showdown.Game
             bool flip = m.PlayerB == MeIndex;
             BattleTeam mine = flip ? m.TeamB : m.TeamA;
             BattleTeam theirs = flip ? m.TeamA : m.TeamB;
-            PlayBattle(mine, theirs, battle, LastLobbyReport.Round, HudText.MyTeam, OpponentName(m), m.Seed, flip);
+            PlayBattle(mine, theirs, battle, LastLobbyReport.Round, HudText.MyTeam, OpponentName(m), m.Seed, flip,
+                SpeciesIds((flip ? m.SnapshotB : m.SnapshotA)?.Board), SpeciesIds((flip ? m.SnapshotA : m.SnapshotB)?.Board));
         }
 
         private void ReplayLobbyMatch()
@@ -410,9 +409,7 @@ namespace Moa.Showdown.Game
             lobbyView.ShowScout(string.Format(HudText.ScoutTitleFormat, p.Name), p.Run.Bench.Select(UnitText).ToList());
             if (mode == Mode.Online) lobbyView.SetScoutTimer(_scoutFromShop ? OnlineSecondsLeft : -1, OnlineSecondsLeft <= prepWarnSeconds);
             else lobbyView.SetScoutTimer(_scoutFromShop && _prep.IsRunning ? _prep.DisplaySeconds : -1, _prep.DisplaySeconds <= prepWarnSeconds);
-            BattleTeam team = TeamFactory.Build(_run.MakeSnapshot(p.Run), _catalog, _statRules);
-            stage.Build(team, new BattleTeam(), unchecked((ulong)p.Run.Seed));
-            stage.Tick(0f, 0f, true);
+            ShowBoardPreview(p.Run);
             RefreshStandings();
         }
 
@@ -427,9 +424,7 @@ namespace Moa.Showdown.Game
             if (fromShop) RefreshShop();
             else
             {
-                BattleTeam mine = TeamFactory.Build(_run.MakeSnapshot(State), _catalog, _statRules);
-                stage.Build(mine, new BattleTeam(), unchecked((ulong)State.Seed));
-                stage.Tick(0f, 0f, true);
+                ShowBoardPreview(State);
                 if (LastLobbyReport != null)
                 {
                     LobbyMatch mm = LastLobbyReport.MatchOf(MeIndex);

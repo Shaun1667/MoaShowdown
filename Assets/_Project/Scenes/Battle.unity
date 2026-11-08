@@ -412,6 +412,12 @@ MonoBehaviour:
   colorB: {r: 0.95, g: 0.4, b: 0.35, a: 1}
   gaugeColor: {r: 1, g: 0.95, b: 0.6, a: 1}
   groundColor: {r: 0.22, g: 0.26, b: 0.24, a: 1}
+  visuals: {fileID: 11400000, guid: 56e7b1d1141eae34ca193b107002528b, type: 2}
+  facingYawA: 125
+  idleBobAmount: 0.04
+  idleBobSpeed: 1.6
+  hitSquashSeconds: 0.2
+  hitSquashAmount: 0.18
 --- !u!4 &967320974
 Transform:
   m_ObjectHideFlags: 0
@@ -460,6 +466,7 @@ MonoBehaviour:
   buttonColor: {r: 0.25, g: 0.45, b: 0.8, a: 1}
   leaveColor: {r: 0.85, g: 0.35, b: 0.5, a: 1}
   fieldColor: {r: 1, g: 1, b: 1, a: 0.1}
+  startColor: {r: 0.3, g: 0.7, b: 0.4, a: 1}
 --- !u!4 &1096297363
 Transform:
   m_ObjectHideFlags: 0
@@ -817,6 +824,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Moa.Showdown.Game::Moa.Showdown.Game.GameRoot
   onlineView: {fileID: 1096297362}
   onlineMaxPlayers: 8
+  onlineCarouselDoneSeconds: 3
+  onlineResultGraceSeconds: 20
   mode: 2
   balance: {fileID: 11400000, guid: 8238de04230599c4988b3422d7d03fa1, type: 2}
   runBalance: {fileID: 11400000, guid: 3f10e60482647b5489b5295c7317c8b8, type: 2}

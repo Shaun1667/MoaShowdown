@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3d72d323416f7a46adc14c9473f3e4d, type: 3}
+  m_Name: MonsterVisuals
+  m_EditorClassIdentifier: Moa.Showdown.Game::Moa.Showdown.Game.Data.MonsterVisualTable
+  targetHeight: 0.9
+  rows:
+  - speciesId: sprout
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: ember
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: pebble
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: zap
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: drip
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: gust
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: spore
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: chirp
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: thornet
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: cinder
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: shellby
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: bubble
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: buzzbolt
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: drum
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: wisp
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: toxifrog
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: grovekeeper
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: stormwing
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: magmaw
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
+  - speciesId: dracon
+    prefab: {fileID: 0}
+    scale: 1
+    yaw: 0
+    yOffset: 0
