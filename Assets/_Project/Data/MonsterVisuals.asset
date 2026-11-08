@@ -20,12 +20,12 @@ MonoBehaviour:
     yaw: 0
     yOffset: 0
   - speciesId: ember
-    prefab: {fileID: 0}
+    prefab: {fileID: 8105811018527984295, guid: 14d17ded66250884d9be52faad2cc121, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: pebble
-    prefab: {fileID: 0}
+    prefab: {fileID: 5442247976337798305, guid: 7134f57e9ea67b34fa5b8890ce493300, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
@@ -35,7 +35,7 @@ MonoBehaviour:
     yaw: 0
     yOffset: 0
   - speciesId: drip
-    prefab: {fileID: 0}
+    prefab: {fileID: 1318131041508928689, guid: 84a8b3e73e3586d448f6f18dcae7bc6d, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0

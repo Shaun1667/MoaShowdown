@@ -93,7 +93,7 @@ namespace Moa.Showdown.Editor.Setup
 
             var files = Directory.GetFiles(fullRoot, "*.*", SearchOption.AllDirectories)
                 .Select(f => "Assets" + f.Substring(Path.GetFullPath("Assets").Length).Replace('\\', '/'))
-                .Where(p => !p.StartsWith(PrefabDir))
+                .Where(p => !p.StartsWith(PrefabDir) && !p.Contains("_Textures/"))
                 .OrderBy(p => p, System.StringComparer.Ordinal);
             foreach (string path in files)
             {
@@ -125,12 +125,17 @@ namespace Moa.Showdown.Editor.Setup
                 return null;
             }
 
+            Material textured = BuildTexturedMaterial(id, modelPath, source);
+
             var root = new GameObject(id);
             try
             {
                 var model = (GameObject)PrefabUtility.InstantiatePrefab(source, root.transform) ?? Object.Instantiate(source, root.transform);
                 model.transform.localPosition = Vector3.zero;
                 foreach (Collider c in model.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);
+                if (textured != null)
+                    foreach (Renderer r in model.GetComponentsInChildren<Renderer>())
+                        r.sharedMaterials = Enumerable.Repeat(textured, r.sharedMaterials.Length).ToArray();
 
                 if (!TryBounds(model, out Bounds b) || b.size.y <= 0.0001f)
                 {
@@ -151,6 +156,63 @@ namespace Moa.Showdown.Editor.Setup
             {
                 Object.DestroyImmediate(root);
             }
+        }
+
+        /// <summary>
+        /// FBX 안의 텍스처를 쓰는 재질 (AI 도구 FBX는 텍스처를 품고 있지만 재질이 그걸 가리키지 않는 경우가 많다, Varco 확인 2026-11-09).
+        /// 모델 재질에 이미 텍스처가 있으면 null(그대로 씀). 아니면 텍스처를 `&lt;ID&gt;_Textures/`로 꺼내고(한 번만),
+        /// 이름에 base_color(또는 albedo · diffuse)가 든 그림 = 색, normal이 든 그림 = 요철로 URP Lit 재질 `Art/Prefabs/Monsters/&lt;ID&gt;.mat`을 만든다.
+        /// </summary>
+        private static Material BuildTexturedMaterial(string id, string modelPath, GameObject source)
+        {
+            if (source.GetComponentsInChildren<Renderer>().SelectMany(r => r.sharedMaterials).Any(m => m != null && m.mainTexture != null)) return null;
+
+            string dir = $"{Path.GetDirectoryName(modelPath).Replace('\\', '/')}/{id}_Textures";
+            if (AssetImporter.GetAtPath(modelPath) is ModelImporter importer && !AssetDatabase.IsValidFolder(dir))
+            {
+                EnsureFolder(dir);
+                importer.ExtractTextures(dir);
+                AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            }
+            if (!AssetDatabase.IsValidFolder(dir)) return null;
+
+            string[] textures = AssetDatabase.FindAssets("t:Texture2D", new[] { dir }).Select(AssetDatabase.GUIDToAssetPath).ToArray();
+            string basePath = textures.FirstOrDefault(p => NameHas(p, "base_color", "basecolor", "albedo", "diffuse"));
+            if (basePath == null) return null;
+            string normalPath = textures.FirstOrDefault(p => NameHas(p, "normal"));
+            if (normalPath != null && AssetImporter.GetAtPath(normalPath) is TextureImporter ni && ni.textureType != TextureImporterType.NormalMap)
+            {
+                ni.textureType = TextureImporterType.NormalMap;
+                ni.SaveAndReimport();
+            }
+
+            Shader lit = Shader.Find("Universal Render Pipeline/Lit");
+            if (lit == null) return null;
+            EnsureFolder(PrefabDir);
+            string matPath = $"{PrefabDir}/{id}.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+            if (mat == null)
+            {
+                mat = new Material(lit);
+                AssetDatabase.CreateAsset(mat, matPath);
+            }
+            mat.shader = lit;
+            mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(basePath));
+            mat.SetColor("_BaseColor", Color.white);
+            mat.SetFloat("_Smoothness", 0.2f); // 카툰 톤: 덜 반짝이게
+            if (normalPath != null)
+            {
+                mat.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>(normalPath));
+                mat.EnableKeyword("_NORMALMAP");
+            }
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        private static bool NameHas(string path, params string[] words)
+        {
+            string name = Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
+            return words.Any(w => name.Contains(w));
         }
 
         private static void EnsureFolder(string path)
