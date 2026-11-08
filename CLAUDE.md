@@ -41,6 +41,7 @@ MoaShowdown — 몬스터 팀을 3×2 격자에 배치해 싸우는 **8인 실�
 | 온라인 | ~~비동기 (스냅샷 업로드 · 다운로드)~~ → **8인 실시간 로비, 방장(호스트) 방식** — 방장이 타이머 · 대진 · 공유 풀 · 캐러셀 관리, ~~라운드마다 팀 스냅샷만 주고받고~~ → **참가자는 누른 행동만 보내고 방장이 판 상태를 통째로 나눔** (O-2), 전투는 각자 결정론적으로 다시 계산해 방장 결과와 비교 | ~~확정 2026-11-06~~ → 변경 2026-11-06 (사용자 "TFT 플레이 흐름, 온라인") · 2026-11-08 O-2 사용자 "방장이 계산" |
 | 백엔드 | ~~로컬 가짜 상대 → UGS Cloud Code + Cloud Save~~ → **UGS Lobby + Relay** — 패키지: **Multiplayer Services 2.4.1**(세션 = Lobby + Relay + 익명 로그인) + **Netcode for GameObjects 2.13.3**(사용자 메시지만, 오브젝트 동기화 안 씀) + Multiplayer Play Mode 2.0.2(에디터 2인 확인용). 사람이 모자라면 봇이 채움 | 변경 2026-11-06 · 패키지 확정 2026-11-08 (O-1, 사용자) |
 | UGS 클라우드 프로젝트 | `041f6f3e-…` (이름은 기본값 "My project 2026-11-06_09-39-30", 조직 goni0309) — 그대로 사용 | 결정 2026-11-08 사용자 |
+| 개발 도구 (게임 아님) | **claude-hand 0.1** — Unity 프로젝트마다 전담 하위 세션(`~/.claude/agents/unity-<프로젝트>.md`). 원본 `C:\Users\mbc\Tools\claude-hand`(옮기면 `sync` 다시), Unity 패키지는 `Packages/com.claudehand.tools`(임베디드, `ChSceneSnapshot` 141줄 Unity 6.3용 수정). 필요: CoplayDev MCP for Unity v10.3.0(HTTP `localhost:8080`, `.mcp.json`의 `unityMCP`) + uv(`~/.local/bin`). Unity 공식 AI Assistant MCP와 함께 씀. 새 프로젝트를 열면 `uv run C:\Users\mbc\Tools\claude-hand\tools\claude_hand.py sync --runner "C:/Users/mbc/.local/bin/uv.exe run -q --no-project"` | 설치 2026-11-09 (사용자 "전부 설치") |
 | 테스트 | Unity Test Framework (EditMode) | 확정 2026-11-06 |
 | JSON | Newtonsoft JSON (`com.unity.nuget.newtonsoft-json`, manifest 3.2.1 → UGS 인증 패키지 의존으로 **3.2.2로 자동 해석**, Core에서 사용) | 확정 2026-11-06 · 2026-11-08 3.2.2 |
 | 원격 저장소 | github.com/Shaun1667/MoaShowdown | — |
