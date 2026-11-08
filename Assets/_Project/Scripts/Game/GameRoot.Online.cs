@@ -53,7 +53,8 @@ namespace Moa.Showdown.Game
 
         private void OnRoomChanged()
         {
-            if (_inOnlineGame && _room.State != RoomConnectionState.InRoom) OnlineEndGame(); // 방이 사라짐 · 나감 (끊김 처리는 O-3)
+            if (_inOnlineGame && _room.State != RoomConnectionState.InRoom) OnlineEndGame(); // 방이 사라짐 · 내가 나감 · 방장 넘기기 실패
+            OnRoomChangedDuringGame(); // 나간 사람 → 봇 · 방장 바뀜 안내 (O-3)
             switch (_room.State)
             {
                 case RoomConnectionState.Connecting:
@@ -113,7 +114,7 @@ namespace Moa.Showdown.Game
         private void OnRoomMessage(NetMessage m)
         {
             RoomSnapshot r = _room.Room;
-            if (m.Type == NetMessageTypes.Action || m.Type == NetMessageTypes.Sync)
+            if (m.Type == NetMessageTypes.Action || m.Type == NetMessageTypes.Sync || m.Type == NetMessageTypes.Mismatch)
             {
                 OnGameMessage(m, r);
                 return;

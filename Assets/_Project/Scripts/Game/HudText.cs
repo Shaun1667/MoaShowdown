@@ -194,6 +194,10 @@ namespace Moa.Showdown.Game
         public const string OnlineKeepWatching = "관전 계속";
         public const string OnlineFinishedFormat = "판이 끝났습니다 — {0}등";
         public const string OnlineVersionMismatchFormat = "규칙 버전이 달라 참가할 수 없습니다 (방장 {0} · 나 {1})";
+        // 끊김 · 방장 넘기기 (O-3)
+        public const string OnlineTookOverHost = "방장이 나가 내가 방장을 이어받았습니다 (나간 자리는 봇)";
+        public const string OnlineHostChanging = "방장이 바뀌는 중… 잠시 기다려 주세요";
+        public const string OnlineMismatchReportFormat = "다른 전투 결과 보고: {0} · {1}라운드 · 대전 {2} (기록 파일에 남김)";
 
         /// <summary>전투 중 능력 발동 때 떠오르는 짧은 글. AbilityEffect 번호 순.</summary>
         public static readonly string[] EffectPopupFormats = { "", "+{0}", "화상+{0}", "독+{0}", "방어막+{0}", "", "×{0}!", "", "", "이웃 공격+{0}", "이웃 속도+{0}", "", "강해짐+{0}" };

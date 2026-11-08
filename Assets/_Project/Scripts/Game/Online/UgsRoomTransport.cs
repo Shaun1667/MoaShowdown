@@ -23,12 +23,33 @@ namespace Moa.Showdown.Game.Online
         private const string NameProperty = "name";
 
         private ISession _session;
-        private bool _handlerRegistered;
+        /// <summary>메시지 처리기를 등록한 Netcode 사용자 메시지 관리자 (Netcode가 다시 시작되면 새 객체 → 다시 등록).</summary>
+        private CustomMessagingManager _registeredOn;
         private string _lastPlayerName;
 
         public RoomConnectionState State { get; private set; } = RoomConnectionState.Offline;
         public RoomSnapshot Room { get; private set; } = new RoomSnapshot();
         public string LastError { get; private set; }
+
+        public bool NetworkReady
+        {
+            get
+            {
+                NetworkManager nm = NetworkManager.Singleton;
+                if (_session == null || nm == null || !nm.IsListening) return false;
+                RegisterHandler(); // 방장 넘기기로 Netcode가 다시 시작됐으면 처리기를 다시 단다
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// 방장 넘기기 데이터 (O-3). 참가자 모두가 마지막 판 상태를 이미 받아 갖고 있으므로 서비스에 올리는 것은 작은 표시뿐이고, 새 방장은 자기 사본으로 이어받는다.
+        /// </summary>
+        private sealed class MigrationMarker : IMigrationDataHandler
+        {
+            public byte[] Generate() => System.Text.Encoding.UTF8.GetBytes("moa-showdown");
+            public void Apply(byte[] migrationData) { }
+        }
 
         public event Action RoomChanged;
         public event Action<NetMessage> MessageReceived;
@@ -37,7 +58,7 @@ namespace Moa.Showdown.Game.Online
         {
             await Run(async () =>
             {
-                var options = new SessionOptions { MaxPlayers = maxPlayers, IsPrivate = false }.WithRelayNetwork();
+                var options = new SessionOptions { MaxPlayers = maxPlayers, IsPrivate = false }.WithRelayNetwork().WithHostMigration(new MigrationMarker());
                 SetName(options, playerName);
                 return await MultiplayerService.Instance.CreateSessionAsync(options);
             });
@@ -64,7 +85,7 @@ namespace Moa.Showdown.Game.Online
             await Run(async () =>
             {
                 var quick = new QuickJoinOptions { CreateSession = true, Timeout = TimeSpan.FromSeconds(5) };
-                var options = new SessionOptions { MaxPlayers = maxPlayers, IsPrivate = false }.WithRelayNetwork();
+                var options = new SessionOptions { MaxPlayers = maxPlayers, IsPrivate = false }.WithRelayNetwork().WithHostMigration(new MigrationMarker());
                 SetName(options, playerName);
                 return await MultiplayerService.Instance.MatchmakeSessionAsync(quick, options);
             });
@@ -185,7 +206,22 @@ namespace Moa.Showdown.Game.Online
             s.SessionHostChanged += OnPlayerEvent;
             s.RemovedFromSession += OnLost;
             s.Deleted += OnLost;
+            s.SessionMigrated += OnMigrated;
+            if (s.Network != null) s.Network.MigrationFailed += OnMigrationFailed;
             RegisterHandler();
+        }
+
+        /// <summary>방장 넘기기가 끝남: Netcode가 새로 시작됐으니 처리기를 다시 달고 방 모습을 새로.</summary>
+        private void OnMigrated()
+        {
+            _registeredOn = null;
+            Rebuild();
+        }
+
+        private void OnMigrationFailed(SessionError error)
+        {
+            Detach();
+            Fail($"방장 넘기기 실패 ({error})");
         }
 
         private void Detach()
@@ -198,6 +234,8 @@ namespace Moa.Showdown.Game.Online
                 _session.SessionHostChanged -= OnPlayerEvent;
                 _session.RemovedFromSession -= OnLost;
                 _session.Deleted -= OnLost;
+                _session.SessionMigrated -= OnMigrated;
+                if (_session.Network != null) _session.Network.MigrationFailed -= OnMigrationFailed;
             }
             _session = null;
             UnregisterHandler();
@@ -243,19 +281,19 @@ namespace Moa.Showdown.Game.Online
 
         private void RegisterHandler()
         {
-            if (_handlerRegistered) return;
             NetworkManager nm = NetworkManager.Singleton;
             if (nm == null || nm.CustomMessagingManager == null) return;
+            if (ReferenceEquals(_registeredOn, nm.CustomMessagingManager)) return;
             nm.CustomMessagingManager.RegisterNamedMessageHandler(MessageName, OnNamedMessage);
-            _handlerRegistered = true;
+            _registeredOn = nm.CustomMessagingManager;
         }
 
         private void UnregisterHandler()
         {
-            if (!_handlerRegistered) return;
+            if (_registeredOn == null) return;
             NetworkManager nm = NetworkManager.Singleton;
-            if (nm != null && nm.CustomMessagingManager != null) nm.CustomMessagingManager.UnregisterNamedMessageHandler(MessageName);
-            _handlerRegistered = false;
+            if (nm != null && ReferenceEquals(nm.CustomMessagingManager, _registeredOn)) nm.CustomMessagingManager.UnregisterNamedMessageHandler(MessageName);
+            _registeredOn = null;
         }
 
         private void OnNamedMessage(ulong senderClientId, FastBufferReader reader)

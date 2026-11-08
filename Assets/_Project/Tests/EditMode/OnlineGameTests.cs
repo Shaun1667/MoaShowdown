@@ -258,6 +258,124 @@ namespace Moa.Showdown.Tests
             Assert.Throws<NetMessageFormatException>(() => OnlineLobbyJson.DeserializeAction("x"));
         }
 
+        // ───────── O-3: 나간 사람 → 봇 · 방장 넘기기 · 다름 보고 ─────────
+
+        [Test]
+        public void ReplaceWithBot_InShop_BotActsAndRoundResolvesWhenOthersReady()
+        {
+            HostSession h = Host();
+            h.Apply("p1", LobbyAction.Of(LobbyActionKind.Ready));
+            Assert.That(h.ReplaceWithBot("p2"), Is.True);
+            LobbyPlayer guest = h.Lobby.Players[1];
+            Assert.That((guest.IsBot, h.Seats[1]), Is.EqualTo((true, (string)null)));
+            Assert.That(guest.Name, Is.EqualTo("손님"), "이름 · 목숨 · 몬스터는 그대로");
+            Assert.That(h.Phase, Is.EqualTo(OnlinePhase.Battle), "남은 사람(방장)이 이미 준비 → 바로 전투");
+            Assert.That(h.LastReport.Matches.Any(m => m.PlayerA == 1 || m.PlayerB == 1), Is.True, "봇이 된 자리도 싸움");
+            Assert.That(h.MakeSync().Lobby.Players[1].Run.Team.Any(m => m != null), Is.True, "봇이 바로 사고 배치 (30골드)");
+        }
+
+        [Test]
+        public void ReplaceWithBot_CurrentCarouselPicker_PickedAtOnce()
+        {
+            HostSession h = Host(carousel: true);
+            CarouselState c = h.Lobby.Carousel;
+            Assert.That(c.CurrentPicker, Is.EqualTo(0));
+            h.ReplaceWithBot("p1");
+            Assert.That(c.TakenBy.Count(x => x == 0), Is.EqualTo(1), "봇 규칙으로 바로 고름");
+            Assert.That(c.CurrentPicker, Is.EqualTo(1), "다음 사람(손님) 차례");
+            Assert.That(h.PhaseSecondsLeft, Is.EqualTo(10));
+        }
+
+        [Test]
+        public void ReplaceWithBot_InBattle_OthersContinueAdvances()
+        {
+            HostSession h = Host();
+            h.Tick(31);
+            h.Apply("p1", LobbyAction.Of(LobbyActionKind.Continue));
+            Assert.That(h.Phase, Is.EqualTo(OnlinePhase.Battle));
+            h.ReplaceWithBot("p2");
+            Assert.That((h.Phase, h.Lobby.Round), Is.EqualTo((OnlinePhase.Shop, 2)), "남은 사람이 모두 계속 → 다음 라운드");
+            Assert.That(h.Apply("p2", LobbyAction.Of(LobbyActionKind.Buy, 0)).Ok, Is.False, "봇이 된 사람의 행동은 무시");
+        }
+
+        [Test]
+        public void ReplaceWithBot_Unknown_False()
+        {
+            HostSession h = Host();
+            h.MakeSync();
+            Assert.That(h.ReplaceWithBot("nobody"), Is.False);
+            Assert.That(h.Dirty, Is.False);
+        }
+
+        [Test]
+        public void Resume_ContinuesPhaseTimeReadyAndVersion()
+        {
+            HostSession a = Host();
+            a.Tick(5);
+            a.Apply("p2", LobbyAction.Of(LobbyActionKind.Buy, 0));
+            a.Apply("p2", LobbyAction.Of(LobbyActionKind.Ready));
+            string json = OnlineLobbyJson.SerializeSync(a.MakeSync());
+
+            var b = new HostSession(Ctl(), Timing, 7);
+            b.Resume(OnlineLobbyJson.DeserializeSync(json));
+            Assert.That(b.Phase, Is.EqualTo(OnlinePhase.Shop));
+            Assert.That(b.PhaseSecondsLeft, Is.EqualTo(25).Within(0.001), "30 − 5초");
+            Assert.That(b.Seats, Is.EqualTo(a.Seats));
+            Assert.That(b.Lobby.Players[1].Run.Gold, Is.EqualTo(20));
+            Assert.That(b.MakeSync().Version, Is.EqualTo(a.Version + 1), "참가자가 새 것으로 받아들이게 이어서 셈");
+            Assert.That(b.MakeSync().Ready, Is.EqualTo(new[] { 1 }), "손님 준비 완료 유지");
+
+            // 새 방장은 손님(p2): 나간 옛 방장(p1) 자리를 봇으로 → 남은 사람이 모두 준비 → 바로 전투
+            b.ReplaceWithBot("p1");
+            Assert.That(b.Phase, Is.EqualTo(OnlinePhase.Battle));
+        }
+
+        [Test]
+        public void Resume_InBattle_ThenFinishesWithRecordOnly()
+        {
+            HostSession a = Host(carousel: true, seed: 99);
+            a.Tick(11); a.Tick(11); a.Tick(4); // 캐러셀 사람 둘 시간 끝 + 끝난 캐러셀
+            Assert.That(a.Phase, Is.EqualTo(OnlinePhase.Shop));
+            a.Tick(31);
+            Assert.That(a.Phase, Is.EqualTo(OnlinePhase.Battle));
+
+            var b = new HostSession(Ctl(carousel: true), Timing, 7);
+            b.Resume(OnlineLobbyJson.DeserializeSync(OnlineLobbyJson.SerializeSync(a.MakeSync())));
+            Assert.That(b.LastReport, Is.Null, "계산은 옛 방장이 함 — 기록만 이어받음");
+            Assert.That(b.MakeSync().Report.Round, Is.EqualTo(1), "기록은 계속 보냄");
+            b.ReplaceWithBot("p1");
+            int guard = 0;
+            while (b.Phase != OnlinePhase.Finished && guard++ < 500)
+            {
+                if (b.Phase == OnlinePhase.Shop) b.Apply("p2", LobbyAction.Of(LobbyActionKind.Ready));
+                else if (b.Phase == OnlinePhase.Battle) b.Apply("p2", LobbyAction.Of(LobbyActionKind.Continue));
+                b.Tick(11);
+            }
+            Assert.That(b.Phase, Is.EqualTo(OnlinePhase.Finished));
+            Assert.That(b.Lobby.IsFinished, Is.True);
+        }
+
+        [Test]
+        public void Resume_Rejects_WrongRulesVersion_AndWaiting()
+        {
+            HostSession a = Host();
+            LobbySync s = a.MakeSync();
+            Assert.Throws<System.InvalidOperationException>(() => new HostSession(Ctl(), Timing, 8).Resume(s), "규칙 버전 다름");
+            s.Phase = OnlinePhase.Waiting;
+            Assert.Throws<System.InvalidOperationException>(() => new HostSession(Ctl(), Timing, 7).Resume(s), "시작 전");
+        }
+
+        [Test]
+        public void MismatchReport_RoundTrip_AndBadRejected()
+        {
+            var r = new MismatchReport { LobbyId = "L", Round = 3, Matches = new List<int> { 0, 2 }, RulesVersion = 7 };
+            MismatchReport back = OnlineLobbyJson.DeserializeMismatch(OnlineLobbyJson.SerializeMismatch(r));
+            Assert.That((back.LobbyId, back.Round, back.RulesVersion), Is.EqualTo(("L", 3, 7)));
+            Assert.That(back.Matches, Is.EqualTo(new[] { 0, 2 }));
+            Assert.Throws<NetMessageFormatException>(() => OnlineLobbyJson.DeserializeMismatch("{\"round\":0,\"matches\":[]}"));
+            Assert.Throws<NetMessageFormatException>(() => OnlineLobbyJson.DeserializeMismatch("x"));
+        }
+
         [Test]
         public void FullGame_HumansAlwaysReady_FinishesAndEverySyncFitsOneMessage()
         {

@@ -62,6 +62,8 @@ namespace Moa.Showdown.Core.Online
         RoomConnectionState State { get; }
         RoomSnapshot Room { get; }
         string LastError { get; }
+        /// <summary>메시지를 주고받을 수 있는지 (방장 넘기기 중에는 잠깐 false, O-3).</summary>
+        bool NetworkReady { get; }
 
         /// <summary>방 모습이 바뀜 (참가 · 퇴장 · 방장 바뀜 · 연결 상태).</summary>
         event Action RoomChanged;

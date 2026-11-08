@@ -37,6 +37,8 @@ namespace Moa.Showdown.Core.Online
         public const string Action = "action";
         /// <summary>판 상태 (O-2): 방장 → 모두. body = <see cref="LobbySync"/> JSON.</summary>
         public const string Sync = "sync";
+        /// <summary>전투 결과 다름 보고 (O-3): 참가자 → 방장. body = <see cref="MismatchReport"/> JSON.</summary>
+        public const string Mismatch = "mismatch";
     }
 
     public sealed class NetMessageFormatException : Exception

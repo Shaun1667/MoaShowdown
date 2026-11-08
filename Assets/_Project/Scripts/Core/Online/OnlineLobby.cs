@@ -176,7 +176,17 @@ namespace Moa.Showdown.Core.Online
         public int SeatOf(string playerId) => playerId == null ? -1 : Seats.IndexOf(playerId);
     }
 
-    /// <summary>온라인 판 메시지 JSON 한 곳 (행동 · 동기화). 형식 오류는 <see cref="NetMessageFormatException"/>.</summary>
+    /// <summary>각자 다시 계산한 전투가 방장 결과와 달랐다는 보고 (O-3, 참가자 → 방장). 진행은 방장 결과 기준, 이건 원인 찾기용 기록.</summary>
+    public sealed class MismatchReport
+    {
+        [JsonProperty("lobbyId", Order = 0)] public string LobbyId;
+        [JsonProperty("round", Order = 1)] public int Round;
+        /// <summary>다른 대전 번호 (라운드 기록의 Matches 순서).</summary>
+        [JsonProperty("matches", Order = 2)] public List<int> Matches = new List<int>();
+        [JsonProperty("rulesVersion", Order = 3)] public int RulesVersion;
+    }
+
+    /// <summary>온라인 판 메시지 JSON 한 곳 (행동 · 동기화 · 다름 보고). 형식 오류는 <see cref="NetMessageFormatException"/>.</summary>
     public static class OnlineLobbyJson
     {
         private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
@@ -220,6 +230,15 @@ namespace Moa.Showdown.Core.Online
             }
             if (s.Seats.Count != s.Lobby.Players.Count) throw new NetMessageFormatException("자리 수와 플레이어 수가 다름");
             return s;
+        }
+
+        public static string SerializeMismatch(MismatchReport r) => JsonConvert.SerializeObject(r ?? throw new ArgumentNullException(nameof(r)), Settings);
+
+        public static MismatchReport DeserializeMismatch(string json)
+        {
+            MismatchReport r = Parse<MismatchReport>(json);
+            if (r == null || r.Matches == null || r.Round < 1) throw new NetMessageFormatException("다름 보고 형식 오류");
+            return r;
         }
 
         private static T Parse<T>(string json) where T : class
@@ -267,7 +286,10 @@ namespace Moa.Showdown.Core.Online
         public List<string> Seats { get; } = new List<string>();
         public OnlinePhase Phase { get; private set; } = OnlinePhase.Waiting;
         public double PhaseSecondsLeft { get; private set; }
+        /// <summary>마지막 라운드 전투 보고 (이 방장이 계산한 것만 — 이어받은 방장은 null, 기록은 <see cref="_lastRecord"/>).</summary>
         public LobbyRoundReport LastReport { get; private set; }
+        /// <summary>마지막 라운드 기록 (동기화로 보냄, 방장 넘기기 때 이어받음).</summary>
+        private RoundReportRecord _lastRecord;
         /// <summary>보낼 것이 있는지 (상태가 바뀜). <see cref="MakeSync"/>가 지운다.</summary>
         public bool Dirty { get; private set; }
         public int Version { get; private set; }
@@ -288,7 +310,61 @@ namespace Moa.Showdown.Core.Online
             Seats.Clear();
             for (int i = 0; i < Lobby.Players.Count; i++) Seats.Add(i < humans.Count ? humans[i].playerId : null);
             LastReport = null;
+            _lastRecord = null;
             EnterRound();
+        }
+
+        /// <summary>
+        /// 방장 넘기기 (O-3): 새 방장이 마지막으로 받은 동기화로 진행을 이어받는다 — 단계 · 남은 시간 · 준비한 자리 · 기록 · 순서 번호까지.
+        /// 넘겨받은 상태는 이 객체가 갖게 되므로 화면용과 다른 객체를 넘긴다 (JSON에서 새로 읽은 것).
+        /// </summary>
+        public void Resume(LobbySync s)
+        {
+            if (s?.Lobby == null) throw new ArgumentNullException(nameof(s));
+            if (s.RulesVersion != _rulesVersion) throw new InvalidOperationException($"규칙 버전이 다름 ({s.RulesVersion} ≠ {_rulesVersion})");
+            if (s.Phase == OnlinePhase.Waiting) throw new InvalidOperationException("시작 전 상태는 이어받을 수 없음");
+            Lobby = s.Lobby;
+            Seats.Clear();
+            Seats.AddRange(s.Seats);
+            Phase = s.Phase;
+            PhaseSecondsLeft = s.PhaseMs / 1000.0;
+            _ready.Clear();
+            foreach (int r in s.Ready) _ready.Add(r);
+            _lastRecord = s.Report;
+            LastReport = null;
+            _acks.Clear();
+            Version = s.Version; // 다음 동기화가 참가자에게 "새 것"으로 받아들여지게 이어서 센다
+            Dirty = true;
+        }
+
+        /// <summary>
+        /// 판 도중에 나간 사람 → 그 자리는 끝까지 봇 (O-3, 결정 2026-11-08). 목숨 · 몬스터 · 골드는 그대로.
+        /// 상점 단계면 봇이 바로 사고 배치하고, 캐러셀에서 그 사람 차례면 바로 대신 고른다. 판에 없는 사람이면 false.
+        /// </summary>
+        public bool ReplaceWithBot(string playerId)
+        {
+            int seat = SeatOf(playerId);
+            if (seat < 0 || Lobby == null) return false;
+            LobbyPlayer p = Lobby.Players[seat];
+            p.IsBot = true;
+            Seats[seat] = null;
+            _ready.Remove(seat);
+            Dirty = true;
+            if (!p.IsAlive) return true;
+            switch (Phase)
+            {
+                case OnlinePhase.Shop:
+                    _ctl.ActAsBot(Lobby, seat);
+                    if (AllReady()) Resolve();
+                    break;
+                case OnlinePhase.Carousel:
+                    if (Lobby.Carousel != null && !Lobby.Carousel.IsDone && Lobby.Carousel.CurrentPicker == seat) AfterCarouselPick();
+                    break;
+                case OnlinePhase.Battle:
+                    if (AllReady()) NextRoundOrFinish();
+                    break;
+            }
+            return true;
         }
 
         public int SeatOf(string playerId) => playerId == null ? -1 : Seats.IndexOf(playerId);
@@ -413,7 +489,7 @@ namespace Moa.Showdown.Core.Online
                 Seats = new List<string>(Seats),
                 Ready = _ready.OrderBy(x => x).ToList(),
                 Lobby = Lobby,
-                Report = LastReport == null ? null : RoundReportRecord.From(LastReport),
+                Report = _lastRecord,
                 Acks = new List<ActionAck>(_acks),
             };
             _acks.Clear();
@@ -461,6 +537,7 @@ namespace Moa.Showdown.Core.Online
         private void Resolve()
         {
             LastReport = _ctl.ResolveRound(Lobby);
+            _lastRecord = RoundReportRecord.From(LastReport);
             _ready.Clear();
             int longest = LastReport.Matches.Count == 0 ? 0 : LastReport.Matches.Max(m => m.Battle.EndTick);
             SetPhase(OnlinePhase.Battle, (double)longest / Math.Max(1, _rules.TicksPerSecond) + _rules.ResultGraceSeconds);
@@ -468,7 +545,7 @@ namespace Moa.Showdown.Core.Online
 
         private void NextRoundOrFinish()
         {
-            if (LastReport != null && LastReport.FinishedAfter) SetPhase(OnlinePhase.Finished, 0);
+            if (_lastRecord != null && _lastRecord.FinishedAfter) SetPhase(OnlinePhase.Finished, 0);
             else EnterRound();
         }
 

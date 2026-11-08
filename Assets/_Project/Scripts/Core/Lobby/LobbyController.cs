@@ -169,6 +169,14 @@ namespace Moa.Showdown.Core.Lobby
             }
         }
 
+        /// <summary>이 자리를 봇 규칙으로 지금 한 번 행동시킨다 (사기 · 팔기 · 배치 — 판 도중에 봇이 된 자리, O-3). 탈락했으면 아무것도 안 함.</summary>
+        public void ActAsBot(LobbyState lobby, int player)
+        {
+            LobbyPlayer p = lobby.Players[player];
+            if (!p.IsAlive) return;
+            _bot.Act(p.Run, new UnitPool(lobby.Pool));
+        }
+
         /// <summary>대진 → 전투 → 목숨 · 탈락 · 순위 → 다음 라운드 번호. 이미 끝난 로비면 예외.</summary>
         public LobbyRoundReport ResolveRound(LobbyState lobby)
         {

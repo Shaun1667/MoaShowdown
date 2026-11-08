@@ -25,6 +25,9 @@ namespace Moa.Showdown.Game
 
         private HostSession _host;
         private LobbySync _lastSync;
+        /// <summary>마지막으로 받은 동기화 원문 (방장 넘기기 때 새 방장이 자기 진행용으로 새로 읽는다, O-3).</summary>
+        private string _lastSyncJson;
+        private string _knownHostId;
         private int _actionSeq;
         private bool _inOnlineGame;
         private OnlinePhase _shownPhase = OnlinePhase.Waiting;
@@ -73,6 +76,7 @@ namespace Moa.Showdown.Game
         private void TickOnline()
         {
             if (mode != Mode.Online) return;
+            TryTakeOverAsHost();
             if (_host != null && _host.Phase != OnlinePhase.Waiting && _host.Phase != OnlinePhase.Finished)
             {
                 _host.Tick(Time.deltaTime);
@@ -93,10 +97,112 @@ namespace Moa.Showdown.Game
             }
         }
 
+        // ───────── 끊김 · 방장 넘기기 (O-3) ─────────
+
+        /// <summary>
+        /// 방장이 나가 내가 새 방장이 됐고 연결이 다시 잡혔으면: 갖고 있던 마지막 판 상태로 진행을 이어받고(<see cref="HostSession.Resume"/>),
+        /// 방에 없는 사람(나간 옛 방장 등)의 자리는 봇으로 바꾼 뒤 모두에게 보낸다.
+        /// </summary>
+        private void TryTakeOverAsHost()
+        {
+            if (!_inOnlineGame || _host != null || _room == null || _lastSyncJson == null) return;
+            if (_room.State != RoomConnectionState.InRoom || !_room.Room.IsLocalHost || !_room.NetworkReady) return;
+            if (_lastSync.Phase == OnlinePhase.Finished) return;
+            var host = new HostSession(_lobby, new HostSessionRules
+            {
+                CarouselDoneSeconds = onlineCarouselDoneSeconds,
+                ResultGraceSeconds = onlineResultGraceSeconds,
+                TicksPerSecond = _rules.TicksPerSecond,
+            }, balance.rulesVersion);
+            try
+            {
+                host.Resume(OnlineLobbyJson.DeserializeSync(_lastSyncJson)); // 화면용과 다른 객체
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[Online] 방장 이어받기 실패: {e.Message}");
+                return;
+            }
+            _host = host;
+            Debug.Log($"[Online] 방장을 이어받음 (동기화 {_lastSync.Version}, {_lastSync.Phase})");
+            ReplaceMissingWithBots();
+            BroadcastSync();
+            hud.ShowStatus(HudText.OnlineTookOverHost);
+        }
+
+        /// <summary>방장: 판에 자리가 있는데 방에 없는 사람 → 봇 (끝까지).</summary>
+        private void ReplaceMissingWithBots()
+        {
+            if (_host == null || _room == null || _room.State != RoomConnectionState.InRoom) return;
+            RoomSnapshot r = _room.Room;
+            foreach (string id in _host.Seats.Where(x => x != null && r.Find(x) == null).ToList())
+            {
+                int seat = _host.SeatOf(id);
+                string name = _host.Lobby.Players[seat].Name;
+                if (_host.ReplaceWithBot(id)) Debug.Log($"[Online] {name} 나감 → 봇이 이어받음 (자리 {seat})");
+            }
+            if (_host.Dirty) BroadcastSync();
+        }
+
+        /// <summary>방 모습이 바뀜 (판 중): 방장은 나간 사람을 봇으로, 참가자는 방장이 바뀌면 안내.</summary>
+        private void OnRoomChangedDuringGame()
+        {
+            if (!_inOnlineGame || _room.State != RoomConnectionState.InRoom) return;
+            RoomSnapshot r = _room.Room;
+            string hostId = r.Members.FirstOrDefault(m => m.IsHost)?.PlayerId;
+            if (_knownHostId != null && hostId != _knownHostId && !r.IsLocalHost) hud.ShowStatus(HudText.OnlineHostChanging);
+            _knownHostId = hostId;
+            if (_host != null && r.IsLocalHost) ReplaceMissingWithBots();
+            else if (_host != null && !r.IsLocalHost) _host = null; // 방장이 다른 사람에게 넘어감 — 진행은 그쪽이
+        }
+
+        /// <summary>전투 결과가 방장과 다름: 참가자는 방장에게 보고, 방장은 기록 (진행은 방장 결과 기준).</summary>
+        private void ReportMismatch(int round, IReadOnlyList<int> matches)
+        {
+            if (matches.Count == 0 || _room == null || _lastSync == null) return;
+            var report = new MismatchReport { LobbyId = Lobby.LobbyId, Round = round, Matches = matches.ToList(), RulesVersion = balance.rulesVersion };
+            string me = _room.Room.LocalPlayerId;
+            if (_room.Room.IsLocalHost) LogMismatch(me, report);
+            else _room.SendToHost(new NetMessage { Type = NetMessageTypes.Mismatch, From = me, Body = OnlineLobbyJson.SerializeMismatch(report) });
+        }
+
+        /// <summary>방장: 다름 보고를 화면 상태 줄 + 파일(persistentDataPath/OnlineLogs/mismatch.log)에 남긴다.</summary>
+        private void LogMismatch(string playerId, MismatchReport r)
+        {
+            int seat = _lastSync?.SeatOf(playerId) ?? -1;
+            string name = seat >= 0 && Lobby != null ? Lobby.Players[seat].Name : playerId;
+            string line = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\t{r.LobbyId}\t라운드 {r.Round}\t{name} ({playerId})\t대전 {string.Join(",", r.Matches)}\t규칙 {r.RulesVersion}";
+            Debug.LogWarning($"[Online] 전투 결과 다름 보고: {line}");
+            try
+            {
+                string dir = System.IO.Path.Combine(Application.persistentDataPath, "OnlineLogs");
+                System.IO.Directory.CreateDirectory(dir);
+                System.IO.File.AppendAllText(System.IO.Path.Combine(dir, "mismatch.log"), line + Environment.NewLine);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[Online] 다름 기록 파일 쓰기 실패: {e.Message}");
+            }
+            hud.ShowStatus(string.Format(HudText.OnlineMismatchReportFormat, name, r.Round, string.Join(",", r.Matches)));
+        }
+
         // ───────── 메시지 ─────────
 
         private void OnGameMessage(NetMessage m, RoomSnapshot r)
         {
+            if (m.Type == NetMessageTypes.Mismatch)
+            {
+                if (!r.IsLocalHost || r.Find(m.From) == null) return;
+                try
+                {
+                    LogMismatch(m.From, OnlineLobbyJson.DeserializeMismatch(m.Body));
+                }
+                catch (NetMessageFormatException e)
+                {
+                    Debug.LogWarning($"[Online] 잘못된 다름 보고를 버림: {e.Message}");
+                }
+                return;
+            }
             if (m.Type == NetMessageTypes.Action)
             {
                 if (_host == null || !r.IsLocalHost) return;
@@ -127,7 +233,7 @@ namespace Moa.Showdown.Game
                 Debug.LogWarning($"[Online] 잘못된 판 상태를 버림: {e.Message}");
                 return;
             }
-            ApplySync(s);
+            if (ApplySync(s)) _lastSyncJson = m.Body;
         }
 
         private void SendOnlineAction(LobbyAction a)
@@ -139,16 +245,17 @@ namespace Moa.Showdown.Game
 
         // ───────── 받은 상태 그리기 ─────────
 
-        private void ApplySync(LobbySync s)
+        /// <summary>받은 판 상태 적용. 받아들였으면 true (옛 상태 · 다른 규칙 버전 · 내 자리 없음은 false).</summary>
+        private bool ApplySync(LobbySync s)
         {
-            if (_lastSync != null && s.Version <= _lastSync.Version) return; // 늦게 온 옛 상태
+            if (_lastSync != null && s.Version <= _lastSync.Version) return false; // 늦게 온 옛 상태
             if (s.RulesVersion != balance.rulesVersion)
             {
                 onlineView.SetStatus(string.Format(HudText.OnlineVersionMismatchFormat, s.RulesVersion, balance.rulesVersion));
-                return;
+                return false;
             }
             int seat = s.SeatOf(_room.Room.LocalPlayerId);
-            if (seat < 0) return; // 판에 자리가 없음 (구경꾼은 아직 없음)
+            if (seat < 0) return false; // 판에 자리가 없음 (구경꾼 · 봇으로 바뀐 자리)
 
             bool first = !_inOnlineGame;
             int livesBefore = !first && State != null ? State.Lives : 0;
@@ -165,6 +272,7 @@ namespace Moa.Showdown.Game
                 _shownPhase = OnlinePhase.Waiting;
                 onlineView.SetVisible(false);
                 LastLobbyReport = null;
+                _knownHostId = _room.Room.Members.FirstOrDefault(x => x.IsHost)?.PlayerId;
                 if (livesBefore == 0) livesBefore = State.Lives;
             }
 
@@ -189,6 +297,7 @@ namespace Moa.Showdown.Game
                     break;
             }
             if (s.Phase != OnlinePhase.Carousel) RefreshStandings();
+            return true;
         }
 
         /// <summary>내 행동 결과를 안내 글로 (오프라인과 같은 문구).</summary>
@@ -295,7 +404,11 @@ namespace Moa.Showdown.Game
             ShowRunInfo(State.Wins, livesBefore);
             _showOpponents = true;
             string warning = _mismatches.Count > 0 ? string.Format(HudText.OnlineMismatchFormat, _mismatches.Count) : "";
-            if (_mismatches.Count > 0) Debug.LogWarning($"[Online] 방장과 다른 전투 결과: 대전 {string.Join(", ", _mismatches)}");
+            if (_mismatches.Count > 0)
+            {
+                Debug.LogWarning($"[Online] 방장과 다른 전투 결과: 대전 {string.Join(", ", _mismatches)}");
+                ReportMismatch(record.Round, _mismatches);
+            }
 
             LobbyMatch m = LastLobbyReport.MatchOf(MeIndex);
             if (m == null)
@@ -344,6 +457,8 @@ namespace Moa.Showdown.Game
         {
             _inOnlineGame = false;
             _lastSync = null;
+            _lastSyncJson = null;
+            _knownHostId = null;
             _shownPhase = OnlinePhase.Waiting;
             _shownRound = 0;
             if (_host != null && _room != null && _room.State == RoomConnectionState.InRoom) _ = _room.SetLockedAsync(false);
