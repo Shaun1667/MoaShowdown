@@ -32,6 +32,8 @@ namespace Moa.Showdown.Game
             BattleTest = 1,
             /// <summary>8인 로비 (TFT 흐름, L-1). 나 + 봇.</summary>
             Lobby = 2,
+            /// <summary>온라인 대기실 (O-1): 방 만들기 · 참가 · 시험 신호. 판 진행은 O-2.</summary>
+            Online = 3,
         }
 
         private static readonly int[] Speeds = { 1, 2, 4 };
@@ -131,6 +133,11 @@ namespace Moa.Showdown.Game
                 s => TeamFactory.IsPlayable(s, _catalog, _statRules));
 
             tooltip.Build();
+            if (mode == Mode.Online)
+            {
+                StartOnline(); // 대기실만 (O-1) — 전투 화면 · 상점은 쓰지 않음
+                return;
+            }
             hud.Build(mainCamera, Speeds);
             hud.AddSideInfo(tooltip, MyInfo, OpponentInfo);
             hud.SpeedClicked += SetSpeed;

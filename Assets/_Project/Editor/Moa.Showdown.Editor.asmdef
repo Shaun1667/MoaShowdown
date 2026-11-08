@@ -3,7 +3,9 @@
     "rootNamespace": "Moa.Showdown.Editor",
     "references": [
         "Moa.Showdown.Core",
-        "Moa.Showdown.Game"
+        "Moa.Showdown.Game",
+        "Unity.Netcode.Runtime",
+        "Unity.Networking.Transport"
     ],
     "includePlatforms": [
         "Editor"

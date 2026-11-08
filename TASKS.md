@@ -1,7 +1,7 @@
 # TASKS.md
 
 ## 진행 요약 (2026-11-08 기준 — 새 세션은 여기부터 읽는다)
-**최신 (2026-11-08): 3-2 콘텐츠(몬스터 20종 · 새 효과 4개 · 라운드별 등급 확률표 · 풀 29 · PvE 다시 맞춤) — 브랜치 `phase3-2-content` 커밋, main 병합 전. **테스트 전부 통과 (2026-11-08 사용자 실행**, 새 `ContentTests` 25개 + `BalanceTests` 고침 · 새 1개 포함 → 195개 예상, 개수는 사용자 보고에 없음). 플레이 확인 대기: 1-3 · 1-4 · 2-1 · 2-2 · 2-3 · 3-1 · L-1 ~ L-5 · 3-2. 다음: O-1 온라인 연결 또는 3-2 다음 묶음(트레이너 · 장신구 · 알/진화) — 착수 질문부터.**
+**최신 (2026-11-08): O-1 온라인 연결 · 대기실 — 브랜치 `phaseO-1-connection` 커밋, main 병합 전. 테스트 작성, 실행 안 함 (새 `OnlineTests` 29개 → 총 224개 예상, **테스트 돌릴 때 됐다**). 3-2는 main 병합 · 푸시 완료 (2026-11-08, 테스트 전부 통과). 플레이 확인 대기: 1-3 · 1-4 · 2-1 · 2-2 · 2-3 · 3-1 · L-1 ~ L-5 · 3-2 · O-1(특히 **2명 참가는 사용자 확인 필요**). 다음: O-2 방장 진행 — 착수 질문부터.**
 - 참고 (2026-11-08): 에디터가 6000.6.0f1로 열려 버전 파일 · 패키지가 바뀐 것을 발견 → 되돌리고 6000.3.25f1로 다시 열었다 (Library 다시 만듦). Hub에서 이 프로젝트 버전을 6000.3.25f1로 둘 것.
 
 ---
@@ -174,7 +174,17 @@
   - 확인 방법: `Battle.unity` 플레이 → 상점 오른쪽 위 목록 → 봇 줄 클릭 → 그 봇 보드 · 대기석 · 남은 시간 · 몬스터에 마우스 → 내 보드로 → 준비 완료 → 목록에 "vs …" (목숨은 결과 화면에서 바뀜) → 결과 화면에서도 구경
 
 ## Phase O. 온라인 (UGS Lobby + Relay, 방장 방식) — ~~Cloud Code + Cloud Save 비동기~~ (2026-11-06 변경)
-- [ ] O-1. UGS 프로젝트 연결 · 익명 인증 · 네트워크 패키지 확정(Netcode 등) · 방 만들기/들어가기(Lobby) · 연결(Relay)
+- [x] **O-1. 온라인 연결 · 대기실** (2026-11-08 사용자 "O-1 온라인 연결") — 플레이 확인 대기
+  - 결정 (2026-11-08, 사용자): 패키지 **Multiplayer Services 세션 + Netcode for GameObjects 사용자 메시지**(+ 에디터 2인 확인용 Multiplayer Play Mode) · 방 참가 **방 코드 + 빠른 참가** · 범위 **연결 + 대기실**(판 진행은 O-2) · UGS 클라우드 프로젝트는 **지금 연결 그대로**
+  - 구현: 패키지 — `com.unity.services.multiplayer` 2.4.1 · `com.unity.netcode.gameobjects` 2.13.3 · `com.unity.multiplayer.playmode` 2.0.2 (의존: Transport 2.7.4 · Authentication 3.8.0 · Newtonsoft 3.2.2로 자동 상향). Core — `NetMessage`/`NetMessageTypes`/`NetMessageJson`(봉투 형식 v1) · `RoomMember`/`RoomSnapshot`/`RoomConnectionState`/`IRoomTransport` · `RoomRules`(코드 · 이름 정리) · `RoomProtocol`(시험 신호 Ping → 방장 Pong). Game — `UgsRoomTransport`(익명 로그인 · 세션 만들기/코드 참가/빠른 참가/나가기 · 이름은 플레이어 속성 `name` · Netcode 사용자 메시지 `"moa"`) · `OnlineView`(대기실 uGUI 코드 생성) · `GameRoot.Online.cs` · 모드 `Online` 3 · `HudText` 대기실 문구 · asmdef 참조. Editor — Battle Scene Setup이 `NetworkManager` + `UnityTransport` · `Online` 오브젝트 만들고 연결 · NGO가 `Assets/DefaultNetworkPrefabs.asset` 자동 생성 · MPPM이 `ProjectSettings/VirtualProjectsConfig.json` 생성
+  - 정한 것 (Claude, 확인 필요): 방 최대 8 · 빠른 참가 5초 찾고 없으면 새 방 · 방은 공개 · 기본 이름 "플레이어 + 네 자리" · 이름 최대 12자 · 메시지 최대 64KB · 실패 문구는 UGS 원문(영어) 그대로 "실패: …" · 방장 자신이 보낸 신호도 방장이 답함 · 에디터에서 프로세스마다 로그인 프로필 분리
+  - 수치: BALANCE 18
+  - 확인: 컴파일 오류 0 · Battle Scene Setup → NetworkManager(전송 연결됨) · 대기실 연결 · 씬 모드는 Lobby 그대로 저장 · 플레이(모드를 메모리에서만 Online): **방 만들기 → 익명 로그인 · Relay 세션 성공, 참가 코드 T6TFP9, Netcode 방장으로 열림** · 참가자 "플레이어2733 (방장) ← 나" · 시험 신호 → "신호 보냄" → "방장이 플레이어2733의 신호를 받았습니다" · 틀린 코드 → "실패: session code 'ZZZZZZ' contains an invalid character…" 후 방 밖 화면 · 빠른 참가 → 열린 방 없음 → 새 방(9HL8TL, 방장) · 나가기 → Netcode 종료 · "방에서 나왔습니다" · 캡처 1장 · 콘솔 오류 0 · 끝난 뒤 모드 Lobby로 되돌림
+  - 고친 것: 방장이 신호를 보내면 "받았습니다"가 "보냄"보다 먼저 찍힘 → 기록을 먼저 남기고 보냄
+  - 확인 못 함: **2명이 같은 방에 들어오는 것 · 참가자 → 방장 신호 · 참가/퇴장 기록 · 방장이 나갔을 때 참가자 쪽** (에디터 하나로는 안 됨 — Multiplayer Play Mode 가상 플레이어를 켜야 함) · 빌드에서 동작 · 실패 문구 한글화
+  - 확인하다 겪은 것: 플레이 중에 스크립트를 고쳐 재컴파일이 미뤄지고 MCP 명령이 시간 초과 → 사용자가 플레이를 멈춰 풀림 (CLAUDE 코딩 규칙에 기록)
+  - 테스트 작성, 실행 안 함: `OnlineTests`(고정 JSON v1 · 왕복 · 모르는 필드 · 잘못된 JSON 8종 · 너무 긴 메시지 · 잘못된 메시지 보내기 · 코드 정리 4 · 이름 정리 6 · 방장 Pong · 참가자는 안 답함 · 낯선 사람 무시 · 방장 자기 신호 · 방장만 Pong · 방장 판정)
+  - 확인 방법: ① GameRoot `Mode` = Online → 플레이 → "방 만들기" → 참가 코드 · "(방장) ← 나" → "시험 신호 보내기" → 기록 두 줄 → "나가기" ② 2명: Window → Multiplayer → Multiplayer Play Mode → Player 2 켜기 → 플레이 → 메인 에디터에서 방 만들기 → Player 2 창에서 코드 입력 · "참가" (또는 "빠른 참가") → 양쪽 "참가자 2/8" · 메인에 "○○ 들어옴" → Player 2에서 "시험 신호 보내기" → 양쪽에 "방장이 ○○의 신호를 받았습니다" → Player 2 "나가기" → 메인에 "… 나감" ③ 확인 뒤 `Mode`를 Lobby로 되돌림
 - [ ] O-2. 방장 진행: 타이머 · 대진 · 공유 풀 구매 확인 · 전투 시드 · 결과 확정을 Core로 계산해 나눔 / 각자는 팀 스냅샷만 보냄 / **구경용으로 모두의 지금 보드 + 대기석을 나눔** (L-5 결정 "지금 보드 + 대기석")
 - [ ] O-3. 접속 끊김 → 봇이 이어받음 · 방장 넘기기 · 같은 전투가 모두에게 같게 나오는지 확인(기록 비교)
 
@@ -190,4 +200,5 @@
 - **`Docs/진행상황.md`를 먼저 읽는다** (2026-11-06 작업 환경 옮기기 — 설치 · 브랜치 · 다음 할 일 · 임시값 정리)
 - Unity Hub에서 `MoaShowdown` 폴더를 프로젝트로 추가 (이전 `My project` 경로 항목은 삭제)
 - L-5까지 main에 병합됨 (2026-11-06) → main 그대로 열면 됨 · 테스트 169개
-- 3-2는 브랜치 `phase3-2-content` (2026-11-08, main 병합 전) — 이어 하려면 그 브랜치를 받는다 · Unity는 **6000.3.25f1**로 연다
+- ~~3-2는 브랜치 `phase3-2-content` (2026-11-08, main 병합 전)~~ → main 병합 · 푸시 완료 (2026-11-08) · Unity는 **6000.3.25f1**로 연다
+- O-1은 브랜치 `phaseO-1-connection` (2026-11-08, main 병합 전) · 새 PC에서 처음 열면 UGS 패키지를 받느라 시간이 걸림 · 같은 UGS 클라우드 프로젝트에 연결돼 있어야 방이 만들어짐 (Edit → Project Settings → Services)

@@ -60,6 +60,15 @@ namespace Moa.Showdown.Editor.Setup
             TooltipView tooltip = GetOrAdd<TooltipView>(FindOrCreateChild(rootGo, "Tooltip"));
             CarouselView carouselView = GetOrAdd<CarouselView>(FindOrCreateChild(rootGo, "Carousel"));
             LobbyView lobbyView = GetOrAdd<LobbyView>(FindOrCreateChild(rootGo, "Lobby"));
+            OnlineView onlineView = GetOrAdd<OnlineView>(FindOrCreateChild(rootGo, "Online"));
+
+            // 온라인 (O-1): Multiplayer Services 세션이 Relay로 Netcode를 시작하려면 씬에 NetworkManager + UnityTransport가 있어야 한다
+            GameObject netGo = FindOrCreate("NetworkManager", go => { });
+            var transport = GetOrAdd<Unity.Netcode.Transports.UTP.UnityTransport>(netGo);
+            var networkManager = GetOrAdd<Unity.Netcode.NetworkManager>(netGo);
+            if (networkManager.NetworkConfig == null) networkManager.NetworkConfig = new Unity.Netcode.NetworkConfig();
+            if (networkManager.NetworkConfig.NetworkTransport == null) networkManager.NetworkConfig.NetworkTransport = transport;
+            EditorUtility.SetDirty(networkManager);
 
             var so = new SerializedObject(rootGo.GetComponent<GameRoot>());
             SetIfNull(so, "balance", AssetDatabase.LoadAssetAtPath<BattleBalance>(BalanceSetup.BattleBalancePath));
@@ -73,6 +82,7 @@ namespace Moa.Showdown.Editor.Setup
             SetIfNull(so, "tooltip", tooltip);
             SetIfNull(so, "carouselView", carouselView);
             SetIfNull(so, "lobbyView", lobbyView);
+            SetIfNull(so, "onlineView", onlineView);
             so.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.MarkSceneDirty(scene);

@@ -157,6 +157,35 @@ namespace Moa.Showdown.Game
             "골드 +{0}",
             "자기 공격력 +{0} (이번 전투, 쌓임)",
         };
+        // 온라인 대기실 (O-1)
+        public const string OnlineTitle = "온라인 대기실 (시험)";
+        public const string OnlineNameLabel = "이름";
+        public const string OnlineNamePlaceholder = "이름 (최대 12자)";
+        public const string OnlineDefaultNameFormat = "플레이어{0}";
+        public const string OnlineCreate = "방 만들기";
+        public const string OnlineQuickJoin = "빠른 참가";
+        public const string OnlineCodeLabel = "참가 코드";
+        public const string OnlineCodePlaceholder = "코드 입력";
+        public const string OnlineJoin = "참가";
+        public const string OnlinePing = "시험 신호 보내기";
+        public const string OnlineLeave = "나가기";
+        public const string OnlineConnecting = "연결 중…";
+        public const string OnlineIdle = "방을 만들거나 참가하세요";
+        public const string OnlineFailedFormat = "실패: {0}";
+        public const string OnlineLeft = "방에서 나왔습니다";
+        public const string OnlineCodeFormat = "참가 코드: {0}";
+        public const string OnlineMembersFormat = "참가자 {0}/{1}";
+        public const string OnlineMemberFormat = "{0}{1}{2}";
+        public const string OnlineHostTag = " (방장)";
+        public const string OnlineMeTag = "  ← 나";
+        public const string OnlineUnknownName = "(이름 없음)";
+        public const string OnlineInRoomHost = "내가 방장입니다 — 친구에게 참가 코드를 알려 주세요";
+        public const string OnlineInRoomGuest = "방에 들어왔습니다";
+        public const string OnlinePingSentFormat = "{0}: 신호 보냄";
+        public const string OnlinePongFormat = "방장이 {0}의 신호를 받았습니다";
+        public const string OnlineJoinedFormat = "{0} 들어옴";
+        public const string OnlineLeftFormat = "{0} 나감";
+
         /// <summary>전투 중 능력 발동 때 떠오르는 짧은 글. AbilityEffect 번호 순.</summary>
         public static readonly string[] EffectPopupFormats = { "", "+{0}", "화상+{0}", "독+{0}", "방어막+{0}", "", "×{0}!", "", "", "이웃 공격+{0}", "이웃 속도+{0}", "", "강해짐+{0}" };
     }

@@ -39,9 +39,10 @@ MoaShowdown — 몬스터 팀을 3×2 격자에 배치해 싸우는 **8인 실�
 | UI | uGUI | 확정 2026-11-06 · 변경 금지 |
 | 그래픽 | 3D (그레이박스 → AI 3D 모델, 예: Varco) | 확정 2026-11-06 |
 | 온라인 | ~~비동기 (스냅샷 업로드 · 다운로드)~~ → **8인 실시간 로비, 방장(호스트) 방식** — 방장이 타이머 · 대진 · 공유 풀 · 캐러셀 관리, 라운드마다 팀 스냅샷만 주고받고 전투는 각자 결정론적으로 계산 | ~~확정 2026-11-06~~ → 변경 2026-11-06 (사용자 "TFT 플레이 흐름, 온라인") |
-| 백엔드 | ~~로컬 가짜 상대 → UGS Cloud Code + Cloud Save~~ → **UGS Lobby + Relay** (+ Netcode, 패키지는 O-1 착수 때 확정). 사람이 모자라면 봇이 채움 (로컬 상대 · 상점 AI) | 변경 2026-11-06 |
+| 백엔드 | ~~로컬 가짜 상대 → UGS Cloud Code + Cloud Save~~ → **UGS Lobby + Relay** — 패키지: **Multiplayer Services 2.4.1**(세션 = Lobby + Relay + 익명 로그인) + **Netcode for GameObjects 2.13.3**(사용자 메시지만, 오브젝트 동기화 안 씀) + Multiplayer Play Mode 2.0.2(에디터 2인 확인용). 사람이 모자라면 봇이 채움 | 변경 2026-11-06 · 패키지 확정 2026-11-08 (O-1, 사용자) |
+| UGS 클라우드 프로젝트 | `041f6f3e-…` (이름은 기본값 "My project 2026-11-06_09-39-30", 조직 goni0309) — 그대로 사용 | 결정 2026-11-08 사용자 |
 | 테스트 | Unity Test Framework (EditMode) | 확정 2026-11-06 |
-| JSON | Newtonsoft JSON (`com.unity.nuget.newtonsoft-json` 3.2.1, Core에서 사용) | 확정 2026-11-06 |
+| JSON | Newtonsoft JSON (`com.unity.nuget.newtonsoft-json`, manifest 3.2.1 → UGS 인증 패키지 의존으로 **3.2.2로 자동 해석**, Core에서 사용) | 확정 2026-11-06 · 2026-11-08 3.2.2 |
 | 원격 저장소 | github.com/Shaun1667/MoaShowdown | — |
 | 회사 · 제품 이름 | NariGames / MoaShowdown (식별자 `com.NariGames.MoaShowdown`) | 확정 2026-11-06 · **바꾸면 저장 위치(`AppData/LocalLow/NariGames/MoaShowdown`)가 바뀜 — 바꾸기 전에 알린다** |
 
@@ -100,6 +101,9 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 - 공유 몬스터 풀은 `UnitPool`(Core/Shop) — 상태는 `LobbyState.Pool`(몬스터 표 순서 목록)에 있고 `UnitPool`은 그걸 다루기만. 상점 조작은 풀을 인자로 받는다: `BeginRound/Reroll(s, pool)`(안 산 카드 돌려놓고 남은 수 비례로 뽑기) · `Sell(s, at, pool)`(`CopiesAt` 마리 돌려놓기) · `ReturnEverything`(탈락). pool = null이면 예전처럼 무한 상점(Run 모드). GameRoot는 `CurrentPool`을 넘긴다. **불변식: 풀 + 모든 상점 카드 + 모든 보유 몬스터 마리 수 = 처음 총량** (`LobbyTests.Pool_TotalUnitsConserved…`).
 - 준비 시간은 `PrepTimer`(Core/Lobby) 한 곳 — 시작 조건(시간 0 또는 살아 있는 사람 전원 준비 완료, 봇 · 탈락자는 처음부터 준비)을 여기서만 판정한다. 실제 시간이라 결정론 대상이 아니고 전투 결과에 영향 없음. GameRoot는 상점이 열려 있을 때만 `Advance`, 시간 끝 강제 시작은 `StartBattleNow(force: true)`(빈 보드 경고 없음). 인스펙터 `usePrepTimer`로 끌 수 있음.
 - PvE · 캐러셀 시기는 `LobbyRules.IsPveRound` / `IsCarouselRound`(시작 N라운드 + 시작점부터 간격마다, 0 = 없음), PvE 팀은 `LobbyRules.PveTeams`(나온 순서, 뒤는 마지막) ← `RunBalance.pveTeams`(BALANCE 16). PvE 라운드는 `ResolveRound`가 대진 대신 모두를 같은 팀과 싸우게 함(`LobbyMatch.IsPve`, 보상 `GoldGainedA`, 목숨 `PveLifeLoss` 고정). 캐러셀은 `LobbyController.StartCarousel` → `PickCarousel`/`AutoPickCarousel`/`AdvanceCarouselBots`, 상태는 `LobbyState.Carousel`(formatVersion 3, 2는 변환) — 아직 안 고른 몬스터는 풀에서 빠져 있음(불변식에 포함). `BeginRound`는 안 끝난 캐러셀을 자동으로 마저 고른다. 받기는 `ShopController.Gain`(살 때 능력 없음). 화면은 `CarouselView`(Game/Shop), GameRoot는 `EnterLobbyRound`(캐러셀 → 상점).
+- 온라인 방 · 메시지는 `IRoomTransport`(Core/Online) 하나 — UGS 구현 `UgsRoomTransport`(Game/Online: 익명 로그인 → Multiplayer Services 세션(Relay) 만들기 · 코드 참가 · 빠른 참가, 메시지 = Netcode 사용자 메시지 이름 `"moa"`에 JSON 한 통, `ReliableFragmentedSequenced`). 메시지 형식은 `NetMessage`/`NetMessageJson` 한 곳(봉투 v · type · from · body, 형식 버전 1, 더 새 버전 거부, 최대 64KB) — 종류 문자열 `NetMessageTypes`는 바꾸지 않고 새 종류 = 새 문자열. 받은 메시지 규칙은 `RoomProtocol`(Core) 한 곳(방장만 답함, 방에 없는 사람 · 방장이 아닌 Pong 무시). 방장은 `SendToHost`를 자기에게 바로 전달, `Broadcast`는 방장만(나 포함). 씬에는 `NetworkManager` + `UnityTransport`(Setup/Battle Scene이 만듦).
+- GameRoot 모드 Online(`GameRoot.Online.cs` partial): 대기실 `OnlineView`(Game/Ui)만 — 전투 화면 · 상점은 만들지 않음. 에디터에서는 프로세스마다 UGS 프로필을 나눠(`p` + 프로세스 ID) Multiplayer Play Mode 가상 플레이어끼리 같은 익명 ID가 되지 않게 한다.
+- **플레이 중에 스크립트를 고치지 않는다** — 재컴파일이 플레이 끝까지 미뤄지고 MCP `RunCommand`가 시간 초과로 막힌다 (2026-11-08 겪음, 사용자가 플레이를 멈춰 풀림).
 - (시스템이 생길 때마다 한 줄씩 추가: "이 시스템은 `클래스` 한 곳, 데이터 `에셋`, 새 항목 = 표 한 줄")
 
 ## 핵심 설계 규칙 (변경 금지)

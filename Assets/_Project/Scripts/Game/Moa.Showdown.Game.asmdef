@@ -4,7 +4,13 @@
     "references": [
         "Moa.Showdown.Core",
         "Unity.InputSystem",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.Services.Core",
+        "Unity.Services.Authentication",
+        "Unity.Services.Multiplayer",
+        "Unity.Netcode.Runtime",
+        "Unity.Networking.Transport",
+        "Unity.Collections"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
