@@ -49,7 +49,7 @@ namespace Moa.Showdown.Editor.Setup
             b.burnIntervalTicks = 10;
             b.poisonIntervalTicks = 20;
             b.levelAttackMultiplier = 2;
-            b.rulesVersion = 2; // 2 = 3-1 능력 추가
+            b.rulesVersion = 3; // 2 = 3-1 능력 추가, 3 = 3-2 몬스터 20종 · 새 효과
         }
     }
 }

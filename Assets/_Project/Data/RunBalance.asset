@@ -24,9 +24,24 @@ MonoBehaviour:
   sellPercent: 75
   mergeCountByLevel: 0300000002000000
   maxLevel: 3
+  rarityOdds:
+  - fromRound: 1
+    percent: 6400000000000000000000000000000000000000
+  - fromRound: 3
+    percent: 4b00000019000000000000000000000000000000
+  - fromRound: 5
+    percent: 370000001e0000000f0000000000000000000000
+  - fromRound: 7
+    percent: 2800000021000000160000000500000000000000
+  - fromRound: 10
+    percent: 19000000230000001e0000000900000001000000
+  - fromRound: 13
+    percent: 140000001e000000210000000e00000003000000
+  - fromRound: 16
+    percent: 0f00000019000000230000001400000005000000
   playerCount: 8
   recentOpponentMemory: 3
-  poolSizeByRarity: 3c00000016000000120000000c0000000a000000
+  poolSizeByRarity: 1d00000016000000120000000c0000000a000000
   prepSeconds: 30
   pveOpeningRounds: 2
   pveRepeatStart: 8
@@ -61,67 +76,67 @@ MonoBehaviour:
     loseGold: 5
     monsters:
     - slot: 0
-      speciesId: ember
+      speciesId: cinder
       level: 2
     - slot: 1
-      speciesId: pebble
+      speciesId: drum
       level: 2
     - slot: 2
-      speciesId: drip
+      speciesId: ember
       level: 2
     - slot: 3
-      speciesId: gust
-      level: 2
-    - slot: 4
       speciesId: zap
       level: 2
+    - slot: 4
+      speciesId: pebble
+      level: 2
     - slot: 5
-      speciesId: sprout
+      speciesId: spore
       level: 2
   - label: "\uC57C\uC0DD 4 (14R)"
     winGold: 10
     loseGold: 5
     monsters:
     - slot: 0
-      speciesId: ember
-      level: 3
+      speciesId: wisp
+      level: 2
     - slot: 1
-      speciesId: pebble
-      level: 3
+      speciesId: grovekeeper
+      level: 2
     - slot: 2
-      speciesId: drip
-      level: 3
+      speciesId: toxifrog
+      level: 2
     - slot: 3
-      speciesId: gust
-      level: 2
+      speciesId: drum
+      level: 3
     - slot: 4
-      speciesId: zap
-      level: 2
+      speciesId: magmaw
+      level: 1
     - slot: 5
-      speciesId: sprout
-      level: 2
+      speciesId: shellby
+      level: 3
   - label: "\uC57C\uC0DD 5 (20R~)"
     winGold: 10
     loseGold: 5
     monsters:
     - slot: 0
-      speciesId: ember
+      speciesId: wisp
       level: 3
     - slot: 1
-      speciesId: pebble
+      speciesId: grovekeeper
       level: 3
     - slot: 2
-      speciesId: drip
+      speciesId: toxifrog
       level: 3
     - slot: 3
-      speciesId: gust
+      speciesId: drum
       level: 3
     - slot: 4
-      speciesId: zap
-      level: 3
+      speciesId: magmaw
+      level: 2
     - slot: 5
-      speciesId: sprout
-      level: 3
+      speciesId: dracon
+      level: 2
   carouselOpeningRounds: 1
   carouselRepeatStart: 5
   carouselRepeatEvery: 6

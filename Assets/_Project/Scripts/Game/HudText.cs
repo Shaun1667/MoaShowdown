@@ -137,7 +137,7 @@ namespace Moa.Showdown.Game
         public const string HealPopupFormat = "+{0}";
         public const string InfoTypeFormat = "속성: {0}";
         public const string InfoAbilityFormat = "능력: {0} {1}";
-        public static readonly string[] TypeNames = { "없음", "풀", "불", "물", "전기", "바위", "비행", "독" };
+        public static readonly string[] TypeNames = { "없음", "풀", "불", "물", "전기", "바위", "비행", "독", "벌레", "유령", "용", "강철" };
         /// <summary>AbilityTrigger 번호 순.</summary>
         public static readonly string[] TriggerNames = { "", "전투 시작 시", "공격할 때", "{0}번째 공격마다", "라운드 시작마다", "살 때" };
         /// <summary>AbilityEffect 번호 순. {0} = 수치.</summary>
@@ -152,8 +152,12 @@ namespace Moa.Showdown.Game
             "피해 ×{0}",
             "자기 공격력 영구 +{0}",
             "가장 약한 아군 공격력 영구 +{0}",
+            "붙어 있는 아군 공격력 +{0} (이번 전투)",
+            "붙어 있는 아군 공격 간격 −{0}틱 (이번 전투)",
+            "골드 +{0}",
+            "자기 공격력 +{0} (이번 전투, 쌓임)",
         };
         /// <summary>전투 중 능력 발동 때 떠오르는 짧은 글. AbilityEffect 번호 순.</summary>
-        public static readonly string[] EffectPopupFormats = { "", "+{0}", "화상+{0}", "독+{0}", "방어막+{0}", "", "×{0}!", "", "" };
+        public static readonly string[] EffectPopupFormats = { "", "+{0}", "화상+{0}", "독+{0}", "방어막+{0}", "", "×{0}!", "", "", "이웃 공격+{0}", "이웃 속도+{0}", "", "강해짐+{0}" };
     }
 }

@@ -35,6 +35,22 @@ namespace Moa.Showdown.Core.Shop
         /// <summary>합체로 오를 수 있는 최대 레벨.</summary>
         public int MaxLevel;
 
+        /// <summary>
+        /// 라운드별 등급 확률표 (BALANCE 17, 3-2). FromRound 오름차순, 첫 줄은 1라운드부터. 각 줄 = 등급 번호 순 %, 합 100.
+        /// 비어 있으면(null 또는 0줄) 등급을 따로 뽑지 않는다 — 풀 남은 수 비례(로비) · 몬스터 표 균등(혼자).
+        /// </summary>
+        public RarityOdds[] RarityOddsByRound;
+
+        /// <summary>이 라운드의 등급별 % (표가 없으면 null).</summary>
+        public int[] OddsFor(int round)
+        {
+            if (RarityOddsByRound == null || RarityOddsByRound.Length == 0) return null;
+            int[] odds = RarityOddsByRound[0].Percent;
+            foreach (RarityOdds o in RarityOddsByRound)
+                if (round >= o.FromRound) odds = o.Percent;
+            return odds;
+        }
+
         /// <summary>이 레벨 몬스터를 다음 레벨로 합치는 데 필요한 마리 수. 최대 레벨이면 0 (합칠 수 없음).</summary>
         public int MergeCountFor(int level)
         {
@@ -80,6 +96,32 @@ namespace Moa.Showdown.Core.Shop
                 throw new InvalidOperationException("MergeCountByLevel이 최대 레벨까지 안 됨");
             foreach (int n in MergeCountByLevel)
                 if (n < 2) throw new InvalidOperationException("합체 마리 수 < 2");
+            if (RarityOddsByRound != null && RarityOddsByRound.Length > 0)
+            {
+                int rarityCount = Enum.GetValues(typeof(Rarity)).Length;
+                if (RarityOddsByRound[0].FromRound != 1) throw new InvalidOperationException("등급 확률표 첫 줄은 1라운드부터");
+                for (int i = 0; i < RarityOddsByRound.Length; i++)
+                {
+                    RarityOdds o = RarityOddsByRound[i];
+                    if (o == null || o.Percent == null || o.Percent.Length != rarityCount) throw new InvalidOperationException($"등급 확률표 {i}번 줄: 등급 수와 다름");
+                    if (i > 0 && o.FromRound <= RarityOddsByRound[i - 1].FromRound) throw new InvalidOperationException("등급 확률표 라운드가 오름차순이 아님");
+                    int sum = 0;
+                    foreach (int p in o.Percent)
+                    {
+                        if (p < 0) throw new InvalidOperationException("등급 확률 음수");
+                        sum += p;
+                    }
+                    if (sum != 100) throw new InvalidOperationException($"등급 확률표 {o.FromRound}라운드 줄 합이 100이 아님 ({sum})");
+                }
+            }
         }
+    }
+
+    /// <summary>등급 확률표 한 줄: 이 라운드부터 등급별 % (BALANCE 17).</summary>
+    public sealed class RarityOdds
+    {
+        public int FromRound;
+        /// <summary>등급(Rarity 번호 순)별 %, 합 100.</summary>
+        public int[] Percent;
     }
 }

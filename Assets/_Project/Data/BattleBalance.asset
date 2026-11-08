@@ -22,4 +22,4 @@ MonoBehaviour:
   burnIntervalTicks: 10
   poisonIntervalTicks: 20
   levelAttackMultiplier: 2
-  rulesVersion: 2
+  rulesVersion: 3

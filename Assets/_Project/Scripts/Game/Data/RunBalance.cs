@@ -35,6 +35,8 @@ namespace Moa.Showdown.Game.Data
         [Tooltip("판매가 = 들인 골드 × %")] public int sellPercent;
         [Tooltip("레벨별 합체 마리 수: [0] Lv1 몇 마리 → Lv2, [1] Lv2 몇 마리 → Lv3")] public int[] mergeCountByLevel;
         public int maxLevel;
+        [Tooltip("라운드별 등급 확률표 (BALANCE 17) — 이 라운드부터 일반 · 고급 · 희귀 · 영웅 · 전설 %, 합 100. 비우면 등급을 따로 안 뽑음")]
+        public List<RarityOddsRow> rarityOdds = new List<RarityOddsRow>();
 
         [Header("로비 (BALANCE 13)")]
         [Tooltip("로비 인원 (모자라면 봇)")] public int playerCount;
@@ -75,6 +77,9 @@ namespace Moa.Showdown.Game.Data
             SellPercent = sellPercent,
             MergeCountByLevel = (int[])mergeCountByLevel.Clone(),
             MaxLevel = maxLevel,
+            RarityOddsByRound = (rarityOdds ?? new List<RarityOddsRow>())
+                .Select(o => new RarityOdds { FromRound = o.fromRound, Percent = (int[])(o.percent ?? new int[0]).Clone() })
+                .ToArray(),
         };
 
         public LobbyRules ToLobbyRules() => new LobbyRules
@@ -119,6 +124,14 @@ namespace Moa.Showdown.Game.Data
                 d.Board[s.slot] = new MonsterSnapshot { SpeciesId = s.speciesId, Level = s.level };
             return d;
         }
+    }
+
+    /// <summary>등급 확률표 한 줄 (BALANCE 17).</summary>
+    [Serializable]
+    public sealed class RarityOddsRow
+    {
+        [Tooltip("이 라운드부터")] public int fromRound;
+        [Tooltip("일반 · 고급 · 희귀 · 영웅 · 전설 %, 합 100")] public int[] percent;
     }
 
     [Serializable]

@@ -16,12 +16,14 @@ namespace Moa.Showdown.Editor.Setup
             var existing = AssetDatabase.LoadAssetAtPath<RunBalance>(RunBalancePath);
             if (existing != null)
             {
-                // 새로 생긴 PvE · 캐러셀 칸만 비어 있으면 채운다 (다른 값은 그대로)
-                if (FillPveCarouselDefaults(existing))
+                // 새로 생긴 칸(PvE · 캐러셀 · 등급 확률표)만 비어 있으면 채운다 (다른 값은 그대로)
+                bool pve = FillPveCarouselDefaults(existing);
+                bool odds = FillRarityOddsDefaults(existing);
+                if (pve || odds)
                 {
                     EditorUtility.SetDirty(existing);
                     AssetDatabase.SaveAssets();
-                    Debug.Log($"[Setup] {RunBalancePath} PvE · 캐러셀 기본값 채움 (다른 값은 그대로)");
+                    Debug.Log($"[Setup] {RunBalancePath} 빈 칸 기본값 채움 (PvE · 캐러셀 {pve}, 등급 확률표 {odds}) — 다른 값은 그대로");
                 }
                 else Debug.Log($"[Setup] {RunBalancePath} 이미 있음 — 값은 그대로 둠");
                 return;
@@ -48,8 +50,9 @@ namespace Moa.Showdown.Editor.Setup
             r.playerCount = 8;
             r.recentOpponentMemory = 3;
             r.prepSeconds = 30; // 준비 시간 BALANCE 15
-            r.poolSizeByRarity = new[] { 60, 22, 18, 12, 10 }; // 공유 풀 BALANCE 14 — 일반은 몬스터가 6종뿐이라 임시 60 (TFT 29, 종류가 늘면 되돌림)
+            r.poolSizeByRarity = new[] { 29, 22, 18, 12, 10 }; // 공유 풀 BALANCE 14 — TFT 값 (~~일반 임시 60~~ → 3-2에서 몬스터 20종이 되어 29로)
             FillPveCarouselDefaults(r);
+            FillRarityOddsDefaults(r);
             AssetDatabase.CreateAsset(r, RunBalancePath);
             AssetDatabase.SaveAssets();
             Debug.Log($"[Setup] {RunBalancePath} 생성");
@@ -70,9 +73,10 @@ namespace Moa.Showdown.Editor.Setup
             {
                 Pve("야생 1 (1R)", 5, 2, ("sprout", 0, 1), ("drip", 1, 1)),
                 Pve("야생 2 (2R)", 5, 2, ("sprout", 0, 1), ("drip", 1, 1), ("gust", 3, 1)),
-                Pve("야생 3 (8R)", 10, 5, ("ember", 0, 2), ("pebble", 1, 2), ("drip", 2, 2), ("gust", 3, 2), ("zap", 4, 2), ("sprout", 5, 2)),
-                Pve("야생 4 (14R)", 10, 5, ("ember", 0, 3), ("pebble", 1, 3), ("drip", 2, 3), ("gust", 3, 2), ("zap", 4, 2), ("sprout", 5, 2)),
-                Pve("야생 5 (20R~)", 10, 5, ("ember", 0, 3), ("pebble", 1, 3), ("drip", 2, 3), ("gust", 3, 3), ("zap", 4, 3), ("sprout", 5, 3)),
+                // 3-2 다시 맞춤: 봇 시뮬(12판) 8R 승률 44% · 14R 44%. 20R은 봇 판이 17라운드 안에 끝나 검증 못 함
+                Pve("야생 3 (8R)", 10, 5, ("cinder", 0, 2), ("drum", 1, 2), ("ember", 2, 2), ("zap", 3, 2), ("pebble", 4, 2), ("spore", 5, 2)),
+                Pve("야생 4 (14R)", 10, 5, ("wisp", 0, 2), ("grovekeeper", 1, 2), ("toxifrog", 2, 2), ("drum", 3, 3), ("magmaw", 4, 1), ("shellby", 5, 3)),
+                Pve("야생 5 (20R~)", 10, 5, ("wisp", 0, 3), ("grovekeeper", 1, 3), ("toxifrog", 2, 3), ("drum", 3, 3), ("magmaw", 4, 2), ("dracon", 5, 2)),
             };
             r.carouselOpeningRounds = 1; // 1라운드 (판 시작)
             r.carouselRepeatStart = 5;   // 5 · 11 · 17 … (PvE 사이 중간)
@@ -80,6 +84,26 @@ namespace Moa.Showdown.Editor.Setup
             r.carouselPickSeconds = 10;
             return true;
         }
+
+        /// <summary>등급 확률표 기본값 (BALANCE 17, 3-2 사용자 "이대로 진행"). 이미 줄이 있으면 아무것도 안 함.</summary>
+        public static bool FillRarityOddsDefaults(RunBalance r)
+        {
+            if (r.rarityOdds != null && r.rarityOdds.Count > 0) return false;
+            r.rarityOdds = new List<RarityOddsRow>
+            {
+                Odds(1, 100, 0, 0, 0, 0),
+                Odds(3, 75, 25, 0, 0, 0),
+                Odds(5, 55, 30, 15, 0, 0),
+                Odds(7, 40, 33, 22, 5, 0),
+                Odds(10, 25, 35, 30, 9, 1),
+                Odds(13, 20, 30, 33, 14, 3),
+                Odds(16, 15, 25, 35, 20, 5),
+            };
+            return true;
+        }
+
+        private static RarityOddsRow Odds(int fromRound, params int[] percent) =>
+            new RarityOddsRow { fromRound = fromRound, percent = percent };
 
         private static PveTeamRow Pve(string label, int win, int lose, params (string id, int slot, int level)[] monsters)
         {

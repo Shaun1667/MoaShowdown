@@ -85,3 +85,171 @@ MonoBehaviour:
       amount: 2
       perLevel: 0
       everyN: 0
+  - id: spore
+    displayName: "\uD3EC\uC790\uC1A1\uC774"
+    attack: 9
+    attackIntervalTicks: 10
+    rarity: 0
+    type: 7
+    ability:
+      trigger: 2
+      effect: 3
+      amount: 1
+      perLevel: 0
+      everyN: 0
+  - id: chirp
+    displayName: "\uC9F9\uC9F9\uC774"
+    attack: 6
+    attackIntervalTicks: 5
+    rarity: 0
+    type: 6
+    ability:
+      trigger: 4
+      effect: 11
+      amount: 1
+      perLevel: 0
+      everyN: 0
+  - id: thornet
+    displayName: "\uAC00\uC2DC\uBC8C"
+    attack: 12
+    attackIntervalTicks: 6
+    rarity: 1
+    type: 8
+    ability:
+      trigger: 3
+      effect: 3
+      amount: 2
+      perLevel: 0
+      everyN: 3
+  - id: cinder
+    displayName: "\uC7BF\uBD88\uC5EC\uC6B0"
+    attack: 18
+    attackIntervalTicks: 9
+    rarity: 1
+    type: 2
+    ability:
+      trigger: 2
+      effect: 2
+      amount: 2
+      perLevel: 0
+      everyN: 0
+  - id: shellby
+    displayName: "\uB2E8\uB2E8\uAECD\uC9C8"
+    attack: 22
+    attackIntervalTicks: 14
+    rarity: 1
+    type: 11
+    ability:
+      trigger: 1
+      effect: 4
+      amount: 40
+      perLevel: 1
+      everyN: 0
+  - id: bubble
+    displayName: "\uAC70\uD488\uACE0\uB798"
+    attack: 14
+    attackIntervalTicks: 10
+    rarity: 1
+    type: 3
+    ability:
+      trigger: 2
+      effect: 5
+      amount: 6
+      perLevel: 1
+      everyN: 0
+  - id: buzzbolt
+    displayName: "\uC719\uC719\uC804\uAE30"
+    attack: 8
+    attackIntervalTicks: 5
+    rarity: 1
+    type: 4
+    ability:
+      trigger: 1
+      effect: 10
+      amount: 1
+      perLevel: 0
+      everyN: 0
+  - id: drum
+    displayName: "\uB465\uB465\uB450\uB354\uC9C0"
+    attack: 16
+    attackIntervalTicks: 12
+    rarity: 1
+    type: 5
+    ability:
+      trigger: 1
+      effect: 9
+      amount: 3
+      perLevel: 1
+      everyN: 0
+  - id: wisp
+    displayName: "\uB3C4\uAE68\uBE44\uBD88"
+    attack: 20
+    attackIntervalTicks: 10
+    rarity: 2
+    type: 9
+    ability:
+      trigger: 2
+      effect: 12
+      amount: 2
+      perLevel: 0
+      everyN: 0
+  - id: toxifrog
+    displayName: "\uB3C5\uAC1C\uAD74"
+    attack: 18
+    attackIntervalTicks: 10
+    rarity: 2
+    type: 7
+    ability:
+      trigger: 2
+      effect: 3
+      amount: 2
+      perLevel: 0
+      everyN: 0
+  - id: grovekeeper
+    displayName: "\uC232\uC9C0\uAE30"
+    attack: 26
+    attackIntervalTicks: 14
+    rarity: 2
+    type: 1
+    ability:
+      trigger: 1
+      effect: 9
+      amount: 6
+      perLevel: 1
+      everyN: 0
+  - id: stormwing
+    displayName: "\uD3ED\uD48D\uB9E4"
+    attack: 14
+    attackIntervalTicks: 4
+    rarity: 3
+    type: 6
+    ability:
+      trigger: 3
+      effect: 6
+      amount: 3
+      perLevel: 0
+      everyN: 4
+  - id: magmaw
+    displayName: "\uC6A9\uC554\uAC70\uBD81"
+    attack: 40
+    attackIntervalTicks: 15
+    rarity: 3
+    type: 2
+    ability:
+      trigger: 2
+      effect: 2
+      amount: 4
+      perLevel: 0
+      everyN: 0
+  - id: dracon
+    displayName: "\uC0C8\uBCBD\uC6A9"
+    attack: 45
+    attackIntervalTicks: 12
+    rarity: 4
+    type: 10
+    ability:
+      trigger: 2
+      effect: 12
+      amount: 5
+      perLevel: 0
+      everyN: 0

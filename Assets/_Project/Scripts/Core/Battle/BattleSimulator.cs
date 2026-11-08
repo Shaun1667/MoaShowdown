@@ -25,7 +25,7 @@ namespace Moa.Showdown.Core.Battle
 
     /// <summary>
     /// 전투 계산 한 곳. 같은 (규칙, 팀 A, 팀 B, 라운드, 시드) → 항상 같은 결과 (CLAUDE 핵심 규칙 2).
-    /// 전투 시작(틱 0): BattleStart 능력.
+    /// 전투 시작(틱 0): BattleStart 능력 (칸 순서 A 0~5 → B 0~5; 이웃 공격력 · 이웃 속도는 이번 전투 능력치를 바꿈).
     /// 한 틱의 순서: 공격(A 0~5칸 → B 0~5칸, 공격 능력 발동) → 화상(BurnInterval마다 쌓인 만큼, 그 뒤 1 감소)
     /// → 독(PoisonInterval마다 쌓인 만큼, 줄지 않음) → 서든데스 → 피해를 양쪽 동시에 적용(방어막이 먼저 받음)
     /// → 회복(살아 있을 때, 시작 체력까지) → 종료 판정.
@@ -72,6 +72,8 @@ namespace Moa.Showdown.Core.Battle
             var sides = new[] { new SideState { Hp = startHp }, new SideState { Hp = startHp } };
             var timers = new int[2, BattleTeam.SlotCount];
             var attackCounts = new int[2, BattleTeam.SlotCount];
+            // 이번 전투 능력치 (전투 중 능력으로 바뀜: 이웃 공격력 · 이웃 속도 · 공격할수록 강해짐, 3-2)
+            var units = new UnitState(teams);
             var events = new List<BattleEvent>();
 
             // 전투 시작 능력 (틱 0)
@@ -84,7 +86,7 @@ namespace Moa.Showdown.Core.Battle
                     BattleUnit u = teams[s][slot];
                     if (u.IsEmpty || u.Ability.IsNone || u.Ability.Trigger != AbilityTrigger.BattleStart) continue;
                     long none = 0;
-                    ApplyAbility(0, (BattleSide)s, slot, u.Ability, sides, events, ref none);
+                    ApplyAbility(0, (BattleSide)s, slot, u.Ability, sides, units, events, ref none);
                 }
             }
             EndOfTickRecords(0, sides, events);
@@ -95,7 +97,7 @@ namespace Moa.Showdown.Core.Battle
                 sides[1].BeginTick();
 
                 for (int s = 0; s < 2; s++)
-                    TickAttacks((BattleSide)s, teams[s], timers, attackCounts, tick, sides, events);
+                    TickAttacks((BattleSide)s, teams[s], timers, attackCounts, tick, sides, units, events);
 
                 if (tick % rules.BurnIntervalTicks == 0)
                 {
@@ -173,7 +175,7 @@ namespace Moa.Showdown.Core.Battle
             return Finish(BattleOutcome.Draw, rules.MaxTicks, sides[0].Hp, sides[1].Hp, startHp, events);
         }
 
-        private static void TickAttacks(BattleSide side, BattleTeam team, int[,] timers, int[,] attackCounts, int tick, SideState[] sides, List<BattleEvent> events)
+        private static void TickAttacks(BattleSide side, BattleTeam team, int[,] timers, int[,] attackCounts, int tick, SideState[] sides, UnitState units, List<BattleEvent> events)
         {
             int s = (int)side;
             SideState enemy = sides[1 - s];
@@ -182,15 +184,15 @@ namespace Moa.Showdown.Core.Battle
                 BattleUnit unit = team[slot];
                 if (unit.IsEmpty) continue;
                 timers[s, slot]++;
-                if (timers[s, slot] < unit.AttackIntervalTicks) continue;
+                if (timers[s, slot] < units.Interval[s, slot]) continue;
                 timers[s, slot] = 0;
                 attackCounts[s, slot]++;
 
-                long damage = unit.Attack;
+                long damage = units.Attack[s, slot];
                 BattleAbility ab = unit.Ability;
                 bool fires = !ab.IsNone && (ab.Trigger == AbilityTrigger.OnAttack
                     || (ab.Trigger == AbilityTrigger.EveryNthAttack && ab.EveryN > 0 && attackCounts[s, slot] % ab.EveryN == 0));
-                if (fires) ApplyAbility(tick, side, slot, ab, sides, events, ref damage);
+                if (fires) ApplyAbility(tick, side, slot, ab, sides, units, events, ref damage);
 
                 damage = Math.Min(damage, int.MaxValue);
                 enemy.IncomingDamage += damage;
@@ -198,13 +200,56 @@ namespace Moa.Showdown.Core.Battle
             }
         }
 
+        /// <summary>이번 전투의 몬스터별 공격력 · 공격 간격 (전투 시작 값 = 팀 능력치, 능력으로 바뀜).</summary>
+        private sealed class UnitState
+        {
+            public readonly int[,] Attack = new int[2, BattleTeam.SlotCount];
+            public readonly int[,] Interval = new int[2, BattleTeam.SlotCount];
+            public readonly bool[,] Present = new bool[2, BattleTeam.SlotCount];
+
+            public UnitState(BattleTeam[] teams)
+            {
+                for (int s = 0; s < 2; s++)
+                    for (int slot = 0; slot < BattleTeam.SlotCount; slot++)
+                    {
+                        BattleUnit u = teams[s][slot];
+                        Present[s, slot] = !u.IsEmpty;
+                        Attack[s, slot] = u.Attack;
+                        Interval[s, slot] = u.AttackIntervalTicks;
+                    }
+            }
+        }
+
+        /// <summary>붙어 있는 칸: 같은 줄 좌우(열 ±1) · 다른 줄 같은 열. 칸 번호 = 줄 × 3 + 열.</summary>
+        public static IEnumerable<int> Neighbors(int slot)
+        {
+            int row = slot / BattleTeam.Columns, col = slot % BattleTeam.Columns;
+            if (col > 0) yield return slot - 1;
+            if (col < BattleTeam.Columns - 1) yield return slot + 1;
+            int otherRow = 1 - row;
+            yield return BattleTeam.SlotOf(otherRow, col);
+        }
+
         /// <summary>능력 하나 적용. damage는 공격 중일 때 이번 공격 피해 (전투 시작이면 쓰지 않음).</summary>
-        private static void ApplyAbility(int tick, BattleSide side, int slot, BattleAbility ab, SideState[] sides, List<BattleEvent> events, ref long damage)
+        private static void ApplyAbility(int tick, BattleSide side, int slot, BattleAbility ab, SideState[] sides, UnitState units, List<BattleEvent> events, ref long damage)
         {
             SideState mine = sides[(int)side];
             SideState enemy = sides[1 - (int)side];
+            int s = (int)side;
             switch (ab.Effect)
             {
+                case AbilityEffect.AdjacentAttackBonus:
+                    foreach (int n in Neighbors(slot))
+                        if (units.Present[s, n]) units.Attack[s, n] = ClampAdd(units.Attack[s, n], ab.Amount);
+                    break;
+                case AbilityEffect.AdjacentHaste:
+                    foreach (int n in Neighbors(slot))
+                        if (units.Present[s, n]) units.Interval[s, n] = Math.Max(1, units.Interval[s, n] - ab.Amount);
+                    break;
+                case AbilityEffect.AttackGrowth:
+                    // 이번 공격 피해는 그대로, 다음 공격부터 강해짐
+                    units.Attack[s, slot] = ClampAdd(units.Attack[s, slot], ab.Amount);
+                    break;
                 case AbilityEffect.BonusDamage:
                     damage += ab.Amount;
                     break;

@@ -89,7 +89,10 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 - 확인 요령: UI 올림/내림 = `ExecuteEvents.Execute(go, new PointerEventData(EventSystem.current), ExecuteEvents.pointerEnterHandler / pointerExitHandler)`, 3D = `InputState.Change(Mouse.current.position, 화면좌표)` 후 Step.
 - 몬스터 능력 = 몬스터 표 한 줄의 `ability`(언제 `AbilityTrigger` × 무엇 `AbilityEffect` × 수치, ×레벨 · N번째 선택) — enum은 끝에만 추가. 전투 능력은 `TeamFactory.BuildUnit`이 `BattleAbility`(레벨 반영 수치)로 바꿔 `BattleSimulator`가 처리(전투 시작 · 공격할 때 · N번째 공격), 상점 능력은 `ShopController`(라운드 시작 = 보드만 · 살 때). 새 효과 = enum 끝 + `ApplyAbility`/`ApplyShopAbility`의 case + `HudText.EffectFormats` · `EffectPopupFormats` 한 줄 + 테스트.
 - 전투 상태: 팀마다 방어막(모든 피해를 먼저 받음) · 화상(BurnInterval마다 스택 피해 후 −1) · 독(PoisonInterval마다 스택 피해, 유지) · 회복(시작 체력까지). 화면은 `ShieldChanged` · `StatusChanged` · `Heal` · `DamageOverTime` · `Ability` 이벤트만 보고 HP 바 아래 상태 줄 · 떠오르는 글로 그린다.
-- 속성은 `ElementType`(몬스터 표 `type`, 끝에만 추가). 아직 속성 시너지 규칙은 없음 (다음 묶음).
+- 속성은 `ElementType`(몬스터 표 `type`, 끝에만 추가). 속성 시너지는 없음 (결정 2026-11-06) — 표시용.
+- 전투 중에 바뀌는 몬스터 능력치(이웃 공격력 · 이웃 속도 · 공격할수록 강해짐, 3-2)는 `BattleSimulator`의 이번 전투 상태(`UnitState`)에만 — `BattleUnit`은 그대로, 다음 전투로 안 넘어감. "붙어 있는 칸"은 `BattleSimulator.Neighbors(칸)` 한 곳(같은 줄 좌우 + 다른 줄 같은 열).
+- 상점 · 캐러셀 카드 뽑기는 `ShopController.DrawCard(pool, 라운드, rng)` 한 곳: 등급 확률표(`ShopRules.RarityOddsByRound` ← `RunBalance.rarityOdds`, BALANCE 17)로 등급 먼저 → 그 등급 안에서 풀 남은 수 비례(풀 없으면 표 균등), 빈 등급은 아래 → 위. 표가 비면 예전 방식. 새 등급 줄 = 표 한 줄.
+- 몬스터 표 Setup(`SpeciesSetup`)은 기본 표에서 **없는 ID만 끝에 추가** — 새 몬스터 = `Defaults` 한 줄 + BALANCE 7 · 12 + `BalanceTests` Balance7 · 12 줄.
 - 규칙 · 능력 · 수치를 바꿔 전투 결과가 달라지면 `BattleBalance.rulesVersion` +1 → `Setup/Local Opponents` 다시 실행 (샘플 상대도 새 버전으로).
 - 8인 로비 진행은 `LobbyController`(Core/Lobby) 한 곳: `NewLobby`(사람 + 봇, 플레이어마다 자기 `RunState`와 시드) → `BeginRound`(살아 있는 모두 수입 · 상점 · 라운드 시작 능력, 봇은 `BotBrain`이 바로 행동) → [사람 상점 · 배치] → `ResolveRound`(대진 · 전투 · 목숨 · 탈락 순위). 상태는 `LobbyState` 하나(JSON `LobbyStateJson`). 대진 난수 = `SeedMix.PurposePairing`, 플레이어 시드 = `PurposeLobbyPlayer`, 대전 시드는 `LobbyMatch.Seed`에 남김. 수치 `LobbyRules` ← `RunBalance`(BALANCE 13).
 - 봇은 `BotBrain`(난수 없음): 가진 몬스터 → 초당 피해 높은 순으로 사고, 대기석이 차면 가장 약한 것 팔고, 보드 빈칸을 강한 것부터 채우고 더 강하면 맞바꿈. 새로고침 안 함.

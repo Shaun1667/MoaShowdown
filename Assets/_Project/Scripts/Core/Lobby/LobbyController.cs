@@ -371,7 +371,7 @@ namespace Moa.Showdown.Core.Lobby
             var rng = new DeterministicRandom(SeedMix.Derive(unchecked((ulong)lobby.Seed), SeedMix.PurposeCarousel, lobby.Round));
             for (int i = 0; i < alive.Count + 1; i++)
             {
-                string id = pool.Draw(rng);
+                string id = _shop.DrawCard(pool, lobby.Round, rng); // 상점과 같은 라운드 등급 확률표 (3-2)
                 if (id == null) break; // 풀이 비면 놓을 수 있는 만큼만
                 c.Units.Add(id);
                 c.TakenBy.Add(-1);

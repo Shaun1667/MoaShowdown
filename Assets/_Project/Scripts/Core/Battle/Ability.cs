@@ -36,6 +36,14 @@ namespace Moa.Showdown.Core.Battle
         PermAttackSelf = 7,
         /// <summary>상점: 내 다른 몬스터 중 공격력이 가장 낮은 하나의 공격력 영구 + 수치.</summary>
         PermAttackWeakestAlly = 8,
+        /// <summary>붙어 있는 아군(같은 줄 좌우 · 같은 열 위아래)의 이번 전투 공격력 + 수치 (3-2).</summary>
+        AdjacentAttackBonus = 9,
+        /// <summary>붙어 있는 아군의 이번 전투 공격 간격 − 수치, 최소 1틱 (3-2).</summary>
+        AdjacentHaste = 10,
+        /// <summary>상점: 골드 + 수치 (3-2).</summary>
+        GainGold = 11,
+        /// <summary>이번 공격 뒤 자기 이번 전투 공격력 + 수치 (공격할수록 강해짐, 3-2).</summary>
+        AttackGrowth = 12,
     }
 
     /// <summary>

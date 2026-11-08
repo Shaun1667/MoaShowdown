@@ -119,6 +119,9 @@ namespace Moa.Showdown.Core.Shop
                     }
                     weakest?.Buffs.Add(new StatBuff(StatIds.Attack, amount));
                     break;
+                case AbilityEffect.GainGold:
+                    s.Gold = (int)Math.Min((long)s.Gold + amount, int.MaxValue);
+                    break;
             }
         }
 
@@ -242,9 +245,57 @@ namespace Moa.Showdown.Core.Shop
             if (pool != null)
                 foreach (string id in s.Shop) pool.Return(id, 1);
             s.Shop.Clear();
-            IReadOnlyList<SpeciesDef> all = _catalog.All;
             for (int i = 0; i < _rules.ShopSlots; i++)
-                s.Shop.Add(pool != null ? pool.Draw(rng) : all[rng.NextInt(all.Count)].Id);
+                s.Shop.Add(DrawCard(pool, s.Round, rng));
+        }
+
+        /// <summary>
+        /// 카드 한 장 뽑기 (상점 · 캐러셀 공용, 3-2). 등급 확률표가 있으면 등급을 먼저 뽑고(0~99), 그 등급 안에서
+        /// 풀 남은 수 비례(로비) 또는 몬스터 표 균등(pool = null). 뽑은 등급이 비면 아래 등급부터, 그다음 위 등급에서 찾는다.
+        /// 표가 없으면 예전 방식(풀 비례 · 표 균등). 아무것도 없으면 null (빈 칸).
+        /// </summary>
+        public string DrawCard(UnitPool pool, int round, DeterministicRandom rng)
+        {
+            IReadOnlyList<SpeciesDef> all = _catalog.All;
+            int[] odds = _rules.OddsFor(round);
+            if (odds == null) return pool != null ? pool.Draw(rng) : all[rng.NextInt(all.Count)].Id;
+
+            int roll = rng.NextInt(100);
+            int rolled = odds.Length - 1;
+            for (int r = 0, acc = 0; r < odds.Length; r++)
+            {
+                acc += odds[r];
+                if (roll < acc)
+                {
+                    rolled = r;
+                    break;
+                }
+            }
+
+            foreach (int r in FallbackOrder(rolled, odds.Length))
+            {
+                var rarity = (Rarity)r;
+                if (pool != null)
+                {
+                    string id = pool.Draw(rng, x => _catalog.TryGet(x, out SpeciesDef d) && d.Rarity == rarity);
+                    if (id != null) return id;
+                }
+                else
+                {
+                    var candidates = new List<SpeciesDef>();
+                    foreach (SpeciesDef d in all)
+                        if (d.Rarity == rarity) candidates.Add(d);
+                    if (candidates.Count > 0) return candidates[rng.NextInt(candidates.Count)].Id;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>뽑은 등급 → 아래 등급들(가까운 순) → 위 등급들(가까운 순).</summary>
+        private static IEnumerable<int> FallbackOrder(int rolled, int count)
+        {
+            for (int r = rolled; r >= 0; r--) yield return r;
+            for (int r = rolled + 1; r < count; r++) yield return r;
         }
 
         /// <summary>판 몬스터 · 상점 카드를 모두 풀로 돌려놓고 비운다 (탈락했을 때).</summary>

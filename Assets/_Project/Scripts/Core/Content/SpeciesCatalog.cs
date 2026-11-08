@@ -23,7 +23,7 @@ namespace Moa.Showdown.Core.Content
         public AbilityDef Ability;
     }
 
-    /// <summary>몬스터 속성 (시너지 조건용). 끝에만 추가한다.</summary>
+    /// <summary>몬스터 속성 (지금은 표시용 — 시너지 없음, 2026-11-06). 끝에만 추가한다.</summary>
     public enum ElementType
     {
         None = 0,
@@ -34,6 +34,10 @@ namespace Moa.Showdown.Core.Content
         Rock = 5,
         Flying = 6,
         Toxic = 7,
+        Bug = 8,
+        Ghost = 9,
+        Dragon = 10,
+        Steel = 11,
     }
 
     /// <summary>몬스터 표의 능력 한 줄: 언제 × 무엇 × 수치 (BALANCE 12).</summary>

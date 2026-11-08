@@ -1,7 +1,7 @@
 [
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r01_0",
     "round": 1,
     "wins": 0,
@@ -10,14 +10,14 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "ember",
+        "speciesId": "zap",
         "level": 1,
         "buffs": []
       },
       null,
       null,
       {
-        "speciesId": "zap",
+        "speciesId": "drum",
         "level": 1,
         "buffs": []
       },
@@ -27,7 +27,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r01_1",
     "round": 1,
     "wins": 0,
@@ -36,14 +36,14 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "sprout",
+        "speciesId": "grovekeeper",
         "level": 1,
         "buffs": []
       },
       null,
       null,
       {
-        "speciesId": "sprout",
+        "speciesId": "magmaw",
         "level": 1,
         "buffs": []
       },
@@ -53,7 +53,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r01_2",
     "round": 1,
     "wins": 0,
@@ -69,7 +69,7 @@
       null,
       null,
       {
-        "speciesId": "sprout",
+        "speciesId": "thornet",
         "level": 1,
         "buffs": []
       },
@@ -79,7 +79,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r02_0",
     "round": 2,
     "wins": 0,
@@ -88,7 +88,7 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "pebble",
+        "speciesId": "shellby",
         "level": 1,
         "buffs": []
       },
@@ -105,7 +105,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r02_1",
     "round": 2,
     "wins": 0,
@@ -114,14 +114,14 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "sprout",
+        "speciesId": "drip",
         "level": 1,
         "buffs": []
       },
       null,
       null,
       {
-        "speciesId": "drip",
+        "speciesId": "thornet",
         "level": 1,
         "buffs": []
       },
@@ -131,7 +131,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r02_2",
     "round": 2,
     "wins": 1,
@@ -140,14 +140,14 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "pebble",
+        "speciesId": "magmaw",
         "level": 1,
         "buffs": []
       },
       null,
       null,
       {
-        "speciesId": "zap",
+        "speciesId": "cinder",
         "level": 1,
         "buffs": []
       },
@@ -157,7 +157,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r03_0",
     "round": 3,
     "wins": 0,
@@ -166,18 +166,18 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "sprout",
+        "speciesId": "buzzbolt",
         "level": 1,
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "wisp",
         "level": 1,
         "buffs": []
       },
       null,
       {
-        "speciesId": "gust",
+        "speciesId": "ember",
         "level": 1,
         "buffs": []
       },
@@ -187,7 +187,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r03_1",
     "round": 3,
     "wins": 1,
@@ -196,18 +196,18 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "gust",
+        "speciesId": "cinder",
         "level": 1,
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "drip",
         "level": 1,
         "buffs": []
       },
       null,
       {
-        "speciesId": "sprout",
+        "speciesId": "shellby",
         "level": 1,
         "buffs": []
       },
@@ -217,7 +217,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r03_2",
     "round": 3,
     "wins": 2,
@@ -226,7 +226,7 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "ember",
+        "speciesId": "stormwing",
         "level": 1,
         "buffs": []
       },
@@ -237,7 +237,7 @@
       },
       null,
       {
-        "speciesId": "pebble",
+        "speciesId": "spore",
         "level": 1,
         "buffs": []
       },
@@ -247,7 +247,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r04_0",
     "round": 4,
     "wins": 0,
@@ -256,18 +256,18 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "zap",
+        "speciesId": "gust",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "ember",
+        "speciesId": "stormwing",
         "level": 2,
         "buffs": []
       },
       null,
       {
-        "speciesId": "zap",
+        "speciesId": "ember",
         "level": 2,
         "buffs": []
       },
@@ -277,7 +277,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r04_1",
     "round": 4,
     "wins": 1,
@@ -286,18 +286,18 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "drip",
+        "speciesId": "shellby",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "bubble",
         "level": 2,
         "buffs": []
       },
       null,
       {
-        "speciesId": "zap",
+        "speciesId": "gust",
         "level": 2,
         "buffs": []
       },
@@ -307,7 +307,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r04_2",
     "round": 4,
     "wins": 2,
@@ -316,18 +316,18 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "drip",
+        "speciesId": "sprout",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "sprout",
+        "speciesId": "buzzbolt",
         "level": 2,
         "buffs": []
       },
       null,
       {
-        "speciesId": "sprout",
+        "speciesId": "pebble",
         "level": 2,
         "buffs": []
       },
@@ -337,7 +337,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r05_0",
     "round": 5,
     "wins": 1,
@@ -346,23 +346,23 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "pebble",
+        "speciesId": "magmaw",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "ember",
         "level": 2,
         "buffs": []
       },
       null,
       {
-        "speciesId": "drip",
+        "speciesId": "pebble",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "drip",
+        "speciesId": "pebble",
         "level": 2,
         "buffs": []
       },
@@ -371,7 +371,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r05_1",
     "round": 5,
     "wins": 2,
@@ -380,18 +380,18 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "ember",
+        "speciesId": "chirp",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "ember",
+        "speciesId": "stormwing",
         "level": 2,
         "buffs": []
       },
       null,
       {
-        "speciesId": "zap",
+        "speciesId": "stormwing",
         "level": 2,
         "buffs": []
       },
@@ -405,7 +405,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r05_2",
     "round": 5,
     "wins": 3,
@@ -414,23 +414,23 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "sprout",
+        "speciesId": "wisp",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "drip",
+        "speciesId": "magmaw",
         "level": 2,
         "buffs": []
       },
       null,
       {
-        "speciesId": "zap",
+        "speciesId": "stormwing",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "drip",
+        "speciesId": "wisp",
         "level": 2,
         "buffs": []
       },
@@ -439,7 +439,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r06_0",
     "round": 6,
     "wins": 1,
@@ -448,23 +448,23 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "sprout",
+        "speciesId": "thornet",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "sprout",
+        "speciesId": "grovekeeper",
         "level": 2,
         "buffs": []
       },
       null,
       {
-        "speciesId": "sprout",
+        "speciesId": "wisp",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "chirp",
         "level": 2,
         "buffs": []
       },
@@ -473,7 +473,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r06_1",
     "round": 6,
     "wins": 2,
@@ -482,23 +482,23 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "ember",
+        "speciesId": "bubble",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "ember",
+        "speciesId": "toxifrog",
         "level": 2,
         "buffs": []
       },
       null,
       {
-        "speciesId": "sprout",
+        "speciesId": "magmaw",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "dracon",
         "level": 2,
         "buffs": []
       },
@@ -507,7 +507,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r06_2",
     "round": 6,
     "wins": 3,
@@ -521,18 +521,18 @@
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "chirp",
         "level": 2,
         "buffs": []
       },
       null,
       {
-        "speciesId": "zap",
+        "speciesId": "dracon",
         "level": 2,
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "toxifrog",
         "level": 2,
         "buffs": []
       },
@@ -541,7 +541,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r07_0",
     "round": 7,
     "wins": 2,
@@ -550,27 +550,27 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "zap",
+        "speciesId": "chirp",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "magmaw",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "gust",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "drip",
+        "speciesId": "magmaw",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "drip",
+        "speciesId": "magmaw",
         "level": 3,
         "buffs": []
       },
@@ -579,7 +579,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r07_1",
     "round": 7,
     "wins": 3,
@@ -588,12 +588,22 @@
     "trinketIds": [],
     "board": [
       {
+        "speciesId": "thornet",
+        "level": 3,
+        "buffs": []
+      },
+      {
+        "speciesId": "magmaw",
+        "level": 3,
+        "buffs": []
+      },
+      {
         "speciesId": "drip",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "sprout",
+        "speciesId": "toxifrog",
         "level": 3,
         "buffs": []
       },
@@ -602,22 +612,12 @@
         "level": 3,
         "buffs": []
       },
-      {
-        "speciesId": "gust",
-        "level": 3,
-        "buffs": []
-      },
-      {
-        "speciesId": "drip",
-        "level": 3,
-        "buffs": []
-      },
       null
     ]
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r07_2",
     "round": 7,
     "wins": 4,
@@ -626,27 +626,27 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "ember",
+        "speciesId": "drum",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "gust",
+        "speciesId": "stormwing",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "gust",
+        "speciesId": "drum",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "magmaw",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "drip",
+        "speciesId": "shellby",
         "level": 3,
         "buffs": []
       },
@@ -655,7 +655,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r08_0",
     "round": 8,
     "wins": 2,
@@ -664,27 +664,27 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "gust",
+        "speciesId": "dracon",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "gust",
+        "speciesId": "ember",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "magmaw",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "drip",
+        "speciesId": "shellby",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "gust",
+        "speciesId": "bubble",
         "level": 3,
         "buffs": []
       },
@@ -693,7 +693,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r08_1",
     "round": 8,
     "wins": 3,
@@ -702,22 +702,22 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "zap",
+        "speciesId": "stormwing",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "spore",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "wisp",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "gust",
+        "speciesId": "bubble",
         "level": 3,
         "buffs": []
       },
@@ -731,7 +731,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r08_2",
     "round": 8,
     "wins": 4,
@@ -740,22 +740,22 @@
     "trinketIds": [],
     "board": [
       {
+        "speciesId": "cinder",
+        "level": 3,
+        "buffs": []
+      },
+      {
+        "speciesId": "stormwing",
+        "level": 3,
+        "buffs": []
+      },
+      {
         "speciesId": "ember",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "zap",
-        "level": 3,
-        "buffs": []
-      },
-      {
-        "speciesId": "ember",
-        "level": 3,
-        "buffs": []
-      },
-      {
-        "speciesId": "sprout",
+        "speciesId": "thornet",
         "level": 3,
         "buffs": []
       },
@@ -769,7 +769,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r09_0",
     "round": 9,
     "wins": 3,
@@ -778,7 +778,7 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "zap",
+        "speciesId": "bubble",
         "level": 3,
         "buffs": []
       },
@@ -788,22 +788,22 @@
         "buffs": []
       },
       {
+        "speciesId": "gust",
+        "level": 3,
+        "buffs": []
+      },
+      {
+        "speciesId": "buzzbolt",
+        "level": 3,
+        "buffs": []
+      },
+      {
         "speciesId": "ember",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "drip",
-        "level": 3,
-        "buffs": []
-      },
-      {
-        "speciesId": "zap",
-        "level": 3,
-        "buffs": []
-      },
-      {
-        "speciesId": "gust",
+        "speciesId": "cinder",
         "level": 3,
         "buffs": []
       }
@@ -811,7 +811,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r09_1",
     "round": 9,
     "wins": 4,
@@ -820,32 +820,32 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "drip",
+        "speciesId": "wisp",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "thornet",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "ember",
+        "speciesId": "bubble",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "grovekeeper",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "sprout",
+        "speciesId": "magmaw",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "sprout",
+        "speciesId": "shellby",
         "level": 3,
         "buffs": []
       }
@@ -853,7 +853,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r09_2",
     "round": 9,
     "wins": 5,
@@ -862,32 +862,32 @@
     "trinketIds": [],
     "board": [
       {
+        "speciesId": "buzzbolt",
+        "level": 3,
+        "buffs": []
+      },
+      {
         "speciesId": "drip",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "sprout",
+        "speciesId": "toxifrog",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "gust",
+        "speciesId": "drum",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "gust",
+        "speciesId": "shellby",
         "level": 3,
         "buffs": []
       },
       {
-        "speciesId": "sprout",
-        "level": 3,
-        "buffs": []
-      },
-      {
-        "speciesId": "zap",
+        "speciesId": "chirp",
         "level": 3,
         "buffs": []
       }
@@ -895,7 +895,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r10_0",
     "round": 10,
     "wins": 3,
@@ -904,32 +904,32 @@
     "trinketIds": [],
     "board": [
       {
+        "speciesId": "wisp",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "stormwing",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "stormwing",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "dracon",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "magmaw",
+        "level": 4,
+        "buffs": []
+      },
+      {
         "speciesId": "sprout",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "gust",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "ember",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "gust",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "pebble",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "pebble",
         "level": 4,
         "buffs": []
       }
@@ -937,7 +937,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r10_1",
     "round": 10,
     "wins": 4,
@@ -946,7 +946,7 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "drip",
+        "speciesId": "spore",
         "level": 4,
         "buffs": []
       },
@@ -956,22 +956,22 @@
         "buffs": []
       },
       {
-        "speciesId": "sprout",
-        "level": 4,
-        "buffs": []
-      },
-      {
         "speciesId": "drip",
         "level": 4,
         "buffs": []
       },
       {
-        "speciesId": "drip",
+        "speciesId": "thornet",
         "level": 4,
         "buffs": []
       },
       {
-        "speciesId": "gust",
+        "speciesId": "buzzbolt",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "chirp",
         "level": 4,
         "buffs": []
       }
@@ -979,7 +979,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r10_2",
     "round": 10,
     "wins": 5,
@@ -988,7 +988,7 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "pebble",
+        "speciesId": "grovekeeper",
         "level": 4,
         "buffs": []
       },
@@ -998,12 +998,12 @@
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "sprout",
         "level": 4,
         "buffs": []
       },
       {
-        "speciesId": "gust",
+        "speciesId": "toxifrog",
         "level": 4,
         "buffs": []
       },
@@ -1021,7 +1021,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r11_0",
     "round": 11,
     "wins": 4,
@@ -1030,27 +1030,27 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "ember",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "zap",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "pebble",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "zap",
+        "speciesId": "stormwing",
         "level": 4,
         "buffs": []
       },
       {
         "speciesId": "gust",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "buzzbolt",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "gust",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "drum",
         "level": 4,
         "buffs": []
       },
@@ -1063,7 +1063,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r11_1",
     "round": 11,
     "wins": 5,
@@ -1072,7 +1072,27 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "gust",
+        "speciesId": "stormwing",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "buzzbolt",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "wisp",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "thornet",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "toxifrog",
         "level": 4,
         "buffs": []
       },
@@ -1080,32 +1100,12 @@
         "speciesId": "sprout",
         "level": 4,
         "buffs": []
-      },
-      {
-        "speciesId": "drip",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "pebble",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "zap",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "drip",
-        "level": 4,
-        "buffs": []
       }
     ]
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r11_2",
     "round": 11,
     "wins": 6,
@@ -1114,27 +1114,27 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "ember",
+        "speciesId": "bubble",
         "level": 4,
         "buffs": []
       },
       {
-        "speciesId": "sprout",
+        "speciesId": "pebble",
         "level": 4,
         "buffs": []
       },
       {
-        "speciesId": "ember",
+        "speciesId": "chirp",
         "level": 4,
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "chirp",
         "level": 4,
         "buffs": []
       },
       {
-        "speciesId": "sprout",
+        "speciesId": "shellby",
         "level": 4,
         "buffs": []
       },
@@ -1147,7 +1147,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r12_0",
     "round": 12,
     "wins": 4,
@@ -1156,7 +1156,22 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "drip",
+        "speciesId": "pebble",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "drum",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "dracon",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "thornet",
         "level": 4,
         "buffs": []
       },
@@ -1166,22 +1181,7 @@
         "buffs": []
       },
       {
-        "speciesId": "gust",
-        "level": 4,
-        "buffs": []
-      },
-      {
         "speciesId": "drip",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "zap",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "sprout",
         "level": 4,
         "buffs": []
       }
@@ -1189,7 +1189,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r12_1",
     "round": 12,
     "wins": 5,
@@ -1198,7 +1198,7 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "ember",
+        "speciesId": "bubble",
         "level": 4,
         "buffs": []
       },
@@ -1208,22 +1208,22 @@
         "buffs": []
       },
       {
-        "speciesId": "drip",
+        "speciesId": "magmaw",
         "level": 4,
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "stormwing",
         "level": 4,
         "buffs": []
       },
       {
-        "speciesId": "ember",
+        "speciesId": "stormwing",
         "level": 4,
         "buffs": []
       },
       {
-        "speciesId": "ember",
+        "speciesId": "drum",
         "level": 4,
         "buffs": []
       }
@@ -1231,7 +1231,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r12_2",
     "round": 12,
     "wins": 6,
@@ -1240,12 +1240,7 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "ember",
-        "level": 4,
-        "buffs": []
-      },
-      {
-        "speciesId": "sprout",
+        "speciesId": "chirp",
         "level": 4,
         "buffs": []
       },
@@ -1255,17 +1250,22 @@
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "wisp",
         "level": 4,
         "buffs": []
       },
       {
-        "speciesId": "gust",
+        "speciesId": "chirp",
         "level": 4,
         "buffs": []
       },
       {
-        "speciesId": "drip",
+        "speciesId": "bubble",
+        "level": 4,
+        "buffs": []
+      },
+      {
+        "speciesId": "pebble",
         "level": 4,
         "buffs": []
       }
@@ -1273,7 +1273,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r13_0",
     "round": 13,
     "wins": 5,
@@ -1282,27 +1282,7 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "drip",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "zap",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "ember",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "zap",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "drip",
+        "speciesId": "sprout",
         "level": 5,
         "buffs": []
       },
@@ -1310,12 +1290,32 @@
         "speciesId": "gust",
         "level": 5,
         "buffs": []
+      },
+      {
+        "speciesId": "drum",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "cinder",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "grovekeeper",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "ember",
+        "level": 5,
+        "buffs": []
       }
     ]
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r13_1",
     "round": 13,
     "wins": 6,
@@ -1324,32 +1324,32 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "sprout",
+        "speciesId": "shellby",
         "level": 5,
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "buzzbolt",
         "level": 5,
         "buffs": []
       },
       {
-        "speciesId": "ember",
+        "speciesId": "drum",
         "level": 5,
         "buffs": []
       },
       {
-        "speciesId": "sprout",
+        "speciesId": "buzzbolt",
         "level": 5,
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "drip",
         "level": 5,
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "drum",
         "level": 5,
         "buffs": []
       }
@@ -1357,7 +1357,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r13_2",
     "round": 13,
     "wins": 7,
@@ -1366,32 +1366,32 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "drip",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "gust",
-        "level": 5,
-        "buffs": []
-      },
-      {
         "speciesId": "sprout",
         "level": 5,
         "buffs": []
       },
       {
-        "speciesId": "gust",
+        "speciesId": "bubble",
         "level": 5,
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "grovekeeper",
         "level": 5,
         "buffs": []
       },
       {
-        "speciesId": "zap",
+        "speciesId": "cinder",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "chirp",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "stormwing",
         "level": 5,
         "buffs": []
       }
@@ -1399,7 +1399,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r14_0",
     "round": 14,
     "wins": 5,
@@ -1408,7 +1408,22 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "sprout",
+        "speciesId": "pebble",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "chirp",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "bubble",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "pebble",
         "level": 5,
         "buffs": []
       },
@@ -1418,22 +1433,7 @@
         "buffs": []
       },
       {
-        "speciesId": "gust",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "sprout",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "ember",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "pebble",
+        "speciesId": "spore",
         "level": 5,
         "buffs": []
       }
@@ -1441,7 +1441,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r14_1",
     "round": 14,
     "wins": 6,
@@ -1450,32 +1450,32 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "pebble",
+        "speciesId": "buzzbolt",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "wisp",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "bubble",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "cinder",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "spore",
         "level": 5,
         "buffs": []
       },
       {
         "speciesId": "pebble",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "zap",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "gust",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "drip",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "sprout",
         "level": 5,
         "buffs": []
       }
@@ -1483,7 +1483,7 @@
   },
   {
     "formatVersion": 1,
-    "rulesVersion": 2,
+    "rulesVersion": 3,
     "runId": "sample_r14_2",
     "round": 14,
     "wins": 7,
@@ -1492,32 +1492,32 @@
     "trinketIds": [],
     "board": [
       {
-        "speciesId": "sprout",
+        "speciesId": "magmaw",
         "level": 5,
         "buffs": []
       },
       {
-        "speciesId": "pebble",
+        "speciesId": "magmaw",
         "level": 5,
         "buffs": []
       },
       {
-        "speciesId": "sprout",
+        "speciesId": "thornet",
         "level": 5,
         "buffs": []
       },
       {
-        "speciesId": "ember",
+        "speciesId": "dracon",
+        "level": 5,
+        "buffs": []
+      },
+      {
+        "speciesId": "buzzbolt",
         "level": 5,
         "buffs": []
       },
       {
         "speciesId": "drip",
-        "level": 5,
-        "buffs": []
-      },
-      {
-        "speciesId": "pebble",
         "level": 5,
         "buffs": []
       }

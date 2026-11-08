@@ -2,6 +2,9 @@ using System.Linq;
 using Moa.Showdown.Game.Data;
 using NUnit.Framework;
 using UnityEditor;
+using E = Moa.Showdown.Core.Content.ElementType;
+using F = Moa.Showdown.Core.Battle.AbilityEffect;
+using T = Moa.Showdown.Core.Battle.AbilityTrigger;
 
 namespace Moa.Showdown.Tests
 {
@@ -85,7 +88,32 @@ namespace Moa.Showdown.Tests
             Assert.That(r.maxLevel, Is.EqualTo(3));
             Assert.DoesNotThrow(() => r.ToShopRules().Validate());
             var species = AssetDatabase.LoadAssetAtPath<SpeciesTable>("Assets/_Project/Data/SpeciesTable.asset");
-            Assert.That(species.rows.All(x => x.rarity == Moa.Showdown.Core.Content.Rarity.Common), Is.True, "시험용 6종은 모두 일반 (BALANCE 7)");
+            // 3-2: 일반 8 · 고급 6 · 희귀 3 · 영웅 2 · 전설 1 (BALANCE 7)
+            int[] byRarity = Enumerable.Range(0, 5).Select(i => species.rows.Count(x => (int)x.rarity == i)).ToArray();
+            CollectionAssert.AreEqual(new[] { 8, 6, 3, 2, 1 }, byRarity, "등급별 몬스터 수");
+        }
+
+        [Test]
+        public void Balance17_RarityOdds()
+        {
+            var r = AssetDatabase.LoadAssetAtPath<RunBalance>("Assets/_Project/Data/RunBalance.asset");
+            var expected = new[]
+            {
+                (1, new[] { 100, 0, 0, 0, 0 }),
+                (3, new[] { 75, 25, 0, 0, 0 }),
+                (5, new[] { 55, 30, 15, 0, 0 }),
+                (7, new[] { 40, 33, 22, 5, 0 }),
+                (10, new[] { 25, 35, 30, 9, 1 }),
+                (13, new[] { 20, 30, 33, 14, 3 }),
+                (16, new[] { 15, 25, 35, 20, 5 }),
+            };
+            Assert.That(r.rarityOdds.Count, Is.EqualTo(expected.Length));
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.That(r.rarityOdds[i].fromRound, Is.EqualTo(expected[i].Item1));
+                CollectionAssert.AreEqual(expected[i].Item2, r.rarityOdds[i].percent, $"{expected[i].Item1}라운드부터");
+            }
+            Assert.DoesNotThrow(() => r.ToShopRules().Validate());
         }
 
         [Test]
@@ -93,7 +121,7 @@ namespace Moa.Showdown.Tests
         {
             var b = Load();
             Assert.That(b.levelAttackMultiplier, Is.EqualTo(2));
-            Assert.That(b.rulesVersion, Is.EqualTo(2), "3-1 능력 추가로 1 → 2");
+            Assert.That(b.rulesVersion, Is.EqualTo(3), "3-1 능력 추가로 1 → 2, 3-2 몬스터 20종 · 새 효과로 2 → 3");
             Assert.DoesNotThrow(() => b.ToStatRules().Validate());
         }
 
@@ -111,7 +139,7 @@ namespace Moa.Showdown.Tests
         public void Balance14_PoolSizes()
         {
             var r = AssetDatabase.LoadAssetAtPath<RunBalance>("Assets/_Project/Data/RunBalance.asset");
-            CollectionAssert.AreEqual(new[] { 60, 22, 18, 12, 10 }, r.poolSizeByRarity, "일반 · 고급 · 희귀 · 영웅 · 전설 (일반은 임시 60, TFT 29)");
+            CollectionAssert.AreEqual(new[] { 29, 22, 18, 12, 10 }, r.poolSizeByRarity, "일반 · 고급 · 희귀 · 영웅 · 전설 (TFT 값, 3-2에서 일반 임시 60 → 29)");
         }
 
         [Test]
@@ -156,6 +184,21 @@ namespace Moa.Showdown.Tests
             Check("zap", Moa.Showdown.Core.Content.ElementType.Electric, Moa.Showdown.Core.Battle.AbilityTrigger.EveryNthAttack, Moa.Showdown.Core.Battle.AbilityEffect.DamageMultiplier, 2, false, 3);
             Check("drip", Moa.Showdown.Core.Content.ElementType.Water, Moa.Showdown.Core.Battle.AbilityTrigger.OnAttack, Moa.Showdown.Core.Battle.AbilityEffect.Heal, 3, true, 0);
             Check("gust", Moa.Showdown.Core.Content.ElementType.Flying, Moa.Showdown.Core.Battle.AbilityTrigger.OnBuy, Moa.Showdown.Core.Battle.AbilityEffect.PermAttackWeakestAlly, 2, false, 0);
+            // 3-2
+            Check("spore", E.Toxic, T.OnAttack, F.Poison, 1, false, 0);
+            Check("chirp", E.Flying, T.ShopRoundStart, F.GainGold, 1, false, 0);
+            Check("thornet", E.Bug, T.EveryNthAttack, F.Poison, 2, false, 3);
+            Check("cinder", E.Fire, T.OnAttack, F.Burn, 2, false, 0);
+            Check("shellby", E.Steel, T.BattleStart, F.Shield, 40, true, 0);
+            Check("bubble", E.Water, T.OnAttack, F.Heal, 6, true, 0);
+            Check("buzzbolt", E.Electric, T.BattleStart, F.AdjacentHaste, 1, false, 0);
+            Check("drum", E.Rock, T.BattleStart, F.AdjacentAttackBonus, 3, true, 0);
+            Check("wisp", E.Ghost, T.OnAttack, F.AttackGrowth, 2, false, 0);
+            Check("toxifrog", E.Toxic, T.OnAttack, F.Poison, 2, false, 0);
+            Check("grovekeeper", E.Grass, T.BattleStart, F.AdjacentAttackBonus, 6, true, 0);
+            Check("stormwing", E.Flying, T.EveryNthAttack, F.DamageMultiplier, 3, false, 4);
+            Check("magmaw", E.Fire, T.OnAttack, F.Burn, 4, false, 0);
+            Check("dracon", E.Dragon, T.OnAttack, F.AttackGrowth, 5, false, 0);
             Assert.DoesNotThrow(() => t.ToCatalog());
         }
 
@@ -164,10 +207,16 @@ namespace Moa.Showdown.Tests
         {
             var t = AssetDatabase.LoadAssetAtPath<SpeciesTable>("Assets/_Project/Data/SpeciesTable.asset");
             Assert.That(t, Is.Not.Null, "SpeciesTable 에셋 없음 — 메뉴 MoaShowdown/Setup/Species Table 실행");
+            // 표 순서 = 상점 · 풀 순서 (새 몬스터는 끝에만)
             var expected = new[]
             {
                 ("sprout", 8, 8), ("ember", 14, 12), ("pebble", 20, 18),
                 ("zap", 5, 4), ("drip", 10, 10), ("gust", 7, 6),
+                ("spore", 9, 10), ("chirp", 6, 5),
+                ("thornet", 12, 6), ("cinder", 18, 9), ("shellby", 22, 14), ("bubble", 14, 10), ("buzzbolt", 8, 5), ("drum", 16, 12),
+                ("wisp", 20, 10), ("toxifrog", 18, 10), ("grovekeeper", 26, 14),
+                ("stormwing", 14, 4), ("magmaw", 40, 15),
+                ("dracon", 45, 12),
             };
             Assert.That(t.rows.Count, Is.EqualTo(expected.Length));
             for (int i = 0; i < expected.Length; i++)

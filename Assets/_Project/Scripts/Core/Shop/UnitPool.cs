@@ -62,6 +62,34 @@ namespace Moa.Showdown.Core.Shop
             throw new InvalidOperationException("풀 뽑기 실패"); // r < total이므로 오지 않음
         }
 
+        /// <summary>조건에 맞는 몬스터의 남은 수 합.</summary>
+        public int CountWhere(Func<string, bool> filter)
+        {
+            int n = 0;
+            foreach (PoolEntry e in _entries)
+                if (e.Count > 0 && filter(e.SpeciesId)) n += e.Count;
+            return n;
+        }
+
+        /// <summary>조건에 맞는 몬스터 중에서 남은 수에 비례해 하나 뽑고 풀에서 뺀다 (등급 확률표용, 3-2). 맞는 게 없으면 null.</summary>
+        public string Draw(DeterministicRandom rng, Func<string, bool> filter)
+        {
+            int total = CountWhere(filter);
+            if (total <= 0) return null;
+            int r = rng.NextInt(total);
+            foreach (PoolEntry e in _entries)
+            {
+                if (e.Count <= 0 || !filter(e.SpeciesId)) continue;
+                if (r < e.Count)
+                {
+                    e.Count--;
+                    return e.SpeciesId;
+                }
+                r -= e.Count;
+            }
+            throw new InvalidOperationException("풀 뽑기 실패");
+        }
+
         /// <summary>풀로 되돌린다 (안 산 상점 카드 · 판 몬스터 · 탈락자 몬스터). 모르는 몬스터면 예외.</summary>
         public void Return(string speciesId, int count)
         {
