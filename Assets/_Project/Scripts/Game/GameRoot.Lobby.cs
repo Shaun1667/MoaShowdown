@@ -18,7 +18,8 @@ namespace Moa.Showdown.Game
     /// </summary>
     public sealed partial class GameRoot
     {
-        public const int MeIndex = 0;
+        /// <summary>내 자리 번호 (오프라인 = 0, 온라인 = 방장이 정한 자리).</summary>
+        public int MeIndex { get; private set; }
 
         private LobbyController _lobby;
 
@@ -30,7 +31,8 @@ namespace Moa.Showdown.Game
         private LobbyPlayer Me => Lobby.Players[MeIndex];
 
         /// <summary>내 상점 조작에 쓰는 공유 풀 (Lobby 모드만, 아니면 null = 무한 상점).</summary>
-        private Moa.Showdown.Core.Shop.UnitPool CurrentPool => mode == Mode.Lobby && Lobby != null ? LobbyController.PoolOf(Lobby) : null;
+        /// <remarks>Online에서는 방장이 보낸 상태의 풀 — 보기만 한다 (조작은 방장이).</remarks>
+        private Moa.Showdown.Core.Shop.UnitPool CurrentPool => LobbyLike && Lobby != null ? LobbyController.PoolOf(Lobby) : null;
 
         public void StartNewLobby()
         {
@@ -172,6 +174,11 @@ namespace Moa.Showdown.Game
         private void OnCarouselCard(int index)
         {
             if (Lobby?.Carousel == null || Lobby.Carousel.CurrentPicker != MeIndex) return;
+            if (mode == Mode.Online)
+            {
+                SendOnlineAction(Moa.Showdown.Core.Online.LobbyAction.Of(Moa.Showdown.Core.Online.LobbyActionKind.CarouselPick, index));
+                return;
+            }
             CarouselPickResult r = _lobby.PickCarousel(Lobby, MeIndex, index);
             if (r != CarouselPickResult.Picked && r != CarouselPickResult.PickedAsGold) return;
             _carouselTimer.Stop();
@@ -197,6 +204,7 @@ namespace Moa.Showdown.Game
         private void OnCarouselContinue()
         {
             if (Lobby?.Carousel == null || !Lobby.Carousel.IsDone) return;
+            if (mode == Mode.Online) return; // 방장이 잠깐 뒤 상점으로 넘김
             carouselView.Hide();
             EnterShop();
         }
@@ -316,15 +324,17 @@ namespace Moa.Showdown.Game
                 if (idx != MeIndex) lines.Add(string.Format(HudText.LobbyEliminatedFormat, p.Name, p.Placement));
             }
 
+            // 온라인: 판이 끝났으면 대기실로, 나만 탈락했으면 관전 계속 (오프라인은 새 판)
+            string endLabel = mode != Mode.Online ? HudText.NewRun : Lobby.IsFinished ? HudText.OnlineBackToRoom : HudText.OnlineKeepWatching;
             if (Me.Placement == 1)
             {
                 hud.ShowBanner(HudText.LobbyFirst);
-                hud.ShowRoundResult(string.Format(HudText.LobbyFirstFormat, r.Round), HudText.NewRun);
+                hud.ShowRoundResult(string.Format(HudText.LobbyFirstFormat, r.Round), endLabel);
             }
             else if (Me.Placement > 1)
             {
                 hud.ShowBanner(string.Format(HudText.PlacementFormat, Me.Placement));
-                hud.ShowRoundResult(string.Format(HudText.LobbyOutFormat, r.Round, Me.Placement), HudText.NewRun);
+                hud.ShowRoundResult(string.Format(HudText.LobbyOutFormat, r.Round, Me.Placement), endLabel);
             }
             else
             {
@@ -398,7 +408,8 @@ namespace Moa.Showdown.Game
             LobbyPlayer p = Lobby.Players[index];
             hud.SetSideLabels(string.Format(HudText.ScoutSideLabelFormat, p.Name), "");
             lobbyView.ShowScout(string.Format(HudText.ScoutTitleFormat, p.Name), p.Run.Bench.Select(UnitText).ToList());
-            lobbyView.SetScoutTimer(_scoutFromShop && _prep.IsRunning ? _prep.DisplaySeconds : -1, _prep.DisplaySeconds <= prepWarnSeconds);
+            if (mode == Mode.Online) lobbyView.SetScoutTimer(_scoutFromShop ? OnlineSecondsLeft : -1, OnlineSecondsLeft <= prepWarnSeconds);
+            else lobbyView.SetScoutTimer(_scoutFromShop && _prep.IsRunning ? _prep.DisplaySeconds : -1, _prep.DisplaySeconds <= prepWarnSeconds);
             BattleTeam team = TeamFactory.Build(_run.MakeSnapshot(p.Run), _catalog, _statRules);
             stage.Build(team, new BattleTeam(), unchecked((ulong)p.Run.Seed));
             stage.Tick(0f, 0f, true);

@@ -33,6 +33,10 @@ namespace Moa.Showdown.Core.Online
         public const string Ping = "ping";
         /// <summary>시험 신호 응답 (O-1): 방장 → 모두. body = 신호를 보낸 사람 ID.</summary>
         public const string Pong = "pong";
+        /// <summary>판 행동 (O-2): 참가자 → 방장. body = <see cref="LobbyAction"/> JSON.</summary>
+        public const string Action = "action";
+        /// <summary>판 상태 (O-2): 방장 → 모두. body = <see cref="LobbySync"/> JSON.</summary>
+        public const string Sync = "sync";
     }
 
     public sealed class NetMessageFormatException : Exception

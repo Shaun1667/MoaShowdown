@@ -133,11 +133,6 @@ namespace Moa.Showdown.Game
                 s => TeamFactory.IsPlayable(s, _catalog, _statRules));
 
             tooltip.Build();
-            if (mode == Mode.Online)
-            {
-                StartOnline(); // 대기실만 (O-1) — 전투 화면 · 상점은 쓰지 않음
-                return;
-            }
             hud.Build(mainCamera, Speeds);
             hud.AddSideInfo(tooltip, MyInfo, OpponentInfo);
             hud.SpeedClicked += SetSpeed;
@@ -146,7 +141,7 @@ namespace Moa.Showdown.Game
             hud.DebugLevelUpClicked += DebugLevelUp;
             SetSpeed(_speed);
 
-            if (mode == Mode.Run || mode == Mode.Lobby)
+            if (mode == Mode.Run || LobbyLike)
             {
                 _run = new RunController(runBalance.ToRules(), _rules, _statRules, _catalog, _opponents, balance.rulesVersion);
                 _shop = new ShopController(runBalance.ToShopRules(), _catalog, _statRules);
@@ -157,8 +152,8 @@ namespace Moa.Showdown.Game
                 shopView.LocationClicked += OnLocation;
                 shopView.StartBattleClicked += OnStartBattle;
                 shopView.SetTooltips(tooltip, CardInfo, LocationInfo);
-                hud.SetDebugVisible(showDebugButtons);
-                if (mode == Mode.Lobby)
+                hud.SetDebugVisible(showDebugButtons && mode != Mode.Online); // 온라인은 방장이 상태를 정하므로 디버그 레벨업 없음
+                if (LobbyLike)
                 {
                     _lobby = new Moa.Showdown.Core.Lobby.LobbyController(runBalance.ToLobbyRules(), runBalance.ToRules(), _rules, _statRules, _catalog, _shop, balance.rulesVersion);
                     carouselView.Build(_lobby.Rules.PlayerCount + 1);
@@ -169,8 +164,12 @@ namespace Moa.Showdown.Game
                     lobbyView.PlayerClicked += OnLobbyPlayerClicked;
                     lobbyView.BackClicked += StopScout;
                     lobbyView.SetBenchTooltips(tooltip, ScoutBenchInfo);
-                    StartNewLobby();
-                    EnterLobbyRound();
+                    if (mode == Mode.Online) StartOnline(); // 대기실부터 (O-1), 판은 방장이 시작 (O-2)
+                    else
+                    {
+                        StartNewLobby();
+                        EnterLobbyRound();
+                    }
                 }
                 else
                 {
@@ -184,10 +183,14 @@ namespace Moa.Showdown.Game
             }
         }
 
+        /// <summary>8인 로비 화면을 쓰는 모드 (오프라인 Lobby · 온라인 Online).</summary>
+        private bool LobbyLike => mode == Mode.Lobby || mode == Mode.Online;
+
         private void Update()
         {
             TickPrepTimer();
             TickCarouselTimer();
+            TickOnline();
             if (_playback == null) return;
             float scaled = Time.deltaTime * _speed;
             _playback.Advance(Time.deltaTime, _speed, OnBattleEvent);
@@ -196,7 +199,7 @@ namespace Moa.Showdown.Game
             if (_roundResultPending && _playback.IsFinished)
             {
                 _roundResultPending = false;
-                if (mode == Mode.Lobby) ShowLobbyRoundResult();
+                if (LobbyLike) ShowLobbyRoundResult();
                 else ShowRoundResult();
             }
             ProbeBattleHover();
@@ -252,7 +255,7 @@ namespace Moa.Showdown.Game
         /// <summary>전투 중 몬스터 정보 (Run 모드: 이번 라운드 스냅샷에서).</summary>
         public (string, string)? BattleUnitInfo(BattleSide side, int slot)
         {
-            if (mode == Mode.Lobby) return LobbyBattleUnitInfo(side, slot);
+            if (LobbyLike) return Lobby == null ? null : LobbyBattleUnitInfo(side, slot);
             if (mode != Mode.Run || LastReport == null) return null;
             TeamSnapshot snap = side == BattleSide.A ? LastReport.MySnapshot : LastReport.Opponent?.Snapshot;
             MonsterSnapshot m = snap?.Board[slot];
@@ -305,7 +308,7 @@ namespace Moa.Showdown.Game
 
         public (string, string)? MyInfo()
         {
-            if (mode == Mode.Lobby) return LobbyMyInfo();
+            if (LobbyLike) return LobbyMyInfo();
             if (mode != Mode.Run || State == null) return null;
             RunRules r = _run.Rules;
             return (HudText.MyTitle, InfoText.MyBody(State.TrainerId, State.Wins, r.WinsToChampion, State.Lives, r.StartLives, State.Gold, State.Round));
@@ -313,7 +316,7 @@ namespace Moa.Showdown.Game
 
         public (string, string)? OpponentInfo()
         {
-            if (mode == Mode.Lobby) return LobbyOpponentInfo();
+            if (LobbyLike) return LobbyOpponentInfo();
             OpponentResult o = mode == Mode.Run ? LastReport?.Opponent : LastOpponent;
             if (o?.Snapshot == null || (mode == Mode.Run && shopView.IsVisible)) return null;
             int count = o.Snapshot.Board.Count(m => m != null);
@@ -344,6 +347,11 @@ namespace Moa.Showdown.Game
             if (mode == Mode.Lobby)
             {
                 LobbyContinue();
+                return;
+            }
+            if (mode == Mode.Online)
+            {
+                OnlineContinue();
                 return;
             }
             if (mode != Mode.Run) return;
@@ -384,6 +392,12 @@ namespace Moa.Showdown.Game
 
         private void OnShopCard(int index)
         {
+            if (mode == Mode.Online)
+            {
+                SendOnlineAction(LobbyAction.Of(LobbyActionKind.Buy, index));
+                _selected = null;
+                return;
+            }
             string id = index < State.Shop.Count ? State.Shop[index] : null;
             int levelBefore = MaxLevelOf(id);
             ShopError e = _shop.Buy(State, index);
@@ -401,6 +415,11 @@ namespace Moa.Showdown.Game
 
         private void OnReroll()
         {
+            if (mode == Mode.Online)
+            {
+                SendOnlineAction(LobbyAction.Of(LobbyActionKind.Reroll));
+                return;
+            }
             ShopError e = _shop.Reroll(State, CurrentPool);
             _shopMessage = e == ShopError.None ? "" : ErrorText(e);
             RefreshShop();
@@ -411,6 +430,12 @@ namespace Moa.Showdown.Game
             if (!_selected.HasValue) return;
             MonsterSnapshot m = ShopController.Get(State, _selected.Value);
             if (m == null) return;
+            if (mode == Mode.Online)
+            {
+                SendOnlineAction(LobbyAction.SellAt(_selected.Value));
+                _selected = null;
+                return;
+            }
             int value = _shop.SellValue(m);
             string name = NameOf(m.SpeciesId);
             if (_shop.Sell(State, _selected.Value, CurrentPool) == ShopError.None) _shopMessage = string.Format(HudText.SoldFormat, name, value);
@@ -427,7 +452,19 @@ namespace Moa.Showdown.Game
             }
             else
             {
-                if (!_selected.Value.Equals(at)) _shop.Move(State, _selected.Value, at);
+                if (!_selected.Value.Equals(at))
+                {
+                    if (mode == Mode.Online)
+                    {
+                        // 받은 상태가 화면을 다시 그린다 (여기서 또 그리지 않음)
+                        Location from = _selected.Value;
+                        _selected = null;
+                        _shopMessage = "";
+                        SendOnlineAction(LobbyAction.MoveFromTo(from, at));
+                        return;
+                    }
+                    _shop.Move(State, _selected.Value, at);
+                }
                 _selected = null;
             }
             _shopMessage = "";
@@ -436,6 +473,15 @@ namespace Moa.Showdown.Game
 
         private void OnStartBattle()
         {
+            if (mode == Mode.Online)
+            {
+                if (State.Team.All(m => m == null) && !_emptyBoardWarned) { WarnEmptyBoard(); return; }
+                // 안내를 먼저 그리고 보낸다: 마지막 준비면 방장이 곧바로 전투로 넘겨 상점이 닫히는데, 그 뒤에 다시 그리면 상점이 되살아난다
+                _shopMessage = HudText.WaitingOthers;
+                RefreshShop();
+                SendOnlineAction(LobbyAction.Of(LobbyActionKind.Ready));
+                return;
+            }
             // 로비: 버튼 = "준비 완료". 전원 준비 완료(오프라인은 봇이 이미 준비)면 바로 시작
             if (mode == Mode.Lobby && usePrepTimer)
             {
@@ -596,7 +642,7 @@ namespace Moa.Showdown.Game
         private void ShowRunInfo(int winsNow, int livesNow)
         {
             RunRules rules = _run.Rules;
-            if (mode == Mode.Lobby)
+            if (LobbyLike)
             {
                 hud.ShowRunInfo(string.Format(HudText.LobbyInfoFormat, livesNow, rules.StartLives, Lobby.AliveCount, Lobby.Players.Count));
                 return;
@@ -607,7 +653,7 @@ namespace Moa.Showdown.Game
         /// <summary>디버그: 팀 전체 레벨 +1 (라운드 사이에만, 다음 라운드부터 적용).</summary>
         public void DebugLevelUp()
         {
-            if ((mode != Mode.Run && mode != Mode.Lobby) || State == null) return;
+            if ((mode != Mode.Run && mode != Mode.Lobby) || State == null) return; // Online은 방장이 상태를 정하므로 안 됨
             RunController.DebugLevelUpAll(State);
             int level = State.Team.Where(m => m != null).Select(m => m.Level).DefaultIfEmpty(0).Max();
             hud.ShowStatus(string.Format(HudText.DebugLevelUpDoneFormat, level));
@@ -624,7 +670,7 @@ namespace Moa.Showdown.Game
         {
             try
             {
-                if (mode == Mode.Lobby) ReplayLobbyMatch();
+                if (LobbyLike) ReplayLobbyMatch();
                 else if (mode == Mode.Run) ReplayLastRound();
                 else await StartTestBattleAsync();
             }

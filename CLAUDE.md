@@ -38,7 +38,7 @@ MoaShowdown — 몬스터 팀을 3×2 격자에 배치해 싸우는 **8인 실�
 | 입력 | Input System | 확정 2026-11-06 · 변경 금지 |
 | UI | uGUI | 확정 2026-11-06 · 변경 금지 |
 | 그래픽 | 3D (그레이박스 → AI 3D 모델, 예: Varco) | 확정 2026-11-06 |
-| 온라인 | ~~비동기 (스냅샷 업로드 · 다운로드)~~ → **8인 실시간 로비, 방장(호스트) 방식** — 방장이 타이머 · 대진 · 공유 풀 · 캐러셀 관리, 라운드마다 팀 스냅샷만 주고받고 전투는 각자 결정론적으로 계산 | ~~확정 2026-11-06~~ → 변경 2026-11-06 (사용자 "TFT 플레이 흐름, 온라인") |
+| 온라인 | ~~비동기 (스냅샷 업로드 · 다운로드)~~ → **8인 실시간 로비, 방장(호스트) 방식** — 방장이 타이머 · 대진 · 공유 풀 · 캐러셀 관리, ~~라운드마다 팀 스냅샷만 주고받고~~ → **참가자는 누른 행동만 보내고 방장이 판 상태를 통째로 나눔** (O-2), 전투는 각자 결정론적으로 다시 계산해 방장 결과와 비교 | ~~확정 2026-11-06~~ → 변경 2026-11-06 (사용자 "TFT 플레이 흐름, 온라인") · 2026-11-08 O-2 사용자 "방장이 계산" |
 | 백엔드 | ~~로컬 가짜 상대 → UGS Cloud Code + Cloud Save~~ → **UGS Lobby + Relay** — 패키지: **Multiplayer Services 2.4.1**(세션 = Lobby + Relay + 익명 로그인) + **Netcode for GameObjects 2.13.3**(사용자 메시지만, 오브젝트 동기화 안 씀) + Multiplayer Play Mode 2.0.2(에디터 2인 확인용). 사람이 모자라면 봇이 채움 | 변경 2026-11-06 · 패키지 확정 2026-11-08 (O-1, 사용자) |
 | UGS 클라우드 프로젝트 | `041f6f3e-…` (이름은 기본값 "My project 2026-11-06_09-39-30", 조직 goni0309) — 그대로 사용 | 결정 2026-11-08 사용자 |
 | 테스트 | Unity Test Framework (EditMode) | 확정 2026-11-06 |
@@ -103,7 +103,10 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 - PvE · 캐러셀 시기는 `LobbyRules.IsPveRound` / `IsCarouselRound`(시작 N라운드 + 시작점부터 간격마다, 0 = 없음), PvE 팀은 `LobbyRules.PveTeams`(나온 순서, 뒤는 마지막) ← `RunBalance.pveTeams`(BALANCE 16). PvE 라운드는 `ResolveRound`가 대진 대신 모두를 같은 팀과 싸우게 함(`LobbyMatch.IsPve`, 보상 `GoldGainedA`, 목숨 `PveLifeLoss` 고정). 캐러셀은 `LobbyController.StartCarousel` → `PickCarousel`/`AutoPickCarousel`/`AdvanceCarouselBots`, 상태는 `LobbyState.Carousel`(formatVersion 3, 2는 변환) — 아직 안 고른 몬스터는 풀에서 빠져 있음(불변식에 포함). `BeginRound`는 안 끝난 캐러셀을 자동으로 마저 고른다. 받기는 `ShopController.Gain`(살 때 능력 없음). 화면은 `CarouselView`(Game/Shop), GameRoot는 `EnterLobbyRound`(캐러셀 → 상점).
 - 온라인 방 · 메시지는 `IRoomTransport`(Core/Online) 하나 — UGS 구현 `UgsRoomTransport`(Game/Online: 익명 로그인 → Multiplayer Services 세션(Relay) 만들기 · 코드 참가 · 빠른 참가, 메시지 = Netcode 사용자 메시지 이름 `"moa"`에 JSON 한 통, `ReliableFragmentedSequenced`). 메시지 형식은 `NetMessage`/`NetMessageJson` 한 곳(봉투 v · type · from · body, 형식 버전 1, 더 새 버전 거부, 최대 64KB) — 종류 문자열 `NetMessageTypes`는 바꾸지 않고 새 종류 = 새 문자열. 받은 메시지 규칙은 `RoomProtocol`(Core) 한 곳(방장만 답함, 방에 없는 사람 · 방장이 아닌 Pong 무시). 방장은 `SendToHost`를 자기에게 바로 전달, `Broadcast`는 방장만(나 포함). 씬에는 `NetworkManager` + `UnityTransport`(Setup/Battle Scene이 만듦).
 - GameRoot 모드 Online(`GameRoot.Online.cs` partial): 대기실 `OnlineView`(Game/Ui)만 — 전투 화면 · 상점은 만들지 않음. 에디터에서는 프로세스마다 UGS 프로필을 나눠(`p` + 프로세스 ID) Multiplayer Play Mode 가상 플레이어끼리 같은 익명 ID가 되지 않게 한다.
+- 온라인 판 진행은 `HostSession`(Core/Online) 한 곳 — 방장만 실행. 판 규칙은 `LobbyController` 그대로, 여기는 단계(`OnlinePhase`: 캐러셀 → 상점 → 전투 · 결과 → … → 끝) · 시간(`Tick(초)`, 실제 시간이라 결정론 대상 아님) · 사람 행동(`Apply(플레이어 ID, LobbyAction)` → `ActionAck`)만. 바뀌면 `Dirty` → GameRoot가 `MakeSync()`(`LobbySync`: 로비 상태 통째 + 자리 → 플레이어 ID + 마지막 라운드 기록 `RoundReportRecord` + 행동 결과)를 메시지 `"sync"`로 모두에게. 참가자 → 방장은 `"action"`(`LobbyAction`, 종류 enum은 끝에만 추가). JSON은 `OnlineLobbyJson` 한 곳(동기화 형식 버전 1, 규칙 버전이 다르면 참가자가 거부).
+- Online 화면(`GameRoot.OnlineGame.cs`): 방장 자신도 참가자와 똑같이 받은 동기화로만 그린다(방장 상태와 화면 상태는 다른 객체). 상점 · 캐러셀 · 결과 화면은 오프라인 로비 코드를 그대로 쓰고(`LobbyLike` = Lobby 또는 Online), 상태를 바꾸는 클릭(사기 · 팔기 · 옮기기 · 새로고침 · 준비 · 캐러셀 · 계속)만 Online이면 `SendOnlineAction`. 전투는 `RoundReportRecord.Rebuild`로 각자 다시 계산해 재생, 방장 결과와 다르면 상태 줄 경고. **행동을 보내는 순간 방장이 곧바로 다음 단계로 넘길 수 있다 → 화면 갱신은 보내기 전에** (2026-11-08 상점이 전투 중에 되살아나던 버그). 내 자리는 `MeIndex`(오프라인 0).
 - **플레이 중에 스크립트를 고치지 않는다** — 재컴파일이 플레이 끝까지 미뤄지고 MCP `RunCommand`가 시간 초과로 막힌다 (2026-11-08 겪음, 사용자가 플레이를 멈춰 풀림).
+- 플레이 모드가 "저절로 꺼지는" 원인: MCP `RunCommand`가 확인용 스크립트를 컴파일할 때 가끔 "forced synchronous recompile"로 어셈블리를 다시 읽어 플레이가 끝난다 (`Logs`/Editor.log에서 확인, 2026-11-08). 플레이 확인은 한 명령 안에서 일시정지 + `Step`으로 최대한 끝낸다.
 - (시스템이 생길 때마다 한 줄씩 추가: "이 시스템은 `클래스` 한 곳, 데이터 `에셋`, 새 항목 = 표 한 줄")
 
 ## 핵심 설계 규칙 (변경 금지)

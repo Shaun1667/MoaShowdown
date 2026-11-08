@@ -90,6 +90,21 @@ namespace Moa.Showdown.Game.Online
             RoomChanged?.Invoke();
         }
 
+        public async Task SetLockedAsync(bool locked)
+        {
+            if (_session == null || !_session.IsHost) return;
+            try
+            {
+                IHostSession host = _session.AsHost();
+                host.IsLocked = locked;
+                await host.SavePropertiesAsync();
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[Online] 방 잠금 실패 (무시): {e.Message}");
+            }
+        }
+
         public void SendToHost(NetMessage m)
         {
             if (Room.IsLocalHost)

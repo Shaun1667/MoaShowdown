@@ -15,6 +15,7 @@ namespace Moa.Showdown.Game.Ui
         [SerializeField] private Color buttonColor = new Color(0.25f, 0.45f, 0.8f);
         [SerializeField] private Color leaveColor = new Color(0.85f, 0.35f, 0.5f);
         [SerializeField] private Color fieldColor = new Color(1f, 1f, 1f, 0.1f);
+        [SerializeField] private Color startColor = new Color(0.3f, 0.7f, 0.4f);
 
         public const int MaxLogLines = 8;
 
@@ -26,8 +27,13 @@ namespace Moa.Showdown.Game.Ui
         public event Action<string, string> JoinClicked;
         public event Action PingClicked;
         public event Action LeaveClicked;
+        /// <summary>게임 시작 (방장만 보임, O-2).</summary>
+        public event Action StartClicked;
 
         private Font _font;
+        private RectTransform _panel;
+        private Button _start;
+        private Text _waitHost;
         private RectTransform _outside;
         private RectTransform _inside;
         private InputField _name;
@@ -59,6 +65,7 @@ namespace Moa.Showdown.Game.Ui
             Vector2 c = new Vector2(0.5f, 0.5f);
 
             var panel = NewRect("OnlinePanel", root, c, c, Vector2.zero, new Vector2(900f, 760f));
+            _panel = panel;
             panel.gameObject.AddComponent<Image>().color = panelColor;
             NewText("Title", panel, new Vector2(0.5f, 1f), new Vector2(0f, -45f), new Vector2(860f, 60f), 38, TextAnchor.MiddleCenter).text = HudText.OnlineTitle;
             _status = NewText("Status", panel, new Vector2(0.5f, 0f), new Vector2(0f, 45f), new Vector2(860f, 50f), 22, TextAnchor.MiddleCenter);
@@ -82,6 +89,10 @@ namespace Moa.Showdown.Game.Ui
             _log = NewText("Log", _inside, new Vector2(1f, 1f), new Vector2(-230f, -330f), new Vector2(400f, 360f), 20, TextAnchor.UpperLeft);
             NewButton("Ping", _inside, new Vector2(-170f, -280f), new Vector2(320f, 70f), HudText.OnlinePing, buttonColor, () => PingClicked?.Invoke());
             NewButton("Leave", _inside, new Vector2(170f, -280f), new Vector2(320f, 70f), HudText.OnlineLeave, leaveColor, () => LeaveClicked?.Invoke());
+            _start = NewButton("StartGame", _inside, new Vector2(0f, -195f), new Vector2(660f, 70f), HudText.OnlineStartGame, startColor, () => StartClicked?.Invoke());
+            _waitHost = NewText("WaitHost", _inside, new Vector2(0.5f, 0.5f), new Vector2(0f, -195f), new Vector2(800f, 60f), 24, TextAnchor.MiddleCenter);
+            _waitHost.text = HudText.OnlineWaitHost;
+            _waitHost.color = new Color(0.8f, 0.85f, 1f);
 
             ShowOutside("");
         }
@@ -94,14 +105,24 @@ namespace Moa.Showdown.Game.Ui
         }
 
         /// <summary>방 안 화면: 코드 · 참가자 줄(그릴 글은 GameRoot가 만든다).</summary>
-        public void ShowRoom(string codeLine, IReadOnlyList<string> memberLines, string status)
+        public void ShowRoom(string codeLine, IReadOnlyList<string> memberLines, string status, bool isHost)
         {
             _outside.gameObject.SetActive(false);
             _inside.gameObject.SetActive(true);
             _roomCode.text = codeLine;
             _members.text = string.Join("\n", memberLines);
             _status.text = status;
+            _start.gameObject.SetActive(isHost);
+            _waitHost.gameObject.SetActive(!isHost);
         }
+
+        /// <summary>판이 진행되는 동안은 대기실 전체를 숨긴다 (O-2).</summary>
+        public void SetVisible(bool visible)
+        {
+            if (_panel != null) _panel.gameObject.SetActive(visible);
+        }
+
+        public bool IsVisible => _panel != null && _panel.gameObject.activeSelf;
 
         public void SetStatus(string status) => _status.text = status;
 
@@ -126,7 +147,7 @@ namespace Moa.Showdown.Game.Ui
 
         // ───────── 만들기 도우미 ─────────
 
-        private void NewButton(string name, RectTransform parent, Vector2 pos, Vector2 size, string label, Color color, Action onClick)
+        private Button NewButton(string name, RectTransform parent, Vector2 pos, Vector2 size, string label, Color color, Action onClick)
         {
             var rt = NewRect(name, parent, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), pos, size);
             var img = rt.gameObject.AddComponent<Image>();
@@ -136,6 +157,7 @@ namespace Moa.Showdown.Game.Ui
             b.onClick.AddListener(() => onClick());
             NewText("Label", rt, new Vector2(0.5f, 0.5f), Vector2.zero, size, 26, TextAnchor.MiddleCenter).text = label;
             _buttons.Add(b);
+            return b;
         }
 
         private InputField NewField(string name, RectTransform parent, Vector2 pos, Vector2 size, string placeholder)

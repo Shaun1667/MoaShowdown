@@ -185,6 +185,15 @@ namespace Moa.Showdown.Game
         public const string OnlinePongFormat = "방장이 {0}의 신호를 받았습니다";
         public const string OnlineJoinedFormat = "{0} 들어옴";
         public const string OnlineLeftFormat = "{0} 나감";
+        // 온라인 판 (O-2)
+        public const string OnlineStartGame = "게임 시작 (빈자리는 봇)";
+        public const string OnlineWaitHost = "방장이 게임을 시작하기를 기다리는 중…";
+        public const string OnlineSpectating = "탈락 — 관전 중 (오른쪽 목록을 누르면 다른 사람 보드 구경)";
+        public const string OnlineMismatchFormat = "주의: 방장과 다른 전투 결과 {0}건 (결정론 확인 필요)";
+        public const string OnlineBackToRoom = "대기실로";
+        public const string OnlineKeepWatching = "관전 계속";
+        public const string OnlineFinishedFormat = "판이 끝났습니다 — {0}등";
+        public const string OnlineVersionMismatchFormat = "규칙 버전이 달라 참가할 수 없습니다 (방장 {0} · 나 {1})";
 
         /// <summary>전투 중 능력 발동 때 떠오르는 짧은 글. AbilityEffect 번호 순.</summary>
         public static readonly string[] EffectPopupFormats = { "", "+{0}", "화상+{0}", "독+{0}", "방어막+{0}", "", "×{0}!", "", "", "이웃 공격+{0}", "이웃 속도+{0}", "", "강해짐+{0}" };

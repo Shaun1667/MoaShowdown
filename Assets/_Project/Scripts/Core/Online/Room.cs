@@ -75,6 +75,9 @@ namespace Moa.Showdown.Core.Online
         Task QuickJoinAsync(string playerName, int maxPlayers);
         Task LeaveAsync();
 
+        /// <summary>방 잠금 (방장만, O-2: 판이 시작되면 새로 못 들어오게). 실패는 무시하고 기록만.</summary>
+        Task SetLockedAsync(bool locked);
+
         /// <summary>방장에게 (내가 방장이면 나에게 바로 전달).</summary>
         void SendToHost(NetMessage m);
         /// <summary>모두에게 (방장만, 나 포함).</summary>

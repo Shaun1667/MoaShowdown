@@ -36,7 +36,16 @@ namespace Moa.Showdown.Game
             onlineView.JoinClicked += (n, code) => _ = _room.JoinByCodeAsync(code, CleanName(n));
             onlineView.PingClicked += OnPingClicked;
             onlineView.LeaveClicked += () => _ = _room.LeaveAsync();
+            onlineView.StartClicked += OnStartGameClicked;
             onlineView.ShowOutside(HudText.OnlineIdle);
+            // 판 화면은 방장이 시작할 때까지 숨김
+            shopView.Hide();
+            carouselView.Hide();
+            lobbyView.SetListVisible(false);
+            hud.HideRoundResult();
+            hud.ShowStatus("");
+            // 창이 뒤에 있어도 방장 진행 · 메시지가 멈추지 않게 (빌드 기본값은 멈춤)
+            Application.runInBackground = true;
         }
 
         private string CleanName(string typed) =>
@@ -44,6 +53,7 @@ namespace Moa.Showdown.Game
 
         private void OnRoomChanged()
         {
+            if (_inOnlineGame && _room.State != RoomConnectionState.InRoom) OnlineEndGame(); // 방이 사라짐 · 나감 (끊김 처리는 O-3)
             switch (_room.State)
             {
                 case RoomConnectionState.Connecting:
@@ -59,7 +69,7 @@ namespace Moa.Showdown.Game
                         string.IsNullOrEmpty(m.Name) ? HudText.OnlineUnknownName : m.Name,
                         m.IsHost ? HudText.OnlineHostTag : "",
                         m.PlayerId == r.LocalPlayerId ? HudText.OnlineMeTag : "")));
-                    onlineView.ShowRoom(string.Format(HudText.OnlineCodeFormat, r.Code), lines, r.IsLocalHost ? HudText.OnlineInRoomHost : HudText.OnlineInRoomGuest);
+                    onlineView.ShowRoom(string.Format(HudText.OnlineCodeFormat, r.Code), lines, r.IsLocalHost ? HudText.OnlineInRoomHost : HudText.OnlineInRoomGuest, r.IsLocalHost);
                     break;
                 case RoomConnectionState.Failed:
                     onlineView.SetBusy(false);
@@ -103,6 +113,11 @@ namespace Moa.Showdown.Game
         private void OnRoomMessage(NetMessage m)
         {
             RoomSnapshot r = _room.Room;
+            if (m.Type == NetMessageTypes.Action || m.Type == NetMessageTypes.Sync)
+            {
+                OnGameMessage(m, r);
+                return;
+            }
             NetMessage reply = RoomProtocol.Handle(m, r);
             if (reply != null) _room.Broadcast(reply);
             string pongFor = RoomProtocol.PongTarget(m, r);
