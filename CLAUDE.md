@@ -125,7 +125,7 @@ MoaShowdown/                (저장소 루트 = Unity 프로젝트 루트)
 
 ## 아트 · 그래픽 규칙
 - 3D. 그레이박스(도형) → AI 3D 모델. 원본은 `Art/<도구>/`, 표시용 프리팹은 Setup 메뉴가 만든다. 모델 크기 · 방향 보정 = Setup 표 한 줄.
-- 몬스터 모델은 `MonsterVisualTable`(Game/Data) 한 곳 ← 에셋 `Data/MonsterVisuals.asset` ← 메뉴 Setup/Monster Visuals(`Art/<도구>/<몬스터 ID>.fbx` → 높이 · 바닥을 맞춘 `Art/Prefabs/Monsters/<ID>.prefab`, 멱등, 줄의 scale · yaw · yOffset 보정은 유지). `BattleStage.Build(…, speciesA, speciesB)`가 ID로 찾아 그리고 없으면 캡슐. 움직임은 코드 연출만(숨쉬기 · 돌진 · 맞으면 납작). GameRoot는 보드 미리 보기를 `ShowBoardPreview(run)`, 전투는 `PlayBattle(…, idsA, idsB)`로 ID를 넘긴다. 프롬프트 · 만드는 순서는 `Docs/아트_프롬프트.md`. 모델 재질에 텍스처가 없으면(Varco FBX) Setup이 텍스처를 `<ID>_Textures/`로 꺼내 URP Lit 재질 `Art/Prefabs/Monsters/<ID>.mat`을 만든다. 일시정지 + Step 확인에서 모델이 하늘색 한 색이면 셰이더 비동기 컴파일 중 — 확인 스크립트에서만 `ShaderUtil.allowAsyncCompilation = false`.
+- 몬스터 모델은 `MonsterVisualTable`(Game/Data) 한 곳 ← 에셋 `Data/MonsterVisuals.asset` ← 메뉴 Setup/Monster Visuals(`Art/<도구>/<몬스터 ID>.fbx` → 높이 · 바닥을 맞춘 `Art/Prefabs/Monsters/<ID>.prefab`, 멱등, 줄의 scale · yaw · yOffset 보정은 유지). `BattleStage.Build(…, boardA, boardB)`가 몬스터(ID → 모델, 레벨 → 크기 `levelScale` Lv2 ×1.15 · Lv3 ×1.3)를 받아 그리고 모델이 없으면 캡슐. 경기장(언덕 위 풀밭 · 하늘 · 덤불)은 `BattleStage.BuildArena` 한 번만(난수 없음). 움직임은 코드 연출만(숨쉬기 · 돌진 · 맞으면 납작). GameRoot는 보드 미리 보기를 `ShowBoardPreview(run)`, 전투는 `PlayBattle(…, boardA, boardB)`로 보드를 넘긴다. 프롬프트 · 만드는 순서는 `Docs/아트_프롬프트.md`. 모델 재질에 텍스처가 없으면(Varco FBX) Setup이 텍스처를 `<ID>_Textures/`로 꺼내 URP Lit 재질 `Art/Prefabs/Monsters/<ID>.mat`을 만든다. 일시정지 + Step 확인에서 모델이 하늘색 한 색이면 셰이더 비동기 컴파일 중 — 확인 스크립트에서만 `ShaderUtil.allowAsyncCompilation = false`.
 - MCP로 에셋을 지우면(`AssetDatabase.DeleteAsset`) 승인 창 때문에 실패한다 → Claude가 만든 파일은 디스크에서 지우고 `AssetDatabase.Refresh`.
 - 참고 게임의 캐릭터 · 아트 · 이름을 가져오지 않는다.
 

@@ -34,6 +34,13 @@ namespace Moa.Showdown.Tests
         }
 
         [Test]
+        public void AllSpecies_HaveModels_G2()
+        {
+            var missing = Table().rows.Where(r => r.prefab == null).Select(r => r.speciesId).ToList();
+            Assert.That(missing, Is.Empty, "G-2: 몬스터 20종 모두 3D 모델 (없으면 Art/Varco/<ID>.fbx 넣고 Setup/Monster Visuals)");
+        }
+
+        [Test]
         public void Find_ReturnsNullWithoutPrefab()
         {
             var t = ScriptableObject.CreateInstance<MonsterVisualTable>();

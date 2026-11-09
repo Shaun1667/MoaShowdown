@@ -183,7 +183,8 @@ namespace Moa.Showdown.Game.Ui
             t.color = Color.white;
             t.raycastTarget = false;
             var outline = rt.gameObject.AddComponent<Outline>();
-            outline.effectColor = new Color(0f, 0f, 0f, 0.8f);
+            outline.effectColor = new Color(0f, 0f, 0f, 0.9f);
+            outline.effectDistance = new Vector2(1.5f, -1.5f); // 밝은 하늘 배경에서도 읽히게 (G-2)
             return t;
         }
 

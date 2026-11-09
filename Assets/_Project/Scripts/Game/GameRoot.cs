@@ -605,7 +605,7 @@ namespace Moa.Showdown.Game
             _lastSignature = Signature(report.Battle);
             hud.ShowStatus("");
             PlayBattle(report.MyTeam, report.OpponentTeam, report.Battle, report.Round, HudText.MyTeam, opponentName, unchecked((ulong)State.Seed) ^ (ulong)report.Round,
-                idsA: SpeciesIds(report.MySnapshot?.Board), idsB: SpeciesIds(report.Opponent.Snapshot?.Board));
+                boardA: report.MySnapshot?.Board, boardB: report.Opponent.Snapshot?.Board);
             _roundResultPending = true;
         }
 
@@ -691,7 +691,7 @@ namespace Moa.Showdown.Game
             hud.HideRoundResult();
             string opponentName = string.Format(r.Opponent.IsBot ? HudText.OpponentBotFormat : HudText.OpponentFormat, r.Opponent.Snapshot.RunId, r.Opponent.Snapshot.Wins);
             PlayBattle(r.MyTeam, r.OpponentTeam, again, r.Round, HudText.MyTeam, opponentName, rs ^ (ulong)r.Round,
-                idsA: SpeciesIds(r.MySnapshot?.Board), idsB: SpeciesIds(r.Opponent.Snapshot?.Board));
+                boardA: r.MySnapshot?.Board, boardB: r.Opponent.Snapshot?.Board);
             _roundResultPending = true;
         }
 
@@ -766,24 +766,20 @@ namespace Moa.Showdown.Game
         private void ShowBoardPreview(RunState run)
         {
             BattleTeam team = TeamFactory.Build(_run.MakeSnapshot(run), _catalog, _statRules);
-            stage.Build(team, new BattleTeam(), unchecked((ulong)run.Seed), SpeciesIds(run.Team));
+            stage.Build(team, new BattleTeam(), unchecked((ulong)run.Seed), run.Team);
             stage.Tick(0f, 0f, true);
         }
 
-        /// <summary>칸별 몬스터 ID (3D 모델 고르기용, 빈칸 = null).</summary>
-        private static string[] SpeciesIds(IReadOnlyList<MonsterSnapshot> board) =>
-            board == null ? null : board.Select(m => m?.SpeciesId).ToArray();
-
-        /// <param name="idsA">칸별 몬스터 ID (3D 모델용, null이면 캡슐).</param>
+        /// <param name="boardA">칸별 몬스터 (3D 모델 · 레벨 크기용, null이면 캡슐).</param>
         private void PlayBattle(BattleTeam a, BattleTeam b, BattleResult result, int battleRound, string nameA, string nameB, ulong fxSeed, bool flip = false,
-            IReadOnlyList<string> idsA = null, IReadOnlyList<string> idsB = null)
+            IReadOnlyList<MonsterSnapshot> boardA = null, IReadOnlyList<MonsterSnapshot> boardB = null)
         {
             _flipSides = flip;
             Array.Clear(_shieldNow, 0, 2);
             Array.Clear(_burnNow, 0, 2);
             Array.Clear(_poisonNow, 0, 2);
             _playback = new BattlePlayback(result, _rules.TicksPerSecond);
-            stage.Build(a, b, fxSeed, idsA, idsB);
+            stage.Build(a, b, fxSeed, boardA, boardB);
             hud.ShowBattle(battleRound, nameA, nameB, result.StartHp);
             hud.SetSideLabels(HudText.MySideLabel, string.Format(HudText.OpponentTitleFormat, nameB));
             AddLabels(BattleSide.A, a);

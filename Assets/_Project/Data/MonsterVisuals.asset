@@ -15,7 +15,7 @@ MonoBehaviour:
   targetHeight: 0.9
   rows:
   - speciesId: sprout
-    prefab: {fileID: 0}
+    prefab: {fileID: 6834223357731869489, guid: 6d1b81876470d9b498c1a243849c7fc1, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
@@ -30,7 +30,7 @@ MonoBehaviour:
     yaw: 0
     yOffset: 0
   - speciesId: zap
-    prefab: {fileID: 0}
+    prefab: {fileID: 1306568490882531844, guid: e66609fc17b3fa344a176d739f584207, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
@@ -40,77 +40,77 @@ MonoBehaviour:
     yaw: 0
     yOffset: 0
   - speciesId: gust
-    prefab: {fileID: 0}
+    prefab: {fileID: 363723266528262712, guid: c377ffca42f82634c80e471b942f77b6, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: spore
-    prefab: {fileID: 0}
+    prefab: {fileID: 3699010274056287489, guid: 30c332c5b16765d4fac5e2045777bd1a, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: chirp
-    prefab: {fileID: 0}
+    prefab: {fileID: 3500593003421289964, guid: 2367396f899176644bfe61db6895a013, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: thornet
-    prefab: {fileID: 0}
+    prefab: {fileID: 773561968258991604, guid: 79f493b80de3e5547853498c34ac9135, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: cinder
-    prefab: {fileID: 0}
+    prefab: {fileID: 2488289450498068572, guid: fd1b1fed357208e429aa837568e85bc5, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: shellby
-    prefab: {fileID: 0}
+    prefab: {fileID: 1721012032165700428, guid: 48f01aaad1bf35148b2e18900a2a8d6b, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: bubble
-    prefab: {fileID: 0}
+    prefab: {fileID: 1334087307666487896, guid: eed42522ef457e04ba23c233536485c8, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: buzzbolt
-    prefab: {fileID: 0}
+    prefab: {fileID: 1022377782628621933, guid: 00f6bba40c1d10e4b9d4700d3bb4ece8, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: drum
-    prefab: {fileID: 0}
+    prefab: {fileID: 4809563013646555977, guid: e300c5b6941c5b247984b52f16bf21dd, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: wisp
-    prefab: {fileID: 0}
+    prefab: {fileID: 101118322215169989, guid: 5152fda6784491945bae1dd2c9c2da3b, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: toxifrog
-    prefab: {fileID: 0}
+    prefab: {fileID: 3115818401142846853, guid: fb0aaeec360334d4699726c3dcf02d63, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: grovekeeper
-    prefab: {fileID: 0}
+    prefab: {fileID: 7485181486012631894, guid: 1bd2f34ce3be5764bbba3d980e7faace, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: stormwing
-    prefab: {fileID: 0}
+    prefab: {fileID: 2966568753441493846, guid: d6e120e9126b2b443b008dbf5281fa47, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: magmaw
-    prefab: {fileID: 0}
+    prefab: {fileID: 2134231463299012147, guid: 93cf89b43f076ef44970818ee78a1a3b, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0
   - speciesId: dracon
-    prefab: {fileID: 0}
+    prefab: {fileID: 9007156991340451771, guid: d459f8d38709d47498a88d9b98e583b3, type: 3}
     scale: 1
     yaw: 0
     yOffset: 0

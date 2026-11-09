@@ -411,13 +411,24 @@ MonoBehaviour:
   colorA: {r: 0.3, g: 0.55, b: 0.95, a: 1}
   colorB: {r: 0.95, g: 0.4, b: 0.35, a: 1}
   gaugeColor: {r: 1, g: 0.95, b: 0.6, a: 1}
-  groundColor: {r: 0.22, g: 0.26, b: 0.24, a: 1}
   visuals: {fileID: 11400000, guid: 56e7b1d1141eae34ca193b107002528b, type: 2}
   facingYawA: 125
   idleBobAmount: 0.04
   idleBobSpeed: 1.6
   hitSquashSeconds: 0.2
   hitSquashAmount: 0.18
+  levelScale:
+  - 1
+  - 1.15
+  - 1.3
+  skyColor: {r: 0.62, g: 0.82, b: 0.95, a: 1}
+  hillColor: {r: 0.36, g: 0.58, b: 0.3, a: 1}
+  grassColor: {r: 0.5, g: 0.74, b: 0.38, a: 1}
+  lineColor: {r: 0.92, g: 0.95, b: 0.85, a: 1}
+  stoneColor: {r: 0.78, g: 0.74, b: 0.66, a: 1}
+  bushColor: {r: 0.28, g: 0.52, b: 0.26, a: 1}
+  rockColor: {r: 0.58, g: 0.56, b: 0.54, a: 1}
+  lightColor: {r: 1, g: 0.95, b: 0.85, a: 1}
 --- !u!4 &967320974
 Transform:
   m_ObjectHideFlags: 0

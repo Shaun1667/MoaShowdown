@@ -279,7 +279,7 @@ namespace Moa.Showdown.Game
             BattleTeam mine = flip ? m.TeamB : m.TeamA;
             BattleTeam theirs = flip ? m.TeamA : m.TeamB;
             PlayBattle(mine, theirs, battle, LastLobbyReport.Round, HudText.MyTeam, OpponentName(m), m.Seed, flip,
-                SpeciesIds((flip ? m.SnapshotB : m.SnapshotA)?.Board), SpeciesIds((flip ? m.SnapshotA : m.SnapshotB)?.Board));
+                (flip ? m.SnapshotB : m.SnapshotA)?.Board, (flip ? m.SnapshotA : m.SnapshotB)?.Board);
         }
 
         private void ReplayLobbyMatch()
